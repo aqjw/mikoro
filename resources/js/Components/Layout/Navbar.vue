@@ -5,11 +5,18 @@ import { useTheme } from 'vuetify';
 import { useUserStore } from '@/Stores/UserStore';
 import { storeToRefs } from 'pinia';
 import MenuProfile from '@/Components/Menu/MenuProfile.vue';
+import MenuNotification from '@/Components/Menu/MenuNotification.vue';
 import useSession from '@/Composables/useSession';
+import { compile } from 'vue';
 
 const theme = useTheme();
 const themeMode = ref(useSession.get('theme', 'light'));
 const isDark = computed(() => themeMode.value === 'dark');
+
+// class="backdrop-blur-md" :color="`rgba(${bgColor}, 0.8)`"
+// const bgColor = computed(() => {
+//   return isDark.value ? '33,33,33' : '255,255,255';
+// });
 
 const userStore = useUserStore();
 const { isLogged, user } = storeToRefs(userStore);
@@ -36,7 +43,7 @@ function toggleTheme() {
             :href="route('home')"
             class="text-2xl font-semibold mr-10 text-zinc-800 dark:text-zinc-200 no-underline"
           >
-            Miroko.tv
+            Mikoro.tv
           </Link>
         </v-col>
 
@@ -55,14 +62,23 @@ function toggleTheme() {
 
           <v-spacer></v-spacer>
 
-          <div class="d-flex align-center gap-6">
-            <v-icon @click="toggleTheme">
-              {{ isDark ? 'mdi-weather-night' : 'mdi-white-balance-sunny' }}
-            </v-icon>
+          <div class="d-flex align-center gap-3">
+            <v-btn
+              density="comfortable"
+              :icon="isDark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
+              variant="plain"
+              @click="toggleTheme"
+            />
 
             <template v-if="isLogged">
-              <v-icon @click="toggleTheme">mdi-bookmark-outline</v-icon>
-              <v-icon @click="toggleTheme">mdi-bell-outline</v-icon>
+              <v-btn
+                density="comfortable"
+                icon="mdi-bookmark-outline"
+                variant="plain"
+                @click="toggleTheme"
+              />
+
+              <MenuNotification />
 
               <MenuProfile :user="user" />
             </template>

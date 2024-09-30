@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Resources\NotificationResource;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -29,9 +31,20 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        /** @var \App\Models\User */
+        $user = $request->user();
+
         return [
             ...parent::share($request),
-            'user' => $request->user(),
+            'auth' => $user ? [
+                'user' => $user,
+                'notifications' => [
+                    'unreadCount' => $user->unreadNotifications()->count(),
+                    'lastItems' => NotificationResource::collection(
+                        $user->unreadNotifications()->latest()->take(10)->get()
+                    ),
+                ],
+            ] : null,
         ];
     }
 }

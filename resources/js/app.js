@@ -18,7 +18,8 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { createPinia } from 'pinia';
 
 // Stores and custom plugins
-import { useUserStore } from '@/Stores/UserStore/index.js';
+import { useUserStore } from '@/Stores/UserStore';
+import { useNotificationStore } from '@/Stores/NotificationStore';
 // import useTimestamp from '@/Plugins/useTimestamp.js';
 // import useMedia from '@/Plugins/useMedia.js';
 // import laravelEcho from '@/Plugins/laravelEcho';
@@ -54,12 +55,11 @@ function createAppInstance({ App, props, plugin }) {
   return app;
 }
 
-function setupEventListeners(app, userStore) {
+function setupEventListeners(app) {
   const $toast = useToast();
 
   router.on('success', (event) => {
-    const { status, user } = event.detail.page.props;
-    userStore.setUser(user);
+    setupStores(event.detail.page.props);
 
     if (status) {
       $toast.open({
@@ -69,6 +69,16 @@ function setupEventListeners(app, userStore) {
       });
     }
   });
+}
+
+function setupStores(props) {
+  const { user = null, notifications = [] } = props.auth ?? {};
+
+  const notificationStore = useNotificationStore();
+  const userStore = useUserStore();
+
+  userStore.setUser(user);
+  notificationStore.setNotifications(notifications);
 }
 
 function toggleTheme(vuetify) {
@@ -88,13 +98,11 @@ createInertiaApp({
     resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
   setup({ el, App, props, plugin }) {
     const appInstance = createAppInstance({ App, props, plugin });
-
-    // Set user on initial page load and listen for route changes
-    const userStore = useUserStore();
-    userStore.setUser(props.initialPage.props.user);
-
     const mountedApp = appInstance.mount(el);
-    setupEventListeners(mountedApp, userStore);
+
+    // Setup stores on initial page load and listen for route changes
+    setupStores(props.initialPage.props);
+    setupEventListeners(mountedApp);
 
     // laravelEcho.start(mountedApp, userStore);
     // Screen.setSizes({ sm: 640, md: 768, lg: 1024, xl: 1280 });

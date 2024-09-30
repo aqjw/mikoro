@@ -1,9 +1,24 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Notifications\NewEpisode;
+use App\Services\KodikService;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::get('/kodik', function (KodikService $kodikService) {
+    $kodikService->list();
+});
+
+// Route::get('/notify', function (Request $request) {
+//     $titleId = 2;
+//     $episodeId = 2;
+//     $request->user()->notify(new NewEpisode($titleId, $episodeId));
+
+//     // Notification::send($users, new NewEpisode($title, $episode));
+// });
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -12,7 +27,7 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Welcome');
 })
-    ->middleware(['auth', 'verified', 'co'])
+    ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {

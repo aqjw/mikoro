@@ -7,11 +7,13 @@ import Sidebar from '@/Components/Layout/Sidebar.vue';
   <v-app id="inspire">
     <Navbar />
 
-    <v-main class="bg-zinc-200 dark:bg-zinc-900">
+    <v-main class="bg-zinc-200 dark:bg-zinc-900 mt-2">
       <v-container>
         <v-row>
           <v-col cols="2">
-            <Sidebar />
+            <div class="sticky top-[88px]">
+              <Sidebar />
+            </div>
           </v-col>
 
           <v-col>
