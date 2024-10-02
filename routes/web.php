@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UPI\SearchController;
 use App\Notifications\NewEpisode;
 use App\Services\KodikService;
 use Illuminate\Foundation\Application;
@@ -20,15 +22,17 @@ Route::get('/kodik', function (KodikService $kodikService) {
 //     // Notification::send($users, new NewEpisode($title, $episode));
 // });
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+Route::get('/', HomeController::class)->name('home');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Welcome');
-})
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::get('/dashboard', fn () => Inertia::render('Home'))->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
+    Route::group(['prefix' => 'search', 'as' => 'search.'], function () {
+        Route::get('random', [SearchController::class, 'random'])->name('random');
+        Route::get('q/{type}/{query}', [SearchController::class, 'query'])->name('query');
+    });
+});
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('titles', function (Blueprint $table) {
             $table->id();
-            $table->string('kid', 20)->index();
+            $table->string('slug', 50)->index();
             $table->unsignedTinyInteger('type')->index();
             $table->string('title');
             $table->string('title_orig')->nullable();

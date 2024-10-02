@@ -21,8 +21,8 @@ import { createPinia } from 'pinia';
 import { useUserStore } from '@/Stores/UserStore';
 import { useNotificationStore } from '@/Stores/NotificationStore';
 // import useTimestamp from '@/Plugins/useTimestamp.js';
-// import useMedia from '@/Plugins/useMedia.js';
 // import laravelEcho from '@/Plugins/laravelEcho';
+import useMedia from '@/Plugins/useMedia.js';
 import useSession from '@/Composables/useSession';
 import useLink from '@/Plugins/Link';
 
@@ -50,7 +50,7 @@ function createAppInstance({ App, props, plugin }) {
     .use(useLink);
 
   // app.config.globalProperties.$timestamp = useTimestamp;
-  // app.config.globalProperties.$media = useMedia();
+  app.config.globalProperties.$media = useMedia();
 
   return app;
 }
@@ -93,7 +93,7 @@ function toggleTheme(vuetify) {
 }
 
 createInertiaApp({
-  title: (title) => `${title} - ${appName}`,
+  title: (title) => `${appName} - ${title}`,
   resolve: (name) =>
     resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
   setup({ el, App, props, plugin }) {

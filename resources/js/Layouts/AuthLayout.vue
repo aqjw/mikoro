@@ -3,12 +3,12 @@ import Navbar from '@/Components/Layout/Navbar.vue';
 </script>
 
 <template>
-  <v-app id="inspire">
+  <v-app id="inspire" class="bg-transparent">
     <Navbar />
 
-    <v-main class="bg-zinc-200 dark:bg-zinc-900">
+    <v-main>
       <v-container>
-        <v-sheet rounded="lg" class=" overflow-hidden">
+        <v-sheet rounded="lg" class="overflow-hidden !shadow-lg">
           <slot />
         </v-sheet>
       </v-container>

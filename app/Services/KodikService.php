@@ -37,12 +37,12 @@ class KodikService
 
         while (true) {
             $response = Http::get($url);
+            $url = $response->json('next_page');
+            $items = $response->json('results');
+
             if (! $response->successful() || empty($items)) {
                 break;
             }
-
-            $url = $response->json('next_page');
-            $items = $response->json('results');
 
             foreach ($items as $item) {
                 // create title
@@ -54,16 +54,17 @@ class KodikService
                 // create episodes
                 $this->createEpisodes($title, $translation, $item);
 
-                // create studios
-                $studios = $this->createStudios($item);
-                $title->studios()->sync($studios);
-
-                // create genres
-                $genres = $this->createGenres($item);
-                $title->genres()->sync($genres);
-
                 if ($title->wasRecentlyCreated) {
-                    $this->storeMedia($title, $item);
+                    // create studios
+                    $studios = $this->createStudios($item);
+                    $title->studios()->sync($studios);
+
+                    // create genres
+                    $genres = $this->createGenres($item);
+                    $title->genres()->sync($genres);
+
+                    // store media
+                    $this->storeMedia($title->id, $item);
                 }
             }
 
@@ -78,8 +79,9 @@ class KodikService
     {
         $material_data = $data['material_data'];
         return Title::updateOrCreate([
-            'kid' => $data['id'],
+            'shikimori_id' => $data['shikimori_id'],
         ], [
+            'slug' => Str::slug($data['title']),
             'type' => TitleType::fromName($data['type']),
             'title' => $data['title'],
             'title_orig' => $data['title_orig'],
@@ -88,7 +90,6 @@ class KodikService
             'duration' => $material_data['duration'] ?? null,
             'status' => TitleStatus::fromName($material_data['all_status'] ?? null),
             'year' => $data['year'],
-            'shikimori_id' => $data['shikimori_id'],
             'shikimori_rating' => $material_data['shikimori_rating'] ?? 0,
             // 'group_id' => $data['group_id'],
             'blocked_countries' => $data['blocked_countries'],
@@ -100,7 +101,7 @@ class KodikService
 
     public function createTranslation(array $data): Translation
     {
-        return Translation::updateOrCreate(
+        return Translation::firstOrCreate(
             ['id' => $data['translation']['id']],
             [
                 'title' => $data['translation']['title'],
@@ -114,11 +115,11 @@ class KodikService
         foreach (array_values($data['seasons']) as $season) {
             foreach ($season['episodes'] as $name => $source) {
                 $title->episodes()->updateOrCreate(
-                    ['name' => $name],
                     [
-                        'source' => $source,
-                        'translation_id' => $translation->id,
+                        'name' => $name,
+                        'translation_id' => $translation->id
                     ],
+                    ['source' => $source],
                 );
             }
         }
@@ -146,8 +147,11 @@ class KodikService
             ->toArray();
     }
 
-    public function storeMedia(Title $title, array $data): void
+    public function storeMedia(int $titleId, array $data): void
     {
-        StoreMediaJob::dispatch($title, $data);
+        StoreMediaJob::dispatch($titleId, [
+            'poster' => $data['material_data']['poster_url'] ?? null,
+            'screenshots' => $data['material_data']['screenshots'] ?? []
+        ]);
     }
 }

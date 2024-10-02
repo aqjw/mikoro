@@ -23,7 +23,7 @@ const submit = () => {
 
   <AuthLayout>
     <div class="d-flex items-center">
-      <div class="w-1/2 bg-zinc-100 dark:bg-zinc-800">
+      <div class="w-1/2 bg-gray-50 dark:bg-neutral-800">
         <SvgLogin class="w-full" />
       </div>
 

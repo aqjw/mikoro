@@ -7,18 +7,17 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 
 class StoreMediaJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable;
 
 
     /**
      * Create a new job instance.
      */
     public function __construct(
-        protected Title $title,
+        protected int $titleId,
         protected array $data
     ) {
         //
@@ -29,17 +28,14 @@ class StoreMediaJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $media = [
-            'poster' => $this->data['material_data']['poster_url'] ?? null,
-            'screenshots' => $this->data['material_data']['screenshots'] ?? []
-        ];
+        $title = Title::find($this->titleId);
 
-        if (filled($media['poster'])) {
-            $this->title->addMediaFromUrl($media['poster'])->toMediaCollection('poster');
+        if (filled($this->data['poster'])) {
+            $title->addMediaFromUrl($this->data['poster'])->toMediaCollection('poster');
         }
 
-        foreach ($media['screenshots'] as $screenshotUrl) {
-            $this->title->addMediaFromUrl($screenshotUrl)->toMediaCollection('screenshots');
+        foreach ($this->data['screenshots'] as $screenshotUrl) {
+            $title->addMediaFromUrl($screenshotUrl)->toMediaCollection('screenshots');
         }
     }
 }

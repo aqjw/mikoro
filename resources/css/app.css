@@ -26,3 +26,33 @@
     box-shadow: none !important;
   }
 }
+
+.bg-bar {
+
+}
+
+.bg-main {
+    @apply bg-gray-100 dark:bg-neutral-900 duration-100;
+}
+
+.v-overlay__scrim {
+    @apply dark:!bg-neutral-900;
+}
+
+
+.text-field-compact {
+    @apply h-8;
+    .v-field {
+        @apply h-8 !p-0;
+
+        .v-field-label {
+            @apply text-sm;
+        }
+
+        .v-field__input {
+            @apply min-h-8 !py-0;
+        }
+
+    }
+}
+

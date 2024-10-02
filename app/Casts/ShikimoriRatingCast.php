@@ -14,7 +14,7 @@ class ShikimoriRatingCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): mixed
     {
-        return $value ? $value / 100 : 0.0;
+        return $value ? round($value / 100, 1) : 0.0;
     }
 
     /**
