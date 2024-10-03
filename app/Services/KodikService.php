@@ -33,7 +33,7 @@ class KodikService
             'with_episodes' => true,
             'with_material_data' => true,
         ];
-        $url = 'https://kodikapi.com/list?' . http_build_query($queryParams);
+        $url = 'https://kodikapi.com/list?'.http_build_query($queryParams);
 
         while (true) {
             $response = Http::get($url);
@@ -118,8 +118,9 @@ class KodikService
         return Translation::firstOrCreate(
             ['id' => $data['translation']['id']],
             [
+                'slug' => Str::slug($data['translation']['title']),
                 'title' => $data['translation']['title'],
-                'type' => TranslationType::fromName($data['translation']['type'])
+                'type' => TranslationType::fromName($data['translation']['type']),
             ]
         );
     }
@@ -131,7 +132,7 @@ class KodikService
                 $title->episodes()->updateOrCreate(
                     [
                         'name' => $name,
-                        'translation_id' => $translation->id
+                        'translation_id' => $translation->id,
                     ],
                     ['source' => $source],
                 );
@@ -165,7 +166,7 @@ class KodikService
     {
         StoreMediaJob::dispatch($titleId, [
             'poster' => $data['material_data']['poster_url'] ?? null,
-            'screenshots' => $data['material_data']['screenshots'] ?? []
+            'screenshots' => $data['material_data']['screenshots'] ?? [],
         ]);
     }
 }

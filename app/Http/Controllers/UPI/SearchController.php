@@ -3,20 +3,12 @@
 namespace App\Http\Controllers\UPI;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Resources\TitleSearchResource;
 use App\Models\Studio;
 use App\Models\Title;
 use App\Services\SearchService;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
-
 
 class SearchController extends Controller
 {
@@ -24,7 +16,7 @@ class SearchController extends Controller
     {
         $titles = Title::with([
             'media' => fn ($query) => $query->where('collection_name', 'poster'),
-            'genres'
+            'genres',
         ])
             ->inRandomOrder()
             ->take(3)

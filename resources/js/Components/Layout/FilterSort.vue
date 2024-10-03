@@ -158,7 +158,7 @@ const updateFilterItems = () => {
             </v-btn>
           </template>
 
-          <v-card width="300px">
+          <v-card width="300px" max-height="500px">
             <v-card-text>
               <MenuFilterItem
                 title="Жанр"

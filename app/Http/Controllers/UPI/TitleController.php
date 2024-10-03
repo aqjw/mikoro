@@ -4,23 +4,14 @@ namespace App\Http\Controllers\UPI;
 
 use App\Enums\TitleStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Resources\TitleShortResource;
 use App\Models\Genre;
 use App\Models\Studio;
 use App\Models\Title;
 use App\Models\Translation;
 use App\Services\CatalogService;
-use App\Services\SearchService;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Str;
-use Inertia\Inertia;
-
 
 class TitleController extends Controller
 {
@@ -39,7 +30,7 @@ class TitleController extends Controller
                 $key => [
                     'incl' => $filters[$key]['incl'] ?? [],
                     'excl' => $filters[$key]['excl'] ?? [],
-                ]
+                ],
             ])->toArray()
         );
 

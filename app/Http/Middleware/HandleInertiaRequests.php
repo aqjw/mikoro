@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Http\Resources\NotificationResource;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 

@@ -59,8 +59,31 @@ const getOptionLabels = (type) => {
   >
     <template v-slot:activator="{ props }">
       <div class="flex justify-between">
-        <div class="font-medium text-lg text-gray-700 dark:text-gray-200">
-          {{ title }}
+        <div class="flex items-center">
+          <span class="font-medium text-lg text-gray-700 dark:text-gray-200 mr-2">
+            {{ title }}
+          </span>
+
+          <div class=" rounded-md overflow-hidden">
+          <v-chip
+            v-if="items.incl.length"
+            density="compact"
+            :rounded="false"
+            variant="tonal"
+            color="green"
+          >
+            {{ items.incl.length }}
+          </v-chip>
+          <v-chip
+            v-if="items.excl.length"
+            density="compact"
+            :rounded="false"
+            variant="tonal"
+            color="red"
+          >
+            {{ items.excl.length }}
+          </v-chip>
+          </div>
         </div>
         <v-btn
           variant="tonal"

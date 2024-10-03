@@ -213,7 +213,7 @@ return [
                     // 'default_sorting_field' => 'created_at',
                 ],
                 'search-parameters' => [
-                    'query_by' => 'slug,title,title_orig,other_title,description'
+                    'query_by' => 'slug,title,title_orig,other_title,description',
                 ],
             ],
             Studio::class => [
@@ -235,7 +235,7 @@ return [
                     // 'default_sorting_field' => 'created_at',
                 ],
                 'search-parameters' => [
-                    'query_by' => 'slug,name'
+                    'query_by' => 'slug,name',
                 ],
             ],
         ],

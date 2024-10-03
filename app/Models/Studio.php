@@ -13,8 +13,8 @@ class Studio extends Model
     use Searchable;
 
     protected $fillable = [
-        'name',
         'slug',
+        'name',
     ];
 
     public function toSearchableArray(): array

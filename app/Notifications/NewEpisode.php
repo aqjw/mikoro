@@ -5,8 +5,6 @@ namespace App\Notifications;
 use App\Models\Episode;
 use App\Models\Title;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class NewEpisode extends Notification
@@ -35,8 +33,6 @@ class NewEpisode extends Notification
 
     /**
      * Get the notification's database type.
-     *
-     * @return string
      */
     public function databaseType(object $notifiable): string
     {
@@ -51,6 +47,7 @@ class NewEpisode extends Notification
     public function toArray(object $notifiable): array
     {
         $ep = $this->episode;
+
         return [
             'title' => $this->title->title,
             'subtitle' => "Вышла {$ep->number} серия в озвучке {$ep->translation->title}",

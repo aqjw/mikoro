@@ -3,15 +3,20 @@ import CardTitle from '@/Components/Card/CardTitle.vue';
 import FilterSort from '@/Components/Layout/FilterSort.vue';
 import TitleRating from '@/Components/TitleRating.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head,Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ref, watch } from 'vue';
 
-// const props = defineProps({
-//   titles: {
-//     type: Array,
-//   },
-// });
+const props = defineProps({
+  genre: [Number, String],
+  translation: [Number, String],
+  studio: [Number, String],
+  year: [Number, String],
+  status: [Number, String],
+});
+
+console.log('props', props);
+
 const doneCallback = ref(null);
 
 const items = ref([]);
@@ -69,7 +74,9 @@ const loadItems = ({ done }) => {
             :key="index"
             class="hover:scale-105 duration-200"
           >
+          <Link :href="route('title', item.slug)">
             <CardTitle :item="item" />
+          </Link>
           </div>
         </div>
 

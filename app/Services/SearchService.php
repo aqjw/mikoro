@@ -5,8 +5,6 @@ namespace App\Services;
 use App\Models\Studio;
 use App\Models\Title;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class SearchService
 {
@@ -17,7 +15,7 @@ class SearchService
                 $builder
                     ->with([
                         'media' => fn ($query) => $query->where('collection_name', 'poster'),
-                        'genres'
+                        'genres',
                     ]);
             })
             ->take(10)

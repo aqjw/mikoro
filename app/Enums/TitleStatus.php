@@ -38,4 +38,3 @@ enum TitleStatus: int
         );
     }
 }
-

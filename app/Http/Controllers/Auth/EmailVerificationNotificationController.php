@@ -21,7 +21,7 @@ class EmailVerificationNotificationController extends Controller
 
         return back()->with('status', [
             'message' => 'A new verification link has been sent.',
-            'type' => 'success'
+            'type' => 'success',
         ]);
     }
 }

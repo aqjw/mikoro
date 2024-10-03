@@ -2,15 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Studio;
 use App\Models\Title;
-
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class CatalogService
 {
@@ -19,7 +13,7 @@ class CatalogService
         $query = Title::query()
             ->with([
                 'media' => fn ($query) => $query->where('collection_name', 'poster'),
-                'genres'
+                'genres',
             ]);
 
         $this->filters($query, $filters);

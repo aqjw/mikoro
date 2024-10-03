@@ -12,6 +12,7 @@ class Translation extends Model
 
     protected $fillable = [
         'id', // non-autoIncrement
+        'slug',
         'title',
         'type',
     ];

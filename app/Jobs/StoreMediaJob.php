@@ -12,7 +12,6 @@ class StoreMediaJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
 
-
     /**
      * Create a new job instance.
      */

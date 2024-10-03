@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('translations', function (Blueprint $table) {
             $table->unsignedBigInteger('id');
+            $table->string('slug')->index();
             $table->string('title');
             $table->unsignedBigInteger('type')->index();
             $table->timestamps();
