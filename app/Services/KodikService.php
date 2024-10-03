@@ -78,7 +78,7 @@ class KodikService
     public function createTitle(array $data): Title
     {
         $material_data = $data['material_data'];
-        return Title::updateOrCreate([
+        $title = Title::updateOrCreate([
             'shikimori_id' => $data['shikimori_id'],
         ], [
             'slug' => Str::slug($data['title']),
@@ -94,9 +94,23 @@ class KodikService
             // 'group_id' => $data['group_id'],
             'blocked_countries' => $data['blocked_countries'],
             'blocked_seasons' => $data['blocked_seasons'],
-            'last_episode' => $data['last_episode'],
-            'episodes_count' => $data['episodes_count'],
         ]);
+
+        if ($title->wasRecentlyCreated) {
+            $title->last_episode = $data['last_episode'];
+            $title->episodes_count = $data['episodes_count'];
+            $title->save();
+        } else {
+            $title->last_episode = $data['last_episode'] > $title->last_episode
+                ? $data['last_episode']
+                : $title->last_episode;
+
+            $title->episodes_count = $data['episodes_count'] > $title->episodes_count
+                ? $data['episodes_count']
+                : $title->episodes_count;
+
+            $title->save();
+        }
     }
 
     public function createTranslation(array $data): Translation

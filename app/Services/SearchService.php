@@ -18,16 +18,6 @@ class SearchService
                     ->with([
                         'media' => fn ($query) => $query->where('collection_name', 'poster'),
                         'genres'
-                    ])
-                    ->addSelect([
-                        'episodes_count' => DB::table('episodes')
-                            ->selectRaw('MAX(episode_count)')
-                            ->from(function ($subQuery) {
-                                $subQuery->selectRaw('COUNT(*) as episode_count, translation_id')
-                                    ->from('episodes')
-                                    ->whereColumn('episodes.title_id', 'titles.id')
-                                    ->groupBy('translation_id');
-                            })
                     ]);
             })
             ->take(10)

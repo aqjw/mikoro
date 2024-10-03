@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Casts\ShikimoriRatingCast;
 use App\Enums\TitleStatus;
 use App\Enums\TitleType;
-use App\Models\Scopes\BestMatchScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;

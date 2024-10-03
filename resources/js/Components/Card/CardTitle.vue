@@ -39,7 +39,7 @@ defineProps({
     </v-img>
 
     <div class="truncate px-2 pt-1">
-      <span class="font-medium">{{ item.title }}</span>
+      <span class="font-semibold">{{ item.title }}</span>
       <v-tooltip
         v-if="item.title.length > 22"
         activator="parent"

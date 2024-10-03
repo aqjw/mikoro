@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UPI\SearchController;
+use App\Http\Controllers\UPI\TitleController;
 use App\Notifications\NewEpisode;
 use App\Services\KodikService;
 use Illuminate\Foundation\Application;
@@ -30,6 +31,11 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
     Route::group(['prefix' => 'search', 'as' => 'search.'], function () {
         Route::get('random', [SearchController::class, 'random'])->name('random');
         Route::get('q/{type}/{query}', [SearchController::class, 'query'])->name('query');
+    });
+
+    Route::group(['prefix' => 'title', 'as' => 'title.'], function () {
+        Route::get('catalog', [TitleController::class, 'catalog'])->name('catalog');
+        Route::get('filters', [TitleController::class, 'filters'])->name('filters');
     });
 });
 
