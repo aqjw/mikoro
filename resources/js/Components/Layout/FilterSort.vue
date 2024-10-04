@@ -1,100 +1,78 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import MenuFilterItem from '../Menu/MenuFilterItem.vue';
+import { useCatalogStore } from '@/Stores/CatalogStore';
+import { storeToRefs } from 'pinia';
 
-const emit = defineEmits(['updated']);
+const emit = defineEmits(['updated', 'reset']);
 
-const EMIT_DELAY_MS = 500;
-const DEFAULT_SORT = {
-  option: 'latest',
-  dir: 'desc',
-};
+const catalogStore = useCatalogStore();
+const {
+  sorting: sortingState,
+  filters: filtersState,
+  options,
+  activeFiltersCount,
+  canReset,
+} = storeToRefs(catalogStore);
 
-const sorting = ref(JSON.parse(JSON.stringify(DEFAULT_SORT)));
-const timer = ref(null);
-const filters = ref({
-  genres: { incl: [], excl: [] },
-  studios: { incl: [], excl: [] },
-  translations: { incl: [], excl: [] },
-  years: { incl: [], excl: [] },
-  statuses: { incl: [], excl: [] },
-});
+const sorting = ref(JSON.parse(JSON.stringify(sortingState.value)));
+const filters = ref(JSON.parse(JSON.stringify(filtersState.value)));
 
-const options = ref({
-  sorting: [
-    { value: 'latest', title: 'Последние поступления' },
-    { value: 'rating', title: 'По рейтингу' },
-    // TODO: no comments yet
-    // { value: 'comments', title: 'По комментариям' },
-    { value: 'episodes_count', title: 'По количеству эпизодов' },
-    { value: 'seasons_count', title: 'По количеству сезонов' },
-  ],
-  filters: {
-    genres: [],
-    studios: [],
-    translations: [],
-    years: [],
-    statuses: [],
-  },
-});
+let updatingQuietly = false;
 
 watch(
-  [sorting, filters],
+  sorting,
   () => {
-    clearTimeout(timer.value);
-    timer.value = setTimeout(
-      () =>
-        emit('updated', {
-          sorting: sorting.value,
-          filters: filters.value,
-        }),
-      EMIT_DELAY_MS
-    );
+    if (!updatingQuietly) {
+      sortingState.value = JSON.parse(JSON.stringify(sorting.value));
+      emit('updated', true);
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  filters,
+  () => {
+    if (!updatingQuietly) {
+      filtersState.value = JSON.parse(JSON.stringify(filters.value));
+      emit('updated', false);
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  sortingState,
+  () => {
+    updateQuietly(() => {
+      sorting.value = JSON.parse(JSON.stringify(sortingState.value));
+    });
+  },
+  { deep: true }
+);
+
+watch(
+  filtersState,
+  () => {
+    updateQuietly(() => {
+      filters.value = JSON.parse(JSON.stringify(filtersState.value));
+    });
   },
   { deep: true }
 );
 
 onMounted(() => {
-  loadFilterOptions();
+  catalogStore.loadOptions();
 });
 
-const canReset = computed(() => {
-  const filtersNotEmpty = Object.values(filters.value).some(
-    (filter) => filter.incl.length || filter.excl.length
-  );
-  return (
-    JSON.stringify(DEFAULT_SORT) !== JSON.stringify(sorting.value) || filtersNotEmpty
-  );
-});
-
-const activeFiltersCount = computed(() => {
-  return Object.values(filters.value).filter(
-    (filter) => filter.incl.length || filter.excl.length
-  ).length;
-});
-
-const reset = () => {
-  sorting.value = JSON.parse(JSON.stringify(DEFAULT_SORT));
-  Object.keys(filters.value).forEach((key) => {
-    filters.value[key] = { incl: [], excl: [] };
-  });
-};
-
-const loadFilterOptions = () => {
-  axios.get(route('upi.title.filters')).then(({ data }) => {
-    options.value.filters.genres = data.genres;
-    options.value.filters.studios = data.studios;
-    options.value.filters.translations = data.translations;
-    options.value.filters.statuses = data.statuses;
-    options.value.filters.years = data.years;
-  });
+const updateQuietly = (callback) => {
+  updatingQuietly = true;
+  callback();
+  nextTick(() => (updatingQuietly = false));
 };
 
 const toggleSortingDir = () => {
-  sorting.value.dir = sorting.value.dir === 'asc' ? 'desc' : 'asc';
-};
-
-const updateFilterItems = () => {
   sorting.value.dir = sorting.value.dir === 'asc' ? 'desc' : 'asc';
 };
 </script>
@@ -134,7 +112,7 @@ const updateFilterItems = () => {
           color="red"
           density="comfortable"
           class="text-none"
-          @click="reset"
+          @click="emit('reset')"
         >
           Сбросить
         </v-btn>

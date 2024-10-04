@@ -3,54 +3,64 @@ import CardTitle from '@/Components/Card/CardTitle.vue';
 import FilterSort from '@/Components/Layout/FilterSort.vue';
 import TitleRating from '@/Components/TitleRating.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Head,Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
+import { useCatalogStore } from '@/Stores/CatalogStore';
+import { storeToRefs } from 'pinia';
+
+const UPDATE_DELAY_MS = 1000;
 
 const props = defineProps({
-  genre: [Number, String],
-  translation: [Number, String],
-  studio: [Number, String],
-  year: [Number, String],
-  status: [Number, String],
+  filter: {
+    type: Object,
+    default: null,
+  },
 });
 
-console.log('props', props);
+const catalogStore = useCatalogStore();
+const { items, params } = storeToRefs(catalogStore);
 
+const infiniteScroll = ref(null);
+const timer = ref(null);
 const doneCallback = ref(null);
 
-const items = ref([]);
-const page = ref(1);
-const params = ref({});
+const onFilterSortUpdated = (isSorting) => {
+  clearTimeout(timer.value);
+  if (isSorting) {
+    catalogStore.resetItems();
+    doneCallback.value?.('ok');
+    return;
+  }
 
-const filterSortUpdated = (newVal) => {
-  params.value = newVal;
-  reset();
+  timer.value = setTimeout(() => {
+    catalogStore.resetItems();
+    doneCallback.value?.('ok');
+  }, UPDATE_DELAY_MS);
 };
 
-const reset = (newVal) => {
-  if (doneCallback.value) {
-    page.value = 1;
-    items.value = [];
-    doneCallback.value('ok');
+const onReset = () => {
+  catalogStore.resetSorting();
+  catalogStore.resetFilters();
+  catalogStore.resetItems();
+  doneCallback.value?.('ok');
+
+  if (route().current().startsWith('catalog.')) {
+    router.visit(route('home'))
   }
 };
 
-const loadItems = ({ done }) => {
-  doneCallback.value = done;
+onMounted(() => {
+  if (props.filter?.key) {
+    catalogStore.setFilterValue(props.filter.key, props.filter.value);
+  }
+});
 
-  axios
-    .get(route('upi.title.catalog'), {
-      params: {
-        page: page.value,
-        ...params.value,
-      },
-    })
-    .then(({ data }) => {
-      page.value++;
-      items.value.push(...data.items);
-      done(data.has_more ? 'ok' : 'empty');
-    });
+const onLoadItems = ({ done }) => {
+  doneCallback.value = done;
+  catalogStore.loadItems((hasMore) => {
+    done(hasMore ? 'ok' : 'empty');
+  });
 };
 </script>
 
@@ -59,12 +69,12 @@ const loadItems = ({ done }) => {
 
   <AppLayout bg-transparent>
     <div>
-      <FilterSort @updated="filterSortUpdated" />
+      <FilterSort @updated="onFilterSortUpdated" @reset="onReset" />
 
       <v-infinite-scroll
         ref="infiniteScroll"
         :items="items"
-        :onLoad="loadItems"
+        :onLoad="onLoadItems"
         :mode="items.length > 0 ? 'manual' : 'intersect'"
         class="p-6 -m-6"
       >
@@ -74,9 +84,9 @@ const loadItems = ({ done }) => {
             :key="index"
             class="hover:scale-105 duration-200"
           >
-          <Link :href="route('title', item.slug)">
-            <CardTitle :item="item" />
-          </Link>
+            <Link :href="route('title', item.slug)">
+              <CardTitle :item="item" />
+            </Link>
           </div>
         </div>
 
@@ -96,7 +106,9 @@ const loadItems = ({ done }) => {
           <v-progress-circular indeterminate :size="50" :width="2" color="primary" />
         </template>
 
-        <template v-slot:empty></template>
+        <template v-slot:empty>
+          <div v-if="items.length === 0">Ничего не найдено</div>
+        </template>
       </v-infinite-scroll>
     </div>
   </AppLayout>
