@@ -46,13 +46,14 @@ const onReset = () => {
   doneCallback.value?.('ok');
 
   if (route().current().startsWith('catalog.')) {
-    router.visit(route('home'))
+    router.visit(route('home'));
   }
 };
 
 onMounted(() => {
   if (props.filter?.key) {
     catalogStore.setFilterValue(props.filter.key, props.filter.value);
+    catalogStore.resetItems();
   }
 });
 
@@ -67,7 +68,7 @@ const onLoadItems = ({ done }) => {
 <template>
   <Head title="Anime" />
 
-  <AppLayout bg-transparent>
+  <AppLayout>
     <div>
       <FilterSort @updated="onFilterSortUpdated" @reset="onReset" />
 

@@ -40,6 +40,7 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
     Route::group(['prefix' => 'title', 'as' => 'title.'], function () {
         Route::get('catalog', [UPI\TitleController::class, 'catalog'])->name('catalog');
         Route::get('filters', [UPI\TitleController::class, 'filters'])->name('filters');
+        Route::get('episodes/{title:id}', [UPI\TitleController::class, 'episodes'])->name('episodes');
     });
 });
 

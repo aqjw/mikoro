@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class CatalogService
 {
-    public function get(array $sorting, array $filters, int $limit = 30): LengthAwarePaginator
+    public function get(array $sorting, array $filters, int $limit = 28): LengthAwarePaginator
     {
         $query = Title::query()
             ->with([

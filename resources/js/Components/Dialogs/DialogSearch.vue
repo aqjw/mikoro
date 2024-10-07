@@ -3,6 +3,7 @@ import { onMounted, ref, watch, computed } from 'vue';
 import ItemTitle from '@/Components/Item/ItemTitle.vue';
 import ItemStudio from '@/Components/Item/ItemStudio.vue';
 import { useDisplay } from 'vuetify';
+import { Link } from '@inertiajs/vue3';
 
 const { mobile, platform } = useDisplay();
 
@@ -127,6 +128,15 @@ const resetOtherTabs = () => {
     }
   }
 };
+const getItemRoute = (item) => {
+  return {
+    title: route('title', item.slug),
+    studio: route('catalog.studio', item.slug),
+    director: '',
+    voice_actor: '',
+    character: '',
+  }[type.value];
+};
 
 const loadItems = async () => {
   loading.value = true;
@@ -236,7 +246,9 @@ onMounted(() => {
           <div v-else>
             <v-list :lines="listLines" density="comfortable" max-height="500">
               <template v-for="(item, index) in itemsList" :key="index">
-                <component :is="listItemComponent" :item="item" />
+                <Link :href="getItemRoute(item)">
+                  <component :is="listItemComponent" :item="item" />
+                </Link>
               </template>
             </v-list>
           </div>

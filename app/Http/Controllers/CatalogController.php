@@ -16,8 +16,8 @@ class CatalogController extends Controller
         return Inertia::render('Home', [
             'filter' => [
                 'key' => 'genres',
-                'value' => $genre->id
-            ]
+                'value' => $genre->id,
+            ],
         ]);
     }
 
@@ -26,8 +26,8 @@ class CatalogController extends Controller
         return Inertia::render('Home', [
             'filter' => [
                 'key' => 'translations',
-                'value' => $translation->id
-            ]
+                'value' => $translation->id,
+            ],
         ]);
     }
 
@@ -36,8 +36,8 @@ class CatalogController extends Controller
         return Inertia::render('Home', [
             'filter' => [
                 'key' => 'studios',
-                'value' => $studio->id
-            ]
+                'value' => $studio->id,
+            ],
         ]);
     }
 
@@ -46,8 +46,8 @@ class CatalogController extends Controller
         return Inertia::render('Home', [
             'filter' => [
                 'key' => 'years',
-                'value' => (int) $year
-            ]
+                'value' => (int) $year,
+            ],
         ]);
     }
 
@@ -58,8 +58,8 @@ class CatalogController extends Controller
         return Inertia::render('Home', [
             'filter' => [
                 'key' => 'statuses',
-                'value' => $case->value ?? null
-            ]
+                'value' => $case->value ?? null,
+            ],
         ]);
     }
 }

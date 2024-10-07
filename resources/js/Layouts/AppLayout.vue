@@ -1,13 +1,6 @@
 <script setup>
 import Navbar from '@/Components/Layout/Navbar.vue';
 import Sidebar from '@/Components/Layout/Sidebar.vue';
-
-defineProps({
-  bgTransparent: {
-    type: Boolean,
-    default: false,
-  },
-});
 </script>
 
 <template>

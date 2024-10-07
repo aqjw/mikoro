@@ -53,4 +53,37 @@ class TitleController extends Controller
             'statuses' => TitleStatus::getCases(),
         ]);
     }
+
+    public function episodes(Title $title, Request $request): JsonResponse
+    {
+        $translations = $title->episodes
+            ->groupBy('translation_id')
+            ->map(fn ($episodes) => [
+                'id' => $episodes->first()->translation->id,
+                'label' => $episodes->first()->translation->title,
+            ])
+            ->values();
+
+        $episodes = $title->episodes->map(fn ($episode) => [
+            'id' => $episode->id,
+            'label' => $episode->name,
+            'source' => $episode->source,
+            'translation_id' => $episode->translation_id,
+        ]);
+
+        $user = $request->user();
+        $playbackState = $user?->playbackStates()
+            ->where('title_id', $title->id)
+            ->first();
+
+        return response()->json([
+            'translations' => $translations,
+            'episodes' => $episodes,
+            'playback_state' => [
+                'translationId' => $playbackState->translation_id ?? $translations[0]['id'],
+                'episodeId' => $playbackState->episode_id ?? $episodes[0]['id'],
+                'time' => $playbackState->time ?? 0,
+            ],
+        ]);
+    }
 }

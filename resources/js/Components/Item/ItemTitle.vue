@@ -1,6 +1,6 @@
 <script setup>
-import { computed } from 'vue';
 import TitleRating from '@/Components/TitleRating.vue';
+import { Link } from '@inertiajs/vue3';
 
 defineProps({
   item: {
@@ -24,19 +24,24 @@ defineProps({
       </div>
 
       <div class="d-flex gap-1 flex-wrap mt-1">
-        <v-chip
+        <Link
           v-for="genre in item.genres"
           :key="genre.slug"
-          size="small"
-          variant="tonal"
-          color="primary"
-          density="compact"
-          @click="() => {}"
+          :href="route('catalog.genre', genre.slug)"
         >
-          {{ genre.name }}
-        </v-chip>
+          <v-chip
+            size="small"
+            variant="tonal"
+            color="primary"
+            density="compact"
+            @click="() => {}"
+          >
+            {{ genre.name }}
+          </v-chip>
+        </Link>
       </div>
     </template>
+
     <template #prepend>
       <v-img
         :width="65"
@@ -49,6 +54,7 @@ defineProps({
         class="mr-4"
       />
     </template>
+
     <template #append>
       <TitleRating :value="item.shikimori_rating" class="!p-1" />
     </template>

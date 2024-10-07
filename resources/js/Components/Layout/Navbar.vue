@@ -36,7 +36,7 @@ function toggleTheme() {
 </script>
 
 <template>
-  <v-app-bar flat density="compact">
+  <v-app-bar flat density="compact" class="!shadow-">
     <v-container>
       <v-row>
         <v-col cols="2" class="d-flex align-center">
@@ -49,7 +49,7 @@ function toggleTheme() {
         </v-col>
 
         <v-col class="mx-auto d-flex align-center justify-center">
-        <DialogSearch />
+          <DialogSearch />
 
           <v-spacer></v-spacer>
 
