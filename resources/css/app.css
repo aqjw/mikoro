@@ -60,3 +60,27 @@
   --vc-nav-background: rgba(var(--v-border-color), var(--v-border-opacity));
   --vc-nav-border-radius: 1rem;
 }
+
+.comment-card {
+  @apply flex gap-2 relative;
+
+  &.is-reply:last-child::before {
+    @apply content-[''] absolute -left-8 top-0 bottom-0 w-8 bg-second;
+  }
+
+  &.is-reply::after {
+    @apply content-[''] absolute -left-8 -top-4 w-8 h-8 border-b border-l rounded-bl-2xl border-gray-200 dark:border-zinc-700;
+  }
+
+  .has-replies {
+    @apply absolute left-4 top-10 bottom-0 bg-gray-200 dark:bg-zinc-700 w-[1px];
+  }
+
+  .comment-actions {
+    @apply flex gap-4 mt-3;
+
+    .comment-action {
+      @apply flex gap-1 items-center text-slate-500 hover:text-slate-700 cursor-pointer;
+    }
+  }
+}

@@ -25,6 +25,7 @@ import { useNotificationStore } from '@/Stores/NotificationStore';
 import useMedia from '@/Plugins/useMedia.js';
 import useSession from '@/Composables/useSession';
 import useLink from '@/Plugins/Link';
+import AutogrowDirective from '@/Directives/TextareaAutogrowDirective';
 
 // Toast
 import ToastPlugin, { useToast } from 'vue-toast-notification';
@@ -48,6 +49,8 @@ function createAppInstance({ App, props, plugin }) {
     .use(vuetify)
     .use(ToastPlugin)
     .use(useLink);
+
+  app.directive(AutogrowDirective.name, AutogrowDirective);
 
   // app.config.globalProperties.$timestamp = useTimestamp;
   app.config.globalProperties.$media = useMedia();

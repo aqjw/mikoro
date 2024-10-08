@@ -9,6 +9,7 @@ import 'vue3-carousel/dist/carousel.css';
 import { Carousel, Slide, Navigation } from 'vue3-carousel';
 import Player from '@/Components/Player.vue';
 import CardComment from '@/Components/Card/CardComment.vue';
+import SectionComments from '@/Components/Sections/SectionComments.vue';
 
 const props = defineProps({
   title: {
@@ -39,15 +40,14 @@ const isReleased = computed(() => status.value === 'released');
         <div>
           <div
             v-if="poster"
-            class="rounded-br-xl float-left w-96 -ml-8 -mt-8 mb-4 p-4 mr-4 bg-main"
+            class="rounded-br-3xl float-left w-96 -ml-8 -mt-8 mb-4 p-4 mr-4 bg-main"
           >
             <div class="rounded-lg overflow-hidden shadow-lg shadow-black/40">
               <v-img
                 :lazy-src="$media.placeholder(poster)"
                 :src="$media.original(poster)"
                 cover
-              >
-              </v-img>
+              />
             </div>
           </div>
 
@@ -78,19 +78,19 @@ const isReleased = computed(() => status.value === 'released');
             <v-table density="compact">
               <tbody>
                 <tr>
-                  <td>
+                  <td class="align-top py-2">
                     <span class="font-semibold">Год:</span>
                   </td>
-                  <td>
+                  <td class="align-top py-2">
                     <span>{{ title.year }}</span>
                   </td>
                 </tr>
 
                 <tr>
-                  <td>
+                  <td class="align-top py-2">
                     <span class="font-semibold">Статус:</span>
                   </td>
-                  <td>
+                  <td class="align-top py-2">
                     <Link :href="route('catalog.status', title.status)">
                       <v-chip
                         size="small"
@@ -107,28 +107,28 @@ const isReleased = computed(() => status.value === 'released');
                 </tr>
 
                 <tr>
-                  <td>
+                  <td class="align-top py-2">
                     <span class="font-semibold">Длительность:</span>
                   </td>
-                  <td>
+                  <td class="align-top py-2">
                     <span>{{ title.duration }} минут</span>
                   </td>
                 </tr>
 
                 <tr>
-                  <td>
+                  <td class="align-top py-2">
                     <span class="font-semibold">Ограничения:</span>
                   </td>
-                  <td>
+                  <td class="align-top py-2">
                     <span>+{{ title.minimal_age }}</span>
                   </td>
                 </tr>
 
                 <tr>
-                  <td>
+                  <td class="align-top py-2">
                     <span class="font-semibold">Студии:</span>
                   </td>
-                  <td>
+                  <td class="align-top py-2">
                     <div class="d-flex gap-1 flex-wrap">
                       <Link
                         v-for="studio in studios"
@@ -151,10 +151,10 @@ const isReleased = computed(() => status.value === 'released');
                 </tr>
 
                 <tr>
-                  <td>
+                  <td class="align-top py-2">
                     <span class="font-semibold">Жанры:</span>
                   </td>
-                  <td>
+                  <td class="align-top py-2">
                     <div class="d-flex gap-1 flex-wrap">
                       <Link
                         v-for="genre in genres"
@@ -217,17 +217,13 @@ const isReleased = computed(() => status.value === 'released');
         </div>
       </div>
 
-      <div class="bg-second p-4 rounded-lg shadow-lg my-4">
-        <div class="flex flex-col gap-8">
-          <CardComment />
-          <CardComment has-replies/>
-          <CardComment />
-        </div>
-      </div>
-
       <div class="bg-gray-300 h-[30rem] my-4 rounded-lg shadow-lg overflow-hidden">
         <!-- <div class="bg-gray-300 h-[20rem] my-4 rounded-lg shadow-lg overflow-hidden"> -->
         <Player :poster="$media.original(screenshots[0])" :title-id="title.id" />
+      </div>
+
+      <div class="bg-second p-4 rounded-lg shadow-lg my-4">
+        <SectionComments />
       </div>
     </div>
   </AppLayout>
