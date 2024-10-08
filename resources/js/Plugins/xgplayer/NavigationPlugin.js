@@ -1,4 +1,5 @@
-import { Plugin, Events } from 'xgplayer';
+import { Plugin, Events, Util } from 'xgplayer';
+import Session from '@/Plugins/Session';
 
 export default class NavigationPlugin extends Plugin {
   static get pluginName() {
@@ -10,6 +11,7 @@ export default class NavigationPlugin extends Plugin {
       position: Plugin.POSITIONS.ROOT_TOP,
       index: 0,
       titleId: null,
+      isLogged: false,
     };
   }
 
@@ -23,11 +25,12 @@ export default class NavigationPlugin extends Plugin {
       },
     };
 
+    console.log('this.config.isLogged', this.config.isLogged);
     this.fetchTitleEpisodes(this.config.titleId);
-    this.bindEvents();
+    this.listenEvents();
   }
 
-  bindEvents() {
+  listenEvents() {
     this.onSelectContainerClick = (e) => {
       const node = e.delegateTarget;
       this.toggleDropdownVisibility(node.id);
@@ -40,21 +43,34 @@ export default class NavigationPlugin extends Plugin {
       this.changeSelectedOption(node.dataset.sid, +node.dataset.oid);
     };
 
-    this.onPlayOrOverlayClick = () => {
+    this.onPlay = () => {
+      this.closeDropdowns();
+      this.updatePlaybackState();
+    };
+
+    this.onPause = () => {
+      this.updatePlaybackState();
+    };
+
+    this.onOverlayClick = () => {
       this.closeDropdowns();
     };
 
     this.bind('.select-container', 'click', this.onSelectContainerClick);
     this.bind('.dropdown-option', 'click', this.onDropdownOptionClick);
-    this.on(Events.PLAY, this.onPlayOrOverlayClick);
-    this.on('overlay_click', this.onPlayOrOverlayClick);
+    this.on(Events.PLAY, this.onPlay);
+    this.on(Events.PAUSE, this.onPause);
+    this.on('overlay_click', this.onOverlayClick);
   }
 
   destroy() {
     this.unbind('.select-container', 'click', this.onSelectContainerClick);
     this.unbind('.dropdown-option', 'click', this.onDropdownOptionClick);
-    this.off(Events.PLAY, this.onPlayOrOverlayClick);
-    this.off('overlay_click', this.onPlayOrOverlayClick);
+    this.off(Events.PLAY, this.onPlay);
+    this.off(Events.PAUSE, this.onPause);
+    this.off('overlay_click', this.onOverlayClick);
+
+    this.updatePlaybackState();
   }
 
   async fetchTitleEpisodes(titleId) {
@@ -63,25 +79,54 @@ export default class NavigationPlugin extends Plugin {
       this._d.translations = data.translations;
       this._d.episodes = data.episodes;
 
-      this.applyPlaybackState(data.playback_state);
       this.populateDropdownOptions('translations', this._d.translations);
-      this.filterEpisodeOptions();
+      this.populateDropdownOptions('episodes', this.filteredEpisodeOptions());
+
+      this.applyPlaybackState(
+        this.config.isLogged
+          ? data.playback_state
+          : Session.get(`playback-${titleId}`, {})
+      );
     } catch (error) {
       console.error(error);
     }
   }
 
   applyPlaybackState(playbackState) {
-      const { translationId, episodeId, time } = playbackState;
-      console.log('s', {translationId,episodeId});
+    const translationId = playbackState?.translation_id ?? this._d.translations[0]?.id;
+    const episodeId =
+      playbackState?.episode_id ?? this.filteredEpisodeOptions(translationId)[0]?.id;
+    const playbackTime = playbackState?.time ?? 0;
+
     this.changeSelectedOption('translations', translationId);
     this.changeSelectedOption('episodes', episodeId);
-    this.player.currentTime = time;
+    this.player.currentTime = playbackTime;
+  }
+
+  async updatePlaybackState() {
+    if (this.player.currentTime > 0) {
+      try {
+        const titleId = this.config.titleId;
+        const params = {
+          episode_id: this._d.selected.episodes,
+          translation_id: this._d.selected.translations,
+          time: Math.floor(this.player.currentTime),
+        };
+
+        if (this.config.isLogged) {
+          await axios.post(route('upi.title.playback_state', titleId), params);
+        } else {
+          Session.set(`playback-${titleId}`, params);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }
 
   getOptionLabel(selectId, option) {
     if (selectId === 'episodes') {
-      return `Серия ${option.label}`;
+      return `${option.label} серия`;
     }
     return option.label;
   }
@@ -122,7 +167,7 @@ export default class NavigationPlugin extends Plugin {
     this.closeDropdowns();
 
     if (selectId === 'translations') {
-      this.filterEpisodeOptions();
+      this.populateDropdownOptions('episodes', this.filteredEpisodeOptions());
       this.switchEpisodeTranslation();
     }
   }
@@ -156,29 +201,28 @@ export default class NavigationPlugin extends Plugin {
 
   updateDisplayedOptionLabel(selectId, optionId) {
     const option = this._d[selectId].find((item) => item.id == optionId);
-    this.find(`#${selectId} .selected-option`).innerHTML = this.getOptionLabel(
-      selectId,
-      option
-    );
+    const label = this.getOptionLabel(selectId, option);
+    this.find(`#${selectId} .selected-option`).innerHTML = label;
   }
 
-  filterEpisodeOptions() {
-    this.populateDropdownOptions(
-      'episodes',
-      this._d.episodes.filter(
-        (item) => item.translation_id == this._d.selected.translations
-      )
-    );
+  filteredEpisodeOptions(translationId = this._d.selected.translations) {
+    return this._d.episodes.filter((item) => item.translation_id == translationId);
+  }
+
+  isSelected(selectId, optionId) {
+    return this._d.selected[selectId] === optionId;
   }
 
   populateDropdownOptions(selectId, options) {
     const html = options
-      .map(
-        (option) => `
-        <li class="dropdown-option" data-sid="${selectId}" data-oid="${option.id}">
-          ${this.getOptionLabel(selectId, option)}
-        </li>`
-      )
+      .map((option) => {
+        const selectedClass = this.isSelected(selectId, option.id) ? 'selected' : '';
+        return Util.createDom('li', this.getOptionLabel(selectId, option), {
+          class: `dropdown-option ${selectedClass}`,
+          'data-sid': selectId,
+          'data-oid': option.id,
+        }).outerHTML;
+      })
       .join('');
 
     this.find(`#${selectId} .dropdown`).innerHTML = html;

@@ -79,11 +79,33 @@ class TitleController extends Controller
         return response()->json([
             'translations' => $translations,
             'episodes' => $episodes,
-            'playback_state' => [
-                'translationId' => $playbackState->translation_id ?? $translations[0]['id'],
-                'episodeId' => $playbackState->episode_id ?? $episodes[0]['id'],
-                'time' => $playbackState->time ?? 0,
-            ],
+            'playback_state' => $playbackState ? [
+                'episode_id' => $playbackState->episode_id,
+                'translation_id' => $playbackState->translation_id,
+                'time' => $playbackState->time,
+            ] : null,
         ]);
+    }
+
+    public function playbackState(Title $title, Request $request): JsonResponse
+    {
+        $request->validate([
+            'episode_id' => ['required'],
+            'translation_id' => ['required'],
+            'time' => ['required'],
+        ]);
+
+        $request->user()
+            ->playbackStates()
+            ->updateOrCreate(
+                ['title_id' => $title->id],
+                [
+                    'episode_id' => $request->episode_id,
+                    'translation_id' => $request->translation_id,
+                    'time' => $request->time,
+                ]
+            );
+
+        return response()->json('ok');
     }
 }

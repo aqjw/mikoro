@@ -39,6 +39,7 @@ export default class OverlayPlugin extends Plugin {
   }
 
   destroy() {
+    console.log('OverlayPlugin - destroy');
     this.unbind('.xgplayer-overlay', 'dblclick', this.onDblclick);
     this.unbind('.xgplayer-overlay', 'click', this.onClick);
   }

@@ -8,6 +8,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import 'vue3-carousel/dist/carousel.css';
 import { Carousel, Slide, Navigation } from 'vue3-carousel';
 import Player from '@/Components/Player.vue';
+import CardComment from '@/Components/Card/CardComment.vue';
 
 const props = defineProps({
   title: {
@@ -33,12 +34,12 @@ const isReleased = computed(() => status.value === 'released');
   <Head :title="title.title" />
 
   <AppLayout>
-    <div class="p-4">
+    <div>
       <div class="bg-second p-4 rounded-lg shadow-lg">
         <div>
           <div
             v-if="poster"
-            class="rounded-br-xl float-left w-64 -ml-8 -mt-8 mb-4 pr-4 pb-4 mr-4 bg-main"
+            class="rounded-br-xl float-left w-96 -ml-8 -mt-8 mb-4 p-4 mr-4 bg-main"
           >
             <div class="rounded-lg overflow-hidden shadow-lg shadow-black/40">
               <v-img
@@ -216,79 +217,17 @@ const isReleased = computed(() => status.value === 'released');
         </div>
       </div>
 
-      <div class="bg-gray-300 h-[30rem] my-4 rounded-lg shadow-lg overflow-hidden">
-      <!-- <div class="bg-gray-300 h-[20rem] my-4 rounded-lg shadow-lg overflow-hidden"> -->
-        <Player
-          :poster="$media.original(screenshots[0])"
-          :title-id="title.id"
-        />
+      <div class="bg-second p-4 rounded-lg shadow-lg my-4">
+        <div class="flex flex-col gap-8">
+          <CardComment />
+          <CardComment has-replies/>
+          <CardComment />
+        </div>
       </div>
 
-      <div class="bg-second p-4 rounded-lg shadow-lg">
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
-        <hr />
-        <br />
+      <div class="bg-gray-300 h-[30rem] my-4 rounded-lg shadow-lg overflow-hidden">
+        <!-- <div class="bg-gray-300 h-[20rem] my-4 rounded-lg shadow-lg overflow-hidden"> -->
+        <Player :poster="$media.original(screenshots[0])" :title-id="title.id" />
       </div>
     </div>
   </AppLayout>

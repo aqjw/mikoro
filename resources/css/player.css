@@ -7,11 +7,11 @@
       @apply bg-[#333] hover:bg-[#444] duration-300;
 
       &:first-child {
-        @apply rounded-l-lg;
+        @apply rounded-l-md;
       }
 
       &:last-child {
-        @apply rounded-r-lg;
+        @apply rounded-r-md;
       }
 
       &.w-long {
@@ -36,7 +36,7 @@
 
       .dropdown-container {
         @apply absolute top-full left-0 right-0 hidden;
-        @apply bg-[#555] rounded-b-lg;
+        @apply bg-[#555] rounded-b-md overflow-hidden;
 
         .dropdown {
           @apply max-h-96 min-h-7;

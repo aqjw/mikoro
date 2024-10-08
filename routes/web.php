@@ -41,6 +41,9 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
         Route::get('catalog', [UPI\TitleController::class, 'catalog'])->name('catalog');
         Route::get('filters', [UPI\TitleController::class, 'filters'])->name('filters');
         Route::get('episodes/{title:id}', [UPI\TitleController::class, 'episodes'])->name('episodes');
+        Route::post('playback-state/{title:id}', [UPI\TitleController::class, 'playbackState'])
+            ->middleware('auth')
+            ->name('playback_state');
     });
 });
 
@@ -50,4 +53,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref, toRefs, watch, onMounted } from 'vue';
+import { ref, toRefs, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { NavigationPlugin, OverlayPlugin } from '@/Plugins/xgplayer';
+import { useUserStore } from '@/Stores/UserStore';
+import { storeToRefs } from 'pinia';
 import Player from 'xgplayer';
 import '@/../css/player.css';
-import NavigationPlugin from '@/Plugins/xgplayer/NavigationPlugin';
-import OverlayPlugin from '@/Plugins/xgplayer/OverlayPlugin';
 
 const props = defineProps({
   poster: {
@@ -18,34 +19,27 @@ const props = defineProps({
 
 const { poster, titleId } = toRefs(props);
 
-const videoPlayer = ref(null);
+const userStore = useUserStore();
+const { isLogged } = storeToRefs(userStore);
+
+const player = ref(null);
+const playerContainer = ref(null);
 
 onMounted(() => {
-  const player = new Player({
-    el: videoPlayer.value,
-    url: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    // definition: {
-    //   list: [
-    //     {
-    //       definition: '320p', // definition key
-    //       url:
-    //         'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    //       text: {
-    //         zh: 'SD', // Chinese showText
-    //         en: '320P', // English showText
-    //       },
-    //     },
-    //     {
-    //       definition: '480p', // definition key
-    //       url:
-    //         'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', // play url
-    //       text: {
-    //         zh: 'HD', // Chinese showText
-    //         en: '480P', // English showText
-    //       },
-    //     },
-    //   ],
-    // },
+  nextTick(initPlayer);
+  window.addEventListener('beforeunload', destroyPlayer);
+});
+
+onBeforeUnmount(() => {
+  destroyPlayer();
+  window.removeEventListener('beforeunload', destroyPlayer);
+});
+
+const initPlayer = () => {
+  player.value = new Player({
+    el: playerContainer.value,
+    url:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     poster: poster.value && {
       poster: poster.value,
       isEndedShow: false,
@@ -67,21 +61,27 @@ onMounted(() => {
         mute: {
           keyCode: 77,
           action: (_, player) => {
-            console.log('player.muted', player.muted);
             player.muted = !player.muted;
           },
         },
       },
     },
-      plugins: [OverlayPlugin],
+    plugins: [OverlayPlugin],
   });
 
-  player.registerPlugin(NavigationPlugin, {
+  player.value.registerPlugin(NavigationPlugin, {
     titleId: titleId.value,
+    isLogged: isLogged.value,
   });
-});
+};
+
+const destroyPlayer = () => {
+  if (player.value) {
+    player.value.destroy();
+  }
+};
 </script>
 
 <template>
-  <div ref="videoPlayer"></div>
+  <div ref="playerContainer"></div>
 </template>
