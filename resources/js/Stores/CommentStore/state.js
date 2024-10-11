@@ -4,6 +4,11 @@ export const DEFAULT_SORTING_STATE = {
 };
 
 export default () => ({
+  draft: {
+    text: '',
+    html: '',
+  },
+  edit: null,
   replyTo: null,
   //
   titleId: null,

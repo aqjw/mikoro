@@ -49,6 +49,7 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
             Route::get('{title:id}', [UPI\CommentController::class, 'index'])->name('get');
             Route::group(['middleware' => 'auth'], function () {
                 Route::post('{title:id}', [UPI\CommentController::class, 'store'])->name('store');
+                Route::patch('{comment:id}', [UPI\CommentController::class, 'update'])->name('update');
                 Route::delete('{comment:id}', [UPI\CommentController::class, 'delete'])->name('delete');
                 Route::post('reaction/{comment:id}/{reaction}', [UPI\CommentController::class, 'toggleReaction'])->name('toggle_reaction');
             });

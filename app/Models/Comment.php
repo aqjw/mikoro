@@ -35,7 +35,16 @@ class Comment extends Model
 
     public function replies(): HasMany
     {
-        return $this->hasMany(Comment::class, 'parent_id')->oldest();
+        return $this
+            ->hasMany(Comment::class, 'parent_id')
+            ->with([
+                'userReactions',
+                'reactions' => function ($query) {
+                    $query->selectRaw('reaction, count(*) as count, comment_id')
+                        ->groupBy('comment_id', 'reaction');
+                },
+            ])
+            ->oldest();
     }
 
     public function parent(): BelongsTo

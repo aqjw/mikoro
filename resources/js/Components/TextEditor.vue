@@ -1,42 +1,34 @@
 <script setup>
-import { onBeforeUnmount, onBeforeMount, ref, computed, watch } from 'vue';
+import { onBeforeUnmount, watch } from 'vue';
 import { useEditor, EditorContent } from '@tiptap/vue-3';
 import Placeholder from '@tiptap/extension-placeholder';
-// import StarterKit from '@tiptap/starter-kit';
-
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
-
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import Spoiler from '@/Plugins/tiptap/extension-spoiler';
-import { formatHtmlToBbcode } from '@/Utils';
 
-import { useCommentStore } from '@/Stores/CommentStore';
-import { storeToRefs } from 'pinia';
-
-defineProps({
-  //
+const props = defineProps({
+  modelValue: {
+    type: Object,
+    default: {
+      text: '',
+      html: '',
+    },
+  },
 });
 
-const commentStore = useCommentStore();
-const { replyTo } = storeToRefs(commentStore);
-
-const emit = defineEmits(['on-submit']);
-
-const loading = ref(false);
-const content = ref(null);
+const emit = defineEmits(['update:modelValue']);
 
 const editor = useEditor({
-  content: '',
+  content: props.modelValue.html,
   extensions: [
     Document,
     Paragraph,
     Text,
-    //
     Bold,
     Italic,
     Underline,
@@ -52,7 +44,22 @@ const editor = useEditor({
       class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl focus:outline-none',
     },
   },
+  onUpdate({ editor }) {
+    emit('update:modelValue', {
+      text: editor.getText(),
+      html: editor.getHTML(),
+    });
+  },
 });
+
+watch(
+  () => props.modelValue.html,
+  (newValue) => {
+    if (editor.value && newValue !== editor.value.getHTML()) {
+      editor.value.commands.setContent(newValue);
+    }
+  }
+);
 
 const editorButtons = [
   {
@@ -82,47 +89,30 @@ const editorButtons = [
   },
 ];
 
-watch(replyTo, (newVal) => {
-  if (newVal) {
-    editor.value.chain().focus();
-  }
-});
+const setEditable = (state) => {
+  editor.value.setEditable(state);
+};
 
-const contentLength = computed(() => {
-  return editor.value?.getText()?.length;
+const focus = () => {
+    editor.value.chain().focus()
+};
+
+defineExpose({
+    setEditable,
+    focus,
 });
 
 onBeforeUnmount(() => {
   editor.value?.destroy();
 });
-
-const onReplyToCancel = () => {
-  commentStore.$setReplyTo(null);
-};
-
-const onSubmit = () => {
-  loading.value = true;
-  editor.value.setEditable(false);
-  emit('on-submit', {
-    body: formatHtmlToBbcode(editor.value?.getHTML()),
-    success() {
-      editor.value.commands.clearContent();
-    },
-    error() {},
-    finish() {
-      loading.value = false;
-      editor.value.setEditable(true);
-    },
-  });
-};
 </script>
 
 <template>
   <div
-    :class="{ 'textarea-editor': true, 'is-focused': editor?.isFocused }"
+    :class="{ 'text-editor': true, 'is-focused': editor?.isFocused }"
     @click="() => editor.chain().focus()"
   >
-    <editor-content :editor="editor" v-model="content" />
+    <editor-content :editor="editor" />
 
     <div v-if="editor" class="actions-section">
       <div class="flex items-center">
@@ -138,34 +128,10 @@ const onSubmit = () => {
             @click="button.action"
           />
         </div>
-        <div
-          v-if="replyTo"
-          class="pl-6 ml-6 border-l border-black/50 flex items-center gap-2"
-        >
-          <span>Reply to "{{ replyTo.author.name }}"</span>
-          <v-btn
-            size="small"
-            variant="tonal"
-            density="compact"
-            icon="mdi-close"
-            @click="onReplyToCancel"
-          />
-        </div>
       </div>
 
       <div>
-        <v-btn
-          :disabled="contentLength < 10"
-          :loading="loading"
-          density="comfortable"
-          color="primary"
-          variant="tonal"
-          rounded="xl"
-          class="text-none"
-          @click="onSubmit"
-        >
-          Submit
-        </v-btn>
+        <slot name="actions" />
       </div>
     </div>
   </div>

@@ -1,7 +1,8 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import CardComment from '@/Components/Card/CardComment.vue';
-import TextareaEditor from '@/Components/TextareaEditor.vue';
+import CardCommentEdit from '@/Components/Card/CardCommentEdit.vue';
+import TextEditor from '@/Components/TextEditor.vue';
 import { useCommentStore } from '@/Stores/CommentStore';
 import { storeToRefs } from 'pinia';
 
@@ -13,13 +14,19 @@ const props = defineProps({
 });
 
 const commentStore = useCommentStore();
-const { items, params} = storeToRefs(commentStore);
+const { items, params, replyTo, edit: editComment, draft, draftTextLength } = storeToRefs(
+  commentStore
+);
 
 commentStore.$setTitleId(props.title.id);
 
+// for list
 const infiniteScroll = ref(null);
-const timer = ref(null);
 const doneCallback = ref(null);
+
+// for new comment
+const textEditor = ref(false);
+const submitting = ref(false);
 
 const onLoadItems = ({ done }) => {
   doneCallback.value = done;
@@ -28,8 +35,21 @@ const onLoadItems = ({ done }) => {
   });
 };
 
-const onSubmit = ({ body, success, error, finish }) => {
-  commentStore.$storeComment(body, { success, error, finish });
+const onSubmit = () => {
+  submitting.value = true;
+  textEditor.value.setEditable(false);
+  commentStore.$storeComment({
+    success: () => {
+      //
+    },
+    error: (error) => {
+      console.error(error);
+    },
+    finish: () => {
+      submitting.value = false;
+      textEditor.value.setEditable(true);
+    },
+  });
 };
 
 onBeforeUnmount(() => {
@@ -39,8 +59,23 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="comments-section">
-    <div class="textarea-editor-container">
-      <TextareaEditor @on-submit="onSubmit" />
+    <div class="text-editor-container">
+      <TextEditor ref="textEditor" v-model="draft">
+        <template #actions="">
+          <v-btn
+            :disabled="draftTextLength < 10"
+            :loading="submitting"
+            density="comfortable"
+            color="primary"
+            variant="tonal"
+            rounded="xl"
+            class="text-none"
+            @click="onSubmit"
+          >
+            Submit
+          </v-btn>
+        </template>
+      </TextEditor>
     </div>
 
     <div class="p-6">
@@ -66,12 +101,14 @@ onBeforeUnmount(() => {
           :onLoad="onLoadItems"
           :mode="items.length > 0 ? 'manual' : 'intersect'"
         >
-          <div class="flex flex-col gap-8">
-            <CardComment
-              v-for="(item, index) in items"
-              :key="index"
-              :comment="item"
-            />
+          <div class="space-y-8">
+            <template v-for="(comment, index) in items" :key="index">
+              <CardCommentEdit
+                v-if="editComment && comment.id == editComment.id"
+                :comment="comment"
+              />
+              <CardComment v-else :comment="comment" />
+            </template>
           </div>
 
           <template v-slot:load-more="{ props }">

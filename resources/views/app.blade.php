@@ -25,7 +25,12 @@
     @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
     @inertiaHead
     <script>
-        window.reactions = @js(\App\Enums\CommentReaction::getCases())
+        window.config = @js([
+            'comments' => [
+                'reactions' => \App\Enums\CommentReaction::getCases(),
+                'max_depth' => \App\Services\CommentService::MAX_DEPTH,
+            ],
+        ])
     </script>
 </head>
 

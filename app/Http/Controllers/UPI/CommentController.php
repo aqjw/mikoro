@@ -47,6 +47,22 @@ class CommentController extends Controller
         ]);
     }
 
+    public function update(Comment $comment, Request $request, CommentService $commentService): JsonResponse
+    {
+        abort_unless($comment->user_id == auth()->id(), 403);
+
+        $data = $request->validate([
+            // TODO: calc max without tags
+            'body' => ['required', 'string', 'min:10', 'max:5000'],
+        ]);
+
+        $comment = $commentService->update($comment, $data['body']);
+
+        return response()->json([
+            'comment' => new CommentResource($comment),
+        ]);
+    }
+
     public function delete(Comment $comment, CommentService $commentService): JsonResponse
     {
         abort_unless($comment->user_id == auth()->id(), 403);

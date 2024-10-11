@@ -69,7 +69,7 @@
 
 .comments-section {
   .comment-card {
-    @apply flex gap-2 relative duration-300;
+    @apply flex gap-2 relative ;
 
     &.is-reply:last-child::before {
       @apply content-[''] absolute -left-8 top-0 bottom-0 w-8 bg-second;
@@ -98,11 +98,12 @@
     }
   }
 
-  .textarea-editor-container {
+  .text-editor-container {
     background-color: rgba(var(--v-theme-surface), 0.7);
-    @apply sticky top-12 z-10 p-4 backdrop-blur-sm;
+    @apply p-4;
+    /* @apply sticky top-12 z-10 backdrop-blur-sm; */
 
-    .textarea-editor {
+    .text-editor {
       @apply bg-gray-100 dark:bg-gray-900 overflow-hidden;
       @apply duration-300 border border-transparent rounded-3xl;
 

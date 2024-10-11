@@ -117,6 +117,14 @@ class Title extends Model implements HasMedia
 
     public function comments(): HasMany
     {
-        return $this->hasMany(Comment::class);
+        return $this
+            ->hasMany(Comment::class)
+            ->with([
+                'userReactions',
+                'reactions' => function ($query) {
+                    $query->selectRaw('reaction, count(*) as count, comment_id')
+                        ->groupBy('comment_id', 'reaction');
+                },
+            ]);
     }
 }

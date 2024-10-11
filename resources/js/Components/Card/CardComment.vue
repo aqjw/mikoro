@@ -1,32 +1,36 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import CardComment from '@/Components/Card/CardComment.vue';
 import DateManager from '@/Plugins/DateManager';
 import { useCommentStore } from '@/Stores/CommentStore';
 import { initials, formatBbcodeToHtml } from '@/Utils';
 import MenuCommentActions from '../Menu/MenuCommentActions.vue';
 import { storeToRefs } from 'pinia';
+import CardCommentEdit from './CardCommentEdit.vue';
+import CardCommentReply from './CardCommentReply.vue';
 
 const commentStore = useCommentStore();
-const { replyTo } = storeToRefs(commentStore);
+const { replyTo, edit:editComment } = storeToRefs(commentStore);
 
 const props = defineProps({
   comment: Object,
 });
 
 const loadingReaction = ref(
-  window.reactions.reduce((obj, { name }) => {
+  window.config.comments.reactions.reduce((obj, { name }) => {
     obj[name] = false;
     return obj;
   }, {})
 );
 
 const isReply = computed(() => props.comment.parent_id != null);
-const isReplyTo = computed(() => replyTo.value?.id == props.comment.id);
+const isReplyTo = computed(() => replyTo.value?.real_id == props.comment.id);
 const hasReplies = computed(() => props.comment.replies.length > 0);
 
 const toggleReaction = (reactionName) => {
-  const reaction = window.reactions.find((reaction) => reaction.name === reactionName);
+  const reaction = window.config.comments.reactions.find(
+    (reaction) => reaction.name === reactionName
+  );
   let loadingTimeout;
 
   loadingTimeout = setTimeout(() => {
@@ -49,12 +53,18 @@ const toggleReaction = (reactionName) => {
 };
 
 const isReactionActive = (reactionName) => {
-  const reaction = window.reactions.find((reaction) => reaction.name === reactionName);
+  const reaction = window.config.comments.reactions.find(
+    (reaction) => reaction.name === reactionName
+  );
   return props.comment.userReactions.includes(reaction.id);
 };
 
 const onReply = () => {
   commentStore.$setReplyTo(props.comment);
+};
+
+const onEdit = () => {
+  commentStore.$setEdit(props.comment);
 };
 
 const onDelete = () => {
@@ -74,10 +84,9 @@ const onSpoilerClick = (event) => {
     :class="{
       'comment-card': true,
       'is-reply': isReply,
-      'reply-to': isReplyTo,
     }"
   >
-    <div v-if="hasReplies" class="has-replies"></div>
+    <div v-if="hasReplies || isReplyTo" class="has-replies"></div>
 
     <div>
       <v-avatar color="brown" size="small">
@@ -85,7 +94,7 @@ const onSpoilerClick = (event) => {
       </v-avatar>
     </div>
 
-    <div class="mt-1 ml-2">
+    <div class="mt-1 ml-2 flex-grow">
       <div class="flex gap-2 items-center">
         <div class="font-semibold">{{ comment.author.name }}</div>
         <div class="text-gray-500 text-sm italic">
@@ -94,8 +103,8 @@ const onSpoilerClick = (event) => {
       </div>
 
       <div class="relative">
-        <div class="mt-2 comment-body" @click="onSpoilerClick">
-          <p v-html="formatBbcodeToHtml(comment.body)"></p>
+        <div class="mt-2" @click="onSpoilerClick">
+          <p class="comment-body" v-html="formatBbcodeToHtml(comment.body)"></p>
         </div>
 
         <div class="flex items-center gap-2 mt-3">
@@ -127,16 +136,20 @@ const onSpoilerClick = (event) => {
             </v-btn>
           </div>
 
-          <MenuCommentActions @reply="onReply" @delete="onDelete" />
+          <MenuCommentActions @reply="onReply" @edit="onEdit" @delete="onDelete" />
         </div>
 
-        <div v-if="hasReplies" class="mt-8">
-          <div class="flex flex-col gap-8">
-            <CardComment
-              v-for="(item, index) in comment.replies"
-              :key="index"
-              :comment="item"
-            />
+        <div v-if="hasReplies || isReplyTo" class="mt-8">
+          <div class="space-y-8">
+            <template v-for="(comment, index) in comment.replies" :key="index">
+              <CardCommentEdit
+                v-if="editComment && comment.id == editComment.id"
+                :comment="comment"
+              />
+              <CardComment v-else :comment="comment" />
+            </template>
+
+            <CardCommentReply v-if="isReplyTo" />
           </div>
         </div>
       </div>

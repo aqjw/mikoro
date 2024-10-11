@@ -1,3 +1,4 @@
+import { formatHtmlToBbcode, formatBbcodeToHtml } from '@/Utils';
 import { DEFAULT_SORTING_STATE } from './state';
 
 export default {
@@ -16,12 +17,62 @@ export default {
   $resetSorting() {
     this.sorting = DEFAULT_SORTING_STATE;
   },
-  $setReplyTo(data) {
-    if (data !== null && this.replyTo?.id == data.id) {
-      data = null;
-    }
-    this.replyTo = data;
+  $resetDraft() {
+    this.draft.text = '';
+    this.draft.html = '';
   },
+  $setEdit(comment) {
+    if (comment !== null && this.edit?.id == comment.id) {
+      comment = null;
+    }
+
+    if (comment) {
+      this.$setReplyTo(null);
+
+      comment.draft = {
+        text: '',
+        html: formatBbcodeToHtml(comment.body),
+      };
+    }
+
+    this.edit = comment;
+  },
+  $setReplyTo(comment) {
+    // TODO: save id and author.name only
+    if (comment !== null && this.replyTo?.real_id == comment.id) {
+      comment = null;
+    }
+
+    if (comment) {
+      this.$setEdit(null);
+
+      const maxDepth = window.config.comments.max_depth;
+      const parentId = this._findValidParentId(this.items, comment.id, maxDepth);
+      comment.real_id = parentId || comment.id;
+    }
+
+    this.replyTo = comment;
+  },
+  _findValidParentId(items, commentId, maxDepth, currentDepth = 1) {
+    for (const item of items) {
+      if (item.id === commentId) {
+        return currentDepth >= maxDepth ? item.parent_id : item.id;
+      }
+
+      if (item.replies && item.replies.length > 0) {
+        const result = this._findValidParentId(
+          item.replies,
+          commentId,
+          maxDepth,
+          currentDepth + 1
+        );
+        if (result) return result;
+      }
+    }
+
+    return null;
+  },
+
   $loadComments(hasMoreClosure) {
     axios
       .get(route('upi.title.comments.get', this.titleId), {
@@ -36,36 +87,91 @@ export default {
         console.error(error);
       });
   },
-  $storeComment(body, closures) {
-    const parent_id = this.replyTo?.id;
+  $storeComment(events) {
+    let parent_id = this.replyTo?.id;
+    const body = formatHtmlToBbcode(this.draft.html);
     axios
       .post(route('upi.title.comments.store', this.titleId), { body, parent_id })
       .then(({ data }) => {
-        this.items.unshift(data.comment);
-        closures.success();
+        parent_id = data.comment.parent_id;
+        if (parent_id) {
+          const addReplyToParent = (items, parent_id, reply) => {
+            return items.map((item) => {
+              if (item.id === parent_id) {
+                item.replies.push(reply);
+              } else if (item.replies) {
+                item.replies = addReplyToParent(item.replies, parent_id, reply);
+              }
+              return item;
+            });
+          };
+
+          this.items = addReplyToParent(this.items, parent_id, data.comment);
+        } else {
+          this.items.unshift(data.comment);
+        }
+
+        events.success();
+        this.$resetDraft();
+        this.$setReplyTo(null);
       })
       .catch((error) => {
-        console.error(error);
-        closures.error();
+        events.error(error);
       })
       .finally(() => {
-        closures.finish();
+        events.finish();
+      });
+  },
+  $updateComment(events) {
+    const body = formatHtmlToBbcode(this.edit.draft.html);
+    axios
+      .patch(route('upi.title.comments.update', this.edit.id), { body })
+      .then(({ data }) => {
+        const updateCommentInTree = (items) => {
+          return items.map((item) => {
+            if (item.id === this.edit.id) {
+              item.body = body;
+            } else if (item.replies) {
+              item.replies = updateCommentInTree(item.replies);
+            }
+            return item;
+          });
+        };
+
+        this.items = updateCommentInTree(this.items);
+
+        events.success();
+        this.$setEdit(null);
+      })
+      .catch((error) => {
+        events.error(error);
+      })
+      .finally(() => {
+        events.finish();
       });
   },
   $deleteComment(commentId) {
     axios
       .delete(route('upi.title.comments.delete', commentId))
       .then(() => {
-        this.items = this.items.filter(({ id }) => id != commentId);
+        const deleteRecursive = (items, id) => {
+          return items.filter((item) => {
+            if (item.id === id) return false;
+            if (item.replies) {
+              item.replies = deleteRecursive(item.replies, id);
+            }
+            return true;
+          });
+        };
+
+        this.items = deleteRecursive(this.items, commentId);
       })
       .catch((error) => {
         console.error(error);
       })
-      .finally(() => {
-        //
-      });
+      .finally(() => {});
   },
-  $toggleReaction(commentId, reactionId, closures) {
+  $toggleReaction(commentId, reactionId, events) {
     const endpoint = route('upi.title.comments.toggle_reaction', {
       comment: commentId,
       reaction: reactionId,
@@ -74,29 +180,38 @@ export default {
     axios
       .post(endpoint)
       .then(({ data }) => {
-        this.items = this.items.map((item) => {
-          if (item.id === commentId) {
-            const hasReaction = item.userReactions.includes(reactionId);
-
-            if (hasReaction) {
-              item.userReactions = item.userReactions.filter((rid) => rid !== reactionId);
-            } else {
-              item.userReactions.push(reactionId);
+        const updateReactions = (items) => {
+          return items.map((item) => {
+            if (item.id === commentId) {
+              const hasReaction = item.userReactions.includes(reactionId);
+              if (hasReaction) {
+                item.userReactions = item.userReactions.filter(
+                  (rid) => rid !== reactionId
+                );
+              } else {
+                item.userReactions.push(reactionId);
+              }
+              item.reactions = data.reactions;
             }
 
-            item.reactions = data.reactions;
-          }
-          return item;
-        });
-        closures.success();
+            if (item.replies) {
+              item.replies = updateReactions(item.replies);
+            }
+
+            return item;
+          });
+        };
+
+        this.items = updateReactions(this.items);
+        events.success();
       })
 
       .catch((error) => {
         console.error(error);
-        closures.error();
+        events.error();
       })
       .finally(() => {
-        closures.finish();
+        events.finish();
       });
   },
 };

@@ -19,11 +19,6 @@ class CommentService
             ->with([
                 'replies',
                 'author.media' => fn ($query) => $query->where('collection_name', 'avatar'),
-                'userReactions',
-                'reactions' => function ($query) {
-                    $query->selectRaw('reaction, count(*) as count, comment_id')
-                        ->groupBy('comment_id', 'reaction');
-                },
             ]);
 
         $this->sorting($query, $sorting);
@@ -61,6 +56,15 @@ class CommentService
                 'parent_id' => $parent_id,
                 'body' => strip_tags($data['body']),
             ]);
+    }
+
+    public function update(Comment $comment, string $body): Comment
+    {
+        $comment->update([
+            'body' => $body,
+        ]);
+
+        return $comment;
     }
 
     public function delete(Comment $comment): void
