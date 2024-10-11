@@ -19,6 +19,12 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "@tiptap/extension-placeholder": "^2.8.0",
+        "@tiptap/extension-underline": "^2.8.0",
+        "@tiptap/pm": "^2.8.0",
+        "@tiptap/starter-kit": "^2.8.0",
+        "@tiptap/vue-3": "^2.8.0",
+        "luxon": "^3.5.0",
         "pinia": "^2.2.2",
         "vue-select": "^4.0.0-beta.6",
         "vue-toast-notification": "^3.1.3",

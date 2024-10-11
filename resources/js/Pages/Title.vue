@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref, toRefs, watch, onMounted } from 'vue';
 import CardTitle from '@/Components/Card/CardTitle.vue';
-import FilterSort from '@/Components/Layout/FilterSort.vue';
 import TitleRating from '@/Components/TitleRating.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -222,8 +221,8 @@ const isReleased = computed(() => status.value === 'released');
         <Player :poster="$media.original(screenshots[0])" :title-id="title.id" />
       </div>
 
-      <div class="bg-second p-4 rounded-lg shadow-lg my-4">
-        <SectionComments />
+      <div class="bg-second rounded-lg shadow-lg my-4">
+        <SectionComments :title="title" />
       </div>
     </div>
   </AppLayout>

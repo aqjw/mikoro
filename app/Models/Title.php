@@ -114,4 +114,9 @@ class Title extends Model implements HasMedia
     {
         return $this->hasMany(Title::class, 'group_id');
     }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

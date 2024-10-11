@@ -4,18 +4,18 @@ namespace App\Enums;
 
 use App\Support\ExtendsEnum;
 
-enum TranslationType: int
+enum CommentReaction: int
 {
     use ExtendsEnum;
 
-    case Subtitles = 1;
-    case Voice = 2;
+    case Like = 1;
+    case Dislike = 2;
 
     public static function mapped(): array
     {
         return [
-            'subtitles' => self::Subtitles,
-            'voice' => self::Voice,
+            'like' => self::Like,
+            'dislike' => self::Dislike,
         ];
     }
 }

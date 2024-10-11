@@ -16,16 +16,15 @@ import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { createPinia } from 'pinia';
+import { Settings } from 'luxon';
 
 // Stores and custom plugins
 import { useUserStore } from '@/Stores/UserStore';
 import { useNotificationStore } from '@/Stores/NotificationStore';
-// import useTimestamp from '@/Plugins/useTimestamp.js';
 // import laravelEcho from '@/Plugins/laravelEcho';
 import useMedia from '@/Plugins/useMedia.js';
 import useSession from '@/Composables/useSession';
 import useLink from '@/Plugins/Link';
-import AutogrowDirective from '@/Directives/TextareaAutogrowDirective';
 
 // Toast
 import ToastPlugin, { useToast } from 'vue-toast-notification';
@@ -39,6 +38,8 @@ const vuetify = createVuetify({
   },
 });
 
+Settings.defaultLocale = import.meta.env.VITE_APP_LOCALE;
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 function createAppInstance({ App, props, plugin }) {
@@ -50,9 +51,6 @@ function createAppInstance({ App, props, plugin }) {
     .use(ToastPlugin)
     .use(useLink);
 
-  app.directive(AutogrowDirective.name, AutogrowDirective);
-
-  // app.config.globalProperties.$timestamp = useTimestamp;
   app.config.globalProperties.$media = useMedia();
 
   return app;

@@ -1,6 +1,6 @@
 <script setup>
 import CardTitle from '@/Components/Card/CardTitle.vue';
-import FilterSort from '@/Components/Layout/FilterSort.vue';
+import SectionFilterSort from '@/Components/Sections/SectionFilterSort.vue';
 import TitleRating from '@/Components/TitleRating.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -70,7 +70,7 @@ const onLoadItems = ({ done }) => {
 
   <AppLayout>
     <div>
-      <FilterSort @updated="onFilterSortUpdated" @reset="onReset" />
+      <SectionFilterSort @updated="onFilterSortUpdated" @reset="onReset" />
 
       <v-infinite-scroll
         ref="infiniteScroll"

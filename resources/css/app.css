@@ -61,26 +61,107 @@
   --vc-nav-border-radius: 1rem;
 }
 
-.comment-card {
-  @apply flex gap-2 relative;
-
-  &.is-reply:last-child::before {
-    @apply content-[''] absolute -left-8 top-0 bottom-0 w-8 bg-second;
+.v-list.no-lines {
+  .v-list-item {
+    @apply min-h-0;
   }
+}
 
-  &.is-reply::after {
-    @apply content-[''] absolute -left-8 -top-4 w-8 h-8 border-b border-l rounded-bl-2xl border-gray-200 dark:border-zinc-700;
-  }
+.comments-section {
+  .comment-card {
+    @apply flex gap-2 relative duration-300;
 
-  .has-replies {
-    @apply absolute left-4 top-10 bottom-0 bg-gray-200 dark:bg-zinc-700 w-[1px];
-  }
-
-  .comment-actions {
-    @apply flex gap-4 mt-3;
-
-    .comment-action {
-      @apply flex gap-1 items-center text-slate-500 hover:text-slate-700 cursor-pointer;
+    &.is-reply:last-child::before {
+      @apply content-[''] absolute -left-8 top-0 bottom-0 w-8 bg-second;
     }
+
+    &.is-reply::after {
+      @apply content-[''] absolute -left-8 -top-4 w-8 h-8 border-b border-l rounded-bl-2xl border-gray-200 dark:border-zinc-700;
+    }
+
+    &.reply-to {
+      @apply border border-blue-500 p-2 rounded-3xl;
+    }
+
+    .has-replies {
+      @apply absolute left-4 top-10 bottom-0 bg-gray-200 dark:bg-zinc-700 w-[1px];
+    }
+
+    .comment-reactions {
+      @apply flex  rounded-3xl overflow-hidden w-fit divide-x;
+
+      .v-btn.no-reactions {
+        .v-btn__prepend {
+          @apply mr-0;
+        }
+      }
+    }
+  }
+
+  .textarea-editor-container {
+    background-color: rgba(var(--v-theme-surface), 0.7);
+    @apply sticky top-12 z-10 p-4 backdrop-blur-sm;
+
+    .textarea-editor {
+      @apply bg-gray-100 dark:bg-gray-900 overflow-hidden;
+      @apply duration-300 border border-transparent rounded-3xl;
+
+      .tiptap {
+        @apply max-h-96 min-h-10 overflow-y-auto p-4;
+
+        p.is-editor-empty:first-child::before {
+          color: #adb5bd;
+          content: attr(data-placeholder);
+          float: left;
+          height: 0;
+          pointer-events: none;
+        }
+
+        spoiler {
+          @apply border border-red-200;
+          filter: blur(0.5px);
+        }
+      }
+
+      .actions-section {
+        @apply flex justify-between items-center px-4 pb-0 pb-2;
+      }
+
+      &.is-focused {
+        @apply rounded-lg border-blue-400;
+      }
+    }
+  }
+
+  .comment-body {
+    spoiler {
+      @apply transition-all ease-in-out cursor-pointer;
+      animation: blur 2s infinite;
+      opacity: 0.6;
+
+      &.un-spoiler {
+        animation: unblur 200ms forwards;
+      }
+    }
+  }
+}
+
+@keyframes blur {
+  0%,
+  100% {
+    filter: blur(5px);
+  }
+  50% {
+    filter: blur(7px);
+  }
+}
+
+@keyframes unblur {
+  from {
+    filter: blur(6px);
+  }
+  to {
+    filter: blur(0px);
+    opacity: 1;
   }
 }

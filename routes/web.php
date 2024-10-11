@@ -44,6 +44,15 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
         Route::post('playback-state/{title:id}', [UPI\TitleController::class, 'playbackState'])
             ->middleware('auth')
             ->name('playback_state');
+
+        Route::group(['prefix' => 'comments', 'as' => 'comments.'], function () {
+            Route::get('{title:id}', [UPI\CommentController::class, 'index'])->name('get');
+            Route::group(['middleware' => 'auth'], function () {
+                Route::post('{title:id}', [UPI\CommentController::class, 'store'])->name('store');
+                Route::delete('{comment:id}', [UPI\CommentController::class, 'delete'])->name('delete');
+                Route::post('reaction/{comment:id}/{reaction}', [UPI\CommentController::class, 'toggleReaction'])->name('toggle_reaction');
+            });
+        });
     });
 });
 
@@ -53,4 +62,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

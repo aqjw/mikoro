@@ -1,14 +1,9 @@
 <script setup>
-const props = defineProps({
+import { initials } from '@/Utils';
+
+defineProps({
   user: Object,
 });
-
-const { user } = props;
-const initials = user.name
-  .match(/(\b\S)?/g)
-  .join('')
-  .match(/(^\S|\S$)?/g)
-  .join('');
 </script>
 
 <template>
@@ -16,7 +11,7 @@ const initials = user.name
     <template v-slot:activator="{ props }">
       <v-btn icon v-bind="props">
         <v-avatar color="brown" size="small">
-          <span class="text-xs">{{ initials }}</span>
+          <span class="text-xs">{{ initials(user.name) }}</span>
         </v-avatar>
       </v-btn>
     </template>
@@ -25,7 +20,7 @@ const initials = user.name
       <v-card-text>
         <div class="mx-auto text-center">
           <v-avatar color="brown">
-            <span class="text-base">{{ initials }}</span>
+            <span class="text-base">{{ initials(user.name) }}</span>
           </v-avatar>
           <h3>{{ user.name }}</h3>
           <p class="text-caption mt-1">
@@ -38,7 +33,7 @@ const initials = user.name
           <v-divider class="my-3 -mx-4"></v-divider>
           <v-btn
             :to="{
-                href: route('logout'),
+              href: route('logout'),
               method: 'post',
             }"
             variant="tonal"

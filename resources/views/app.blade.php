@@ -24,6 +24,9 @@
     @routes
     @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
     @inertiaHead
+    <script>
+        window.reactions = @js(\App\Enums\CommentReaction::getCases())
+    </script>
 </head>
 
 <body class="font-sans antialiased bg-main">
