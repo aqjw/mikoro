@@ -49,6 +49,10 @@ export default {
       const maxDepth = window.config.comments.max_depth;
       const parentId = this._findValidParentId(this.items, comment.id, maxDepth);
       comment.real_id = parentId || comment.id;
+      comment.draft = {
+        text: '',
+        html: '',
+      };
     }
 
     this.replyTo = comment;
@@ -87,13 +91,11 @@ export default {
         console.error(error);
       });
   },
-  $storeComment(events) {
-    let parent_id = this.replyTo?.id;
-    const body = formatHtmlToBbcode(this.draft.html);
+  $storeComment(params, events) {
     axios
-      .post(route('upi.title.comments.store', this.titleId), { body, parent_id })
+      .post(route('upi.title.comments.store', this.titleId), params)
       .then(({ data }) => {
-        parent_id = data.comment.parent_id;
+        const parent_id = data.comment.parent_id;
         if (parent_id) {
           const addReplyToParent = (items, parent_id, reply) => {
             return items.map((item) => {
@@ -112,8 +114,6 @@ export default {
         }
 
         events.success();
-        this.$resetDraft();
-        this.$setReplyTo(null);
       })
       .catch((error) => {
         events.error(error);
@@ -131,6 +131,7 @@ export default {
           return items.map((item) => {
             if (item.id === this.edit.id) {
               item.body = body;
+              item.updated_at = new Date();
             } else if (item.replies) {
               item.replies = updateCommentInTree(item.replies);
             }
@@ -207,8 +208,25 @@ export default {
       })
 
       .catch((error) => {
-        console.error(error);
-        events.error();
+        events.error(error);
+      })
+      .finally(() => {
+        events.finish();
+      });
+  },
+  $report(commentId, reasonId, events) {
+    axios
+      .post(
+        route('upi.title.comments.report', {
+          comment: commentId,
+          reason: reasonId,
+        })
+      )
+      .then(() => {
+        events.success();
+      })
+      .catch((error) => {
+        events.error(error);
       })
       .finally(() => {
         events.finish();

@@ -21,7 +21,7 @@ class CommentResource extends JsonResource
             'parent_id' => $this->parent_id,
             'body' => $this->body,
             'author' => [
-                'id' => $this->author_id,
+                'id' => $this->user_id,
                 'name' => $this->author->name,
                 'avatar' => MediaService::getImageDetails($this->author->getMedia('avatar'), true),
             ],

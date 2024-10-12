@@ -7,8 +7,8 @@ import { Head, Link } from '@inertiajs/vue3';
 import 'vue3-carousel/dist/carousel.css';
 import { Carousel, Slide, Navigation } from 'vue3-carousel';
 import Player from '@/Components/Player.vue';
-import CardComment from '@/Components/Card/CardComment.vue';
-import SectionComments from '@/Components/Sections/SectionComments.vue';
+import CardComment from '@/Components/Comments/CardComment.vue';
+import SectionComments from '@/Components/Comments/SectionComments.vue';
 
 const props = defineProps({
   title: {

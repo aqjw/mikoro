@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\CommentReaction;
+use App\Enums\CommentReportReason;
 use App\Models\Comment;
 use App\Models\Title;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -102,5 +103,16 @@ class CommentService
             'user_id' => $userId,
             'reaction' => $reaction,
         ]);
+    }
+
+    public function report(Comment $comment, int $userId, CommentReportReason $reason): void
+    {
+        $comment
+            ->reports()
+            ->create([
+                'user_id' => $userId,
+                'reason' => $reason,
+
+            ]);
     }
 }

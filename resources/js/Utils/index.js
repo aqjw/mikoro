@@ -29,3 +29,30 @@ export const formatHtmlToBbcode = (htmlContent) => {
     .replace(/<\/p><p>/g, '[br]')
     .replace(/<\/?p>/g, '');
 };
+
+export const scrollToElement = (element, duration) => {
+  if (!element) {
+    return;
+  }
+
+  const start = window.scrollY;
+  const target =
+    element.getBoundingClientRect().top +
+    window.scrollY -
+    window.innerHeight / 2 +
+    element.offsetHeight / 2;
+  const distance = target - start;
+  const startTime = performance.now();
+
+  function scrollAnimation(currentTime) {
+    const elapsedTime = currentTime - startTime;
+    const progress = Math.min(elapsedTime / duration, 1);
+    window.scrollTo(0, start + distance * progress);
+
+    if (elapsedTime < duration) {
+      requestAnimationFrame(scrollAnimation);
+    }
+  }
+
+  requestAnimationFrame(scrollAnimation);
+};

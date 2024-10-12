@@ -52,6 +52,7 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
                 Route::patch('{comment:id}', [UPI\CommentController::class, 'update'])->name('update');
                 Route::delete('{comment:id}', [UPI\CommentController::class, 'delete'])->name('delete');
                 Route::post('reaction/{comment:id}/{reaction}', [UPI\CommentController::class, 'toggleReaction'])->name('toggle_reaction');
+                Route::post('report/{comment:id}/{reason}', [UPI\CommentController::class, 'report'])->name('report');
             });
         });
     });

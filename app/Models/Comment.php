@@ -47,6 +47,11 @@ class Comment extends Model
             ->oldest();
     }
 
+    public function reports(): HasMany
+    {
+        return $this->hasMany(CommentReport::class);
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Comment::class, 'parent_id');

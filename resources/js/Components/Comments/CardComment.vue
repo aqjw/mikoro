@@ -1,16 +1,16 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue';
-import CardComment from '@/Components/Card/CardComment.vue';
+import CardComment from '@/Components/Comments/CardComment.vue';
 import DateManager from '@/Plugins/DateManager';
 import { useCommentStore } from '@/Stores/CommentStore';
 import { initials, formatBbcodeToHtml } from '@/Utils';
-import MenuCommentActions from '../Menu/MenuCommentActions.vue';
+import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
 import { storeToRefs } from 'pinia';
-import CardCommentEdit from './CardCommentEdit.vue';
-import CardCommentReply from './CardCommentReply.vue';
+import CardCommentEdit from '@/Components/Comments/CardCommentEdit.vue';
+import CardCommentReply from '@/Components/Comments/CardCommentReply.vue';
 
 const commentStore = useCommentStore();
-const { replyTo, edit:editComment } = storeToRefs(commentStore);
+const { replyTo, edit: editComment } = storeToRefs(commentStore);
 
 const props = defineProps({
   comment: Object,
@@ -41,8 +41,8 @@ const toggleReaction = (reactionName) => {
     success() {
       console.log('success');
     },
-    error() {
-      console.log('error');
+    error(error) {
+      console.error(error);
     },
     finish() {
       console.log('finish');
@@ -61,6 +61,20 @@ const isReactionActive = (reactionName) => {
 
 const onReply = () => {
   commentStore.$setReplyTo(props.comment);
+};
+
+const onReport = (reasonId) => {
+  commentStore.$report(props.comment.id, reasonId, {
+    success() {
+      console.log('success');
+    },
+    error(error) {
+      console.error(error);
+    },
+    finish() {
+      console.log('finish');
+    },
+  });
 };
 
 const onEdit = () => {
@@ -98,7 +112,10 @@ const onSpoilerClick = (event) => {
       <div class="flex gap-2 items-center">
         <div class="font-semibold">{{ comment.author.name }}</div>
         <div class="text-gray-500 text-sm italic">
-          {{ DateManager.toHuman(comment.created_at, { parts: 1 }) }} ago
+          <span>{{ DateManager.toHuman(comment.created_at, { parts: 1 }) }} ago</span>
+          <span v-if="comment.created_at != comment.updated_at" class="text-sm">
+            (edited)
+          </span>
         </div>
       </div>
 
@@ -136,7 +153,13 @@ const onSpoilerClick = (event) => {
             </v-btn>
           </div>
 
-          <MenuCommentActions @reply="onReply" @edit="onEdit" @delete="onDelete" />
+          <MenuCommentActions
+            :comment="comment"
+            @reply="onReply"
+            @report="onReport"
+            @edit="onEdit"
+            @delete="onDelete"
+          />
         </div>
 
         <div v-if="hasReplies || isReplyTo" class="mt-8">

@@ -1,22 +1,21 @@
 <script setup>
 import { computed, nextTick, ref, onMounted } from 'vue';
-import CardComment from '@/Components/Card/CardComment.vue';
+import CardComment from '@/Components/Comments/CardComment.vue';
 import DateManager from '@/Plugins/DateManager';
 import { useCommentStore } from '@/Stores/CommentStore';
 import { initials, formatBbcodeToHtml } from '@/Utils';
-import MenuCommentActions from '../Menu/MenuCommentActions.vue';
+import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
 import { storeToRefs } from 'pinia';
 import TextEditor from '@/Components/TextEditor.vue';
 
 const commentStore = useCommentStore();
-const { replyTo, edit: editComment, editTextLength } = storeToRefs(commentStore);
+const { edit: editComment, editTextLength } = storeToRefs(commentStore);
 
 const props = defineProps({
   comment: Object,
 });
 
 const isReply = computed(() => props.comment.parent_id != null);
-const isReplyTo = computed(() => replyTo.value?.real_id == props.comment.id);
 const hasReplies = computed(() => props.comment.replies.length > 0);
 
 
@@ -59,7 +58,7 @@ const onEditCancel = () => {
       'is-reply': isReply,
     }"
   >
-    <div v-if="hasReplies || isReplyTo" class="has-replies"></div>
+    <div v-if="hasReplies" class="has-replies"></div>
 
     <div>
       <v-avatar color="brown" size="small">
@@ -72,7 +71,7 @@ const onEditCancel = () => {
         <div class="font-semibold">{{ comment.author.name }}</div>
         <div class="text-gray-500 text-sm italic">
           <span>{{ DateManager.toHuman(comment.created_at, { parts: 1 }) }} ago</span>
-          <span class="text-sm italic"> (edited)</span>
+          <span class="text-sm"> (edited)</span>
         </div>
       </div>
 
@@ -107,15 +106,13 @@ const onEditCancel = () => {
           </TextEditor>
         </div>
 
-        <div v-if="hasReplies || isReplyTo" class="mt-8">
+        <div v-if="hasReplies" class="mt-8">
           <div class="space-y-8">
             <CardComment
               v-for="(item, index) in comment.replies"
               :key="index"
               :comment="item"
             />
-
-            <CardCommentReply v-if="isReplyTo" />
           </div>
         </div>
       </div>

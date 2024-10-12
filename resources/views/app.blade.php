@@ -28,6 +28,7 @@
         window.config = @js([
             'comments' => [
                 'reactions' => \App\Enums\CommentReaction::getCases(),
+                'report_reasons' => \App\Enums\CommentReportReason::getCases(),
                 'max_depth' => \App\Services\CommentService::MAX_DEPTH,
             ],
         ])

@@ -1,10 +1,11 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import CardComment from '@/Components/Card/CardComment.vue';
-import CardCommentEdit from '@/Components/Card/CardCommentEdit.vue';
+import CardComment from '@/Components/Comments/CardComment.vue';
+import CardCommentEdit from '@/Components/Comments/CardCommentEdit.vue';
 import TextEditor from '@/Components/TextEditor.vue';
 import { useCommentStore } from '@/Stores/CommentStore';
 import { storeToRefs } from 'pinia';
+import { formatHtmlToBbcode } from '@/Utils';
 
 const props = defineProps({
   title: {
@@ -38,18 +39,24 @@ const onLoadItems = ({ done }) => {
 const onSubmit = () => {
   submitting.value = true;
   textEditor.value.setEditable(false);
-  commentStore.$storeComment({
-    success: () => {
-      //
+  commentStore.$storeComment(
+    {
+      body: formatHtmlToBbcode(draft.value.html),
+      parent_id: null,
     },
-    error: (error) => {
-      console.error(error);
-    },
-    finish: () => {
-      submitting.value = false;
-      textEditor.value.setEditable(true);
-    },
-  });
+    {
+      success: () => {
+        commentStore.$resetDraft();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+      finish: () => {
+        submitting.value = false;
+        textEditor.value.setEditable(true);
+      },
+    }
+  );
 };
 
 onBeforeUnmount(() => {

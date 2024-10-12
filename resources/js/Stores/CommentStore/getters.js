@@ -14,4 +14,10 @@ export default {
     }
     return this.edit.draft.text.length;
   },
+  replyToTextLength() {
+    if (!this.replyTo) {
+      return 0;
+    }
+    return this.replyTo.draft.text.length;
+  },
 };

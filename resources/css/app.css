@@ -108,7 +108,8 @@
       @apply duration-300 border border-transparent rounded-3xl;
 
       .tiptap {
-        @apply max-h-96 min-h-10 overflow-y-auto p-4;
+        @apply break-words max-h-96 min-h-10 overflow-y-auto p-4;
+        overflow-wrap: anywhere;
 
         p.is-editor-empty:first-child::before {
           color: #adb5bd;
@@ -135,6 +136,9 @@
   }
 
   .comment-body {
+    @apply break-words;
+    overflow-wrap: anywhere;
+
     spoiler {
       @apply transition-all ease-in-out cursor-pointer;
       animation: blur 2s infinite;

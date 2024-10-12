@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\UPI;
 
 use App\Enums\CommentReaction as CommentReactionEnum;
+use App\Enums\CommentReportReason;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
@@ -92,5 +93,13 @@ class CommentController extends Controller
         return response()->json([
             'reactions' => $reactions,
         ]);
+    }
+
+    public function report(Comment $comment, int $reason, CommentService $commentService): JsonResponse
+    {
+        $reason = CommentReportReason::from($reason);
+        $commentService->report($comment, auth()->id(), $reason);
+
+        return response()->json('ok');
     }
 }
