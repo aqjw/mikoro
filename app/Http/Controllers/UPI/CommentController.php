@@ -17,19 +17,25 @@ class CommentController extends Controller
 {
     public function index(Title $title, Request $request, CommentService $commentService): JsonResponse
     {
-        $sorting = $request->sorting;
         $result = $commentService->get(
             title: $title,
-            sorting: [
-                'option' => $sorting['option'] ?? 'latest',
-                'dir' => $sorting['dir'] ?? 'desc',
-            ],
+            sorting: $request->sorting ?? 'latest',
             limit: 10
         );
 
         return response()->json([
             'items' => CommentResource::collection($result->items()),
+            'total' => $result->total(),
             'has_more' => $result->hasMorePages(),
+        ]);
+    }
+
+    public function replies(Comment $comment, int $last, CommentService $commentService): JsonResponse
+    {
+        $items = $commentService->getReplies($comment, $last);
+
+        return response()->json([
+            'items' => CommentResource::collection($items),
         ]);
     }
 

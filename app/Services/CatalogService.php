@@ -60,6 +60,15 @@ class CatalogService
                             filled($excl),
                             fn ($query) => $query->whereDoesntHave('studios', fn ($query) => $query->whereIn('studios.id', $excl))
                         ),
+                    'countries' => $query
+                        ->when(
+                            filled($incl),
+                            fn ($query) => $query->whereHas('countries', fn ($query) => $query->whereIn('countries.id', $incl))
+                        )
+                        ->when(
+                            filled($excl),
+                            fn ($query) => $query->whereDoesntHave('countries', fn ($query) => $query->whereIn('countries.id', $excl))
+                        ),
                     'translations' => $query
                         ->when(
                             filled($incl),

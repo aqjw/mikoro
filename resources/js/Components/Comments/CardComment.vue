@@ -3,19 +3,27 @@ import { computed, nextTick, ref } from 'vue';
 import CardComment from '@/Components/Comments/CardComment.vue';
 import DateManager from '@/Plugins/DateManager';
 import { useCommentStore } from '@/Stores/CommentStore';
-import { initials, formatBbcodeToHtml } from '@/Utils';
+import { useUserStore } from '@/Stores/UserStore';
+import { initials, formatBbcodeToHtml, handleResponseError } from '@/Utils';
 import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
 import { storeToRefs } from 'pinia';
 import CardCommentEdit from '@/Components/Comments/CardCommentEdit.vue';
 import CardCommentReply from '@/Components/Comments/CardCommentReply.vue';
-
-const commentStore = useCommentStore();
-const { replyTo, edit: editComment } = storeToRefs(commentStore);
+import CommentRepliesMore from '@/Components/Comments/CommentRepliesMore.vue';
+import { useToast } from 'vue-toast-notification';
+import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
 
 const props = defineProps({
   comment: Object,
 });
 
+const commentStore = useCommentStore();
+const userStore = useUserStore();
+const { replyTo, edit: editComment } = storeToRefs(commentStore);
+const { isLogged } = storeToRefs(userStore);
+const $toast = useToast();
+
+const loginRequires = ref(null);
 const loadingReaction = ref(
   window.config.comments.reactions.reduce((obj, { name }) => {
     obj[name] = false;
@@ -26,8 +34,16 @@ const loadingReaction = ref(
 const isReply = computed(() => props.comment.parent_id != null);
 const isReplyTo = computed(() => replyTo.value?.real_id == props.comment.id);
 const hasReplies = computed(() => props.comment.replies.length > 0);
+//
+const replies = computed(() => props.comment.replies.filter((item) => !item.is_new));
+const newReplies = computed(() => props.comment.replies.filter((item) => item.is_new));
 
 const toggleReaction = (reactionName) => {
+  if (!isLogged.value) {
+    loginRequires.value.open();
+    return;
+  }
+
   const reaction = window.config.comments.reactions.find(
     (reaction) => reaction.name === reactionName
   );
@@ -38,13 +54,13 @@ const toggleReaction = (reactionName) => {
   }, 200);
 
   commentStore.$toggleReaction(props.comment.id, reaction.id, {
-    success() {
+    success: () => {
       console.log('success');
     },
-    error(error) {
-      console.error(error);
+    error: (error) => {
+      $toast.error(handleResponseError(error));
     },
-    finish() {
+    finish: () => {
       console.log('finish');
       clearTimeout(loadingTimeout);
       loadingReaction.value[reactionName] = false;
@@ -65,13 +81,13 @@ const onReply = () => {
 
 const onReport = (reasonId) => {
   commentStore.$report(props.comment.id, reasonId, {
-    success() {
-      console.log('success');
+    success: () => {
+      $toast.success('Reported successfully.');
     },
-    error(error) {
-      console.error(error);
+    error: (error) => {
+      $toast.error(handleResponseError(error));
     },
-    finish() {
+    finish: () => {
       console.log('finish');
     },
   });
@@ -82,7 +98,17 @@ const onEdit = () => {
 };
 
 const onDelete = () => {
-  commentStore.$deleteComment(props.comment.id);
+  commentStore.$deleteComment(props.comment.id, {
+    success: () => {
+      $toast.success('Deleted successfully.');
+    },
+    error: (error) => {
+      $toast.error(handleResponseError(error));
+    },
+    finish: () => {
+      console.log('finish');
+    },
+  });
 };
 
 const onSpoilerClick = (event) => {
@@ -154,6 +180,7 @@ const onSpoilerClick = (event) => {
           </div>
 
           <MenuCommentActions
+            v-if="isLogged"
             :comment="comment"
             @reply="onReply"
             @report="onReport"
@@ -164,7 +191,17 @@ const onSpoilerClick = (event) => {
 
         <div v-if="hasReplies || isReplyTo" class="mt-8">
           <div class="space-y-8">
-            <template v-for="(comment, index) in comment.replies" :key="index">
+            <template v-for="(comment, index) in replies" :key="index">
+              <CardCommentEdit
+                v-if="editComment && comment.id == editComment.id"
+                :comment="comment"
+              />
+              <CardComment v-else :comment="comment" />
+            </template>
+
+            <CommentRepliesMore :comment="comment" />
+
+            <template v-for="(comment, index) in newReplies" :key="index">
               <CardCommentEdit
                 v-if="editComment && comment.id == editComment.id"
                 :comment="comment"
@@ -177,5 +214,7 @@ const onSpoilerClick = (event) => {
         </div>
       </div>
     </div>
+
+    <DialogLoginRequires ref="loginRequires" />
   </div>
 </template>

@@ -1,21 +1,20 @@
 import { formatHtmlToBbcode, formatBbcodeToHtml } from '@/Utils';
-import { DEFAULT_SORTING_STATE } from './state';
 
 export default {
   $setTitleId(id) {
     this.titleId = id;
   },
-  $reset() {
+  $resetAll() {
     this.$resetItems();
-    this.$resetSorting();
+    this.$resetPage();
     this.titleId = null;
   },
-  $resetItems() {
+  $resetPage() {
     this.page = 1;
-    this.items = [];
   },
-  $resetSorting() {
-    this.sorting = DEFAULT_SORTING_STATE;
+  $resetItems() {
+    this.items = [];
+    this.has_more = true;
   },
   $resetDraft() {
     this.draft.text = '';
@@ -38,7 +37,6 @@ export default {
     this.edit = comment;
   },
   $setReplyTo(comment) {
-    // TODO: save id and author.name only
     if (comment !== null && this.replyTo?.real_id == comment.id) {
       comment = null;
     }
@@ -57,66 +55,99 @@ export default {
 
     this.replyTo = comment;
   },
-  _findValidParentId(items, commentId, maxDepth, currentDepth = 1) {
-    for (const item of items) {
-      if (item.id === commentId) {
-        return currentDepth >= maxDepth ? item.parent_id : item.id;
-      }
-
-      if (item.replies && item.replies.length > 0) {
-        const result = this._findValidParentId(
-          item.replies,
-          commentId,
-          maxDepth,
-          currentDepth + 1
-        );
-        if (result) return result;
-      }
-    }
-
-    return null;
-  },
-
-  $loadComments(hasMoreClosure) {
+  $loadComments(events) {
     axios
       .get(route('upi.title.comments.get', this.titleId), {
         params: this.params,
       })
       .then(({ data }) => {
+        if (this.page === 1) {
+          this.$resetItems();
+        }
+
         this.page++;
         this.items.push(...data.items);
-        hasMoreClosure(data.has_more);
+        this.total = data.total;
+        this.has_more = data.has_more;
+
+        events.success();
       })
-      .catch((error) => {
-        console.error(error);
+      .catch(({ response }) => {
+        events.error(response);
+      })
+      .finally(() => {
+        events.finish();
+      });
+  },
+  $loadReplies(commentId, events) {
+    const comment = this._findCommentById(this.items, commentId);
+    const replies = comment?.replies || [];
+
+    if (replies.length === 0) {
+      events.finish();
+      return;
+    }
+
+    const lastValidReply = [...replies].reverse().find((reply) => !reply.is_new);
+    if (!lastValidReply) {
+      events.error(new Error('No valid lastId found (all replies are marked as new).'));
+      events.finish();
+      return;
+    }
+
+    const lastId = lastValidReply.id;
+
+    axios
+      .get(
+        route('upi.title.comments.replies', {
+          comment: commentId,
+          last: lastId,
+        })
+      )
+      .then(({ data }) => {
+        const newReplies = data.items.filter(
+          (newReply) => !replies.some((reply) => reply.id === newReply.id)
+        );
+        comment.replies.push(...newReplies);
+        events.success();
+      })
+      .catch(({ response }) => {
+        events.error(response);
+      })
+      .finally(() => {
+        events.finish();
       });
   },
   $storeComment(params, events) {
     axios
       .post(route('upi.title.comments.store', this.titleId), params)
       .then(({ data }) => {
-        const parent_id = data.comment.parent_id;
-        if (parent_id) {
-          const addReplyToParent = (items, parent_id, reply) => {
+        const newComment = data.comment;
+        const parentId = newComment.parent_id;
+
+        newComment.is_new = true;
+
+        if (parentId) {
+          const addReplyToParent = (items, parentId, reply) => {
             return items.map((item) => {
-              if (item.id === parent_id) {
+              if (item.id === parentId) {
                 item.replies.push(reply);
               } else if (item.replies) {
-                item.replies = addReplyToParent(item.replies, parent_id, reply);
+                item.replies = addReplyToParent(item.replies, parentId, reply);
               }
               return item;
             });
           };
 
-          this.items = addReplyToParent(this.items, parent_id, data.comment);
+          this.items = addReplyToParent(this.items, parentId, newComment);
         } else {
-          this.items.unshift(data.comment);
+          this.items.unshift(newComment);
         }
 
         events.success();
       })
-      .catch((error) => {
-        events.error(error);
+      .catch(({ response }) => {
+        events.error(response);
       })
       .finally(() => {
         events.finish();
@@ -144,14 +175,14 @@ export default {
         events.success();
         this.$setEdit(null);
       })
-      .catch((error) => {
-        events.error(error);
+      .catch(({ response }) => {
+        events.error(response);
       })
       .finally(() => {
         events.finish();
       });
   },
-  $deleteComment(commentId) {
+  $deleteComment(commentId, events) {
     axios
       .delete(route('upi.title.comments.delete', commentId))
       .then(() => {
@@ -166,11 +197,14 @@ export default {
         };
 
         this.items = deleteRecursive(this.items, commentId);
+        events.success();
       })
-      .catch((error) => {
-        console.error(error);
+      .catch(({ response }) => {
+        events.error(response);
       })
-      .finally(() => {});
+      .finally(() => {
+        events.finish();
+      });
   },
   $toggleReaction(commentId, reactionId, events) {
     const endpoint = route('upi.title.comments.toggle_reaction', {
@@ -207,8 +241,8 @@ export default {
         events.success();
       })
 
-      .catch((error) => {
-        events.error(error);
+      .catch(({ response }) => {
+        events.error(response);
       })
       .finally(() => {
         events.finish();
@@ -225,11 +259,45 @@ export default {
       .then(() => {
         events.success();
       })
-      .catch((error) => {
-        events.error(error);
+      .catch(({ response }) => {
+        events.error(response);
       })
       .finally(() => {
         events.finish();
       });
+  },
+  //
+  _findCommentById(items, commentId) {
+    for (const item of items) {
+      if (item.id === commentId) {
+        return item;
+      }
+
+      if (item.replies && item.replies.length > 0) {
+        const result = this._findCommentById(item.replies, commentId);
+        if (result) return result;
+      }
+    }
+
+    return null;
+  },
+  _findValidParentId(items, commentId, maxDepth, currentDepth = 1) {
+    for (const item of items) {
+      if (item.id === commentId) {
+        return currentDepth >= maxDepth ? item.parent_id : item.id;
+      }
+
+      if (item.replies && item.replies.length > 0) {
+        const result = this._findValidParentId(
+          item.replies,
+          commentId,
+          maxDepth,
+          currentDepth + 1
+        );
+        if (result) return result;
+      }
+    }
+
+    return null;
   },
 };

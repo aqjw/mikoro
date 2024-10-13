@@ -1,11 +1,15 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import CardComment from '@/Components/Comments/CardComment.vue';
 import CardCommentEdit from '@/Components/Comments/CardCommentEdit.vue';
 import TextEditor from '@/Components/TextEditor.vue';
+import InfiniteScroll from '@/Components/InfiniteScroll.vue';
+import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
 import { useCommentStore } from '@/Stores/CommentStore';
+import { useUserStore } from '@/Stores/UserStore';
 import { storeToRefs } from 'pinia';
-import { formatHtmlToBbcode } from '@/Utils';
+import { formatHtmlToBbcode, handleResponseError } from '@/Utils';
+import { useToast } from 'vue-toast-notification';
 
 const props = defineProps({
   title: {
@@ -14,29 +18,63 @@ const props = defineProps({
   },
 });
 
+const $toast = useToast();
+
+const userStore = useUserStore();
 const commentStore = useCommentStore();
-const { items, params, replyTo, edit: editComment, draft, draftTextLength } = storeToRefs(
-  commentStore
-);
+const { isLogged } = storeToRefs(userStore);
+const {
+  items,
+  params,
+  has_more,
+  total,
+  edit: editComment,
+  draft,
+  draftTextLength,
+  sorting_options,
+  sorting,
+} = storeToRefs(commentStore);
 
 commentStore.$setTitleId(props.title.id);
 
-// for list
+const loginRequires = ref(null);
+//
 const infiniteScroll = ref(null);
-const doneCallback = ref(null);
-
-// for new comment
+const loading = ref(false);
 const textEditor = ref(false);
 const submitting = ref(false);
 
-const onLoadItems = ({ done }) => {
-  doneCallback.value = done;
-  commentStore.$loadComments((hasMore) => {
-    done(hasMore ? 'ok' : 'empty');
+watch(sorting, () => {
+  setTimeout(() => {
+    commentStore.$resetPage();
+    infiniteScroll.value?.reload();
+  }, 200);
+});
+
+onMounted(() => {
+  nextTick(() => {
+    infiniteScroll.value?.load();
+  });
+});
+
+const onLoad = (finish) => {
+  loading.value = true;
+  commentStore.$loadComments({
+    success: () => {},
+    error: () => {},
+    finish: () => {
+      loading.value = false;
+      finish();
+    },
   });
 };
 
 const onSubmit = () => {
+  if (!isLogged.value) {
+    loginRequires.value.open();
+    return;
+  }
+
   submitting.value = true;
   textEditor.value.setEditable(false);
   commentStore.$storeComment(
@@ -49,7 +87,7 @@ const onSubmit = () => {
         commentStore.$resetDraft();
       },
       error: (error) => {
-        console.error(error);
+        $toast.error(handleResponseError(error));
       },
       finish: () => {
         submitting.value = false;
@@ -60,13 +98,13 @@ const onSubmit = () => {
 };
 
 onBeforeUnmount(() => {
-  commentStore.$reset();
+  commentStore.$resetAll();
 });
 </script>
 
 <template>
   <div class="comments-section">
-    <div class="text-editor-container">
+    <div class="p-4">
       <TextEditor ref="textEditor" v-model="draft">
         <template #actions="">
           <v-btn
@@ -87,26 +125,38 @@ onBeforeUnmount(() => {
 
     <div class="p-6">
       <div class="flex justify-between items-center mb-4">
-        <div class="text-xl font-medium mb-2">Комментарии:</div>
-        <div class="w-64">
+        <div class="text-xl font-medium">Комментарии:</div>
+        <div>
           <v-select
-            :items="[1, 2, 3, 4]"
-            variant="solo"
+            :items="sorting_options"
+            v-model="sorting"
+            variant="underlined"
             :elevation="0"
             color="primary"
             density="compact"
             rounded="lg"
             hide-details
-          />
+          >
+            <template #prepend>
+              <v-progress-circular
+                v-if="loading"
+                color="primary"
+                indeterminate
+                :size="20"
+                :width="2"
+              />
+              <v-icon v-else icon="mdi-sort" />
+            </template>
+          </v-select>
         </div>
       </div>
 
       <div>
-        <v-infinite-scroll
+        <InfiniteScroll
           ref="infiniteScroll"
           :items="items"
-          :onLoad="onLoadItems"
-          :mode="items.length > 0 ? 'manual' : 'intersect'"
+          :has-more="has_more"
+          :on-load="onLoad"
         >
           <div class="space-y-8">
             <template v-for="(comment, index) in items" :key="index">
@@ -117,30 +167,10 @@ onBeforeUnmount(() => {
               <CardComment v-else :comment="comment" />
             </template>
           </div>
-
-          <template v-slot:load-more="{ props }">
-            <v-btn
-              v-bind="props"
-              variant="flat"
-              class="text-none"
-              color="primary"
-              density="comfortable"
-            >
-              Load More
-            </v-btn>
-          </template>
-
-          <template v-slot:loading>
-            <v-progress-circular indeterminate :size="50" :width="2" color="primary" />
-          </template>
-
-          <template v-slot:empty>
-            <div v-if="items.length === 0">Ничего не найдено</div>
-          </template>
-        </v-infinite-scroll>
-
-        <!-- <CardComment has-replies />-->
+        </InfiniteScroll>
       </div>
     </div>
+
+    <DialogLoginRequires ref="loginRequires" />
   </div>
 </template>

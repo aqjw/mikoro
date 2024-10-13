@@ -5,19 +5,23 @@ import DateManager from '@/Plugins/DateManager';
 import { useCommentStore } from '@/Stores/CommentStore';
 import { useUserStore } from '@/Stores/UserStore';
 import { storeToRefs } from 'pinia';
-import { initials, scrollToElement, formatHtmlToBbcode } from '@/Utils';
+import {
+  initials,
+  scrollToElement,
+  formatHtmlToBbcode,
+  handleResponseError,
+} from '@/Utils';
 import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
 import TextEditor from '@/Components/TextEditor.vue';
 import CardCommentReply from '@/Components/Comments/CardCommentReply.vue';
+import { useToast } from 'vue-toast-notification';
+
+const $toast = useToast();
 
 const commentStore = useCommentStore();
 const userStore = useUserStore();
 const { items, params, replyTo, draft, replyToTextLength } = storeToRefs(commentStore);
 const { user } = storeToRefs(userStore);
-
-const props = defineProps({
-  //
-});
 
 // for new comment
 const textEditor = ref(false);
@@ -45,8 +49,8 @@ const onSubmit = () => {
         onReplyToCancel();
       },
       error: (error) => {
-        console.error(error);
         textEditor.value.setEditable(true);
+        $toast.error(handleResponseError(error));
       },
       finish: () => {
         submitting.value = false;
@@ -74,40 +78,38 @@ const onReplyToCancel = () => {
         <div class="text-gray-500 text-sm italic">now</div>
       </div>
 
-      <div class="relative">
-        <div class="mt-2 text-editor-container !p-0">
-          <TextEditor
-            :id="`reply-text-editor-${replyTo.id}`"
-            ref="textEditor"
-            v-model="replyTo.draft"
-          >
-            <template #actions="">
-              <div class="flex gap-2">
-                <v-btn
-                  density="comfortable"
-                  variant="tonal"
-                  rounded="xl"
-                  class="text-none"
-                  @click="onReplyToCancel"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  :disabled="replyToTextLength < 10"
-                  :loading="submitting"
-                  density="comfortable"
-                  color="primary"
-                  variant="tonal"
-                  rounded="xl"
-                  class="text-none"
-                  @click="onSubmit"
-                >
-                  Submit
-                </v-btn>
-              </div>
-            </template>
-          </TextEditor>
-        </div>
+      <div class="mt-2">
+        <TextEditor
+          :id="`reply-text-editor-${replyTo.id}`"
+          ref="textEditor"
+          v-model="replyTo.draft"
+        >
+          <template #actions>
+            <div class="flex gap-2">
+              <v-btn
+                density="comfortable"
+                variant="tonal"
+                rounded="xl"
+                class="text-none"
+                @click="onReplyToCancel"
+              >
+                Cancel
+              </v-btn>
+              <v-btn
+                :disabled="replyToTextLength < 10"
+                :loading="submitting"
+                density="comfortable"
+                color="primary"
+                variant="tonal"
+                rounded="xl"
+                class="text-none"
+                @click="onSubmit"
+              >
+                Submit
+              </v-btn>
+            </div>
+          </template>
+        </TextEditor>
       </div>
     </div>
   </div>

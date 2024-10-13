@@ -9,6 +9,7 @@ export const initials = (string) => {
 // Function to replace BBCode with HTML
 export const formatBbcodeToHtml = (text) => {
   return text
+    .replace(/\[blockquote\](.*?)\[\/blockquote\]/g, '<blockquote>$1</blockquote>')
     .replace(/\[bold\](.*?)\[\/bold\]/g, '<strong>$1</strong>')
     .replace(/\[italic\](.*?)\[\/italic\]/g, '<em>$1</em>')
     .replace(/\[underline\](.*?)\[\/underline\]/g, '<u>$1</u>')
@@ -20,6 +21,7 @@ export const formatBbcodeToHtml = (text) => {
 // Function to replace HTML with BBCode
 export const formatHtmlToBbcode = (htmlContent) => {
   return htmlContent
+    .replace(/<blockquote>(.*?)<\/blockquote>/g, '[blockquote]$1[/blockquote]')
     .replace(/<strong>(.*?)<\/strong>/g, '[bold]$1[/bold]')
     .replace(/<em>(.*?)<\/em>/g, '[italic]$1[/italic]')
     .replace(/<u>(.*?)<\/u>/g, '[underline]$1[/underline]')
@@ -55,4 +57,21 @@ export const scrollToElement = (element, duration) => {
   }
 
   requestAnimationFrame(scrollAnimation);
+};
+
+export const handleResponseError = (response) => {
+  const data = response?.data;
+    const status = response?.status;
+
+  if (!data || !data.message ||!status) {
+    return 'unknown error';
+  }
+
+    // TODO:
+    // status === 401
+    // status === 403
+    // status === 422
+    // status === 500
+
+  return data.message;
 };

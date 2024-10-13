@@ -5,11 +5,14 @@ export const DEFAULT_SORTING_STATE = {
 
 export default () => ({
   page: 1,
+  total: 0,
   items: [],
+  has_more: true,
   sorting: { ...DEFAULT_SORTING_STATE },
   filters: {
     genres: { incl: [], excl: [] },
     studios: { incl: [], excl: [] },
+    countries: { incl: [], excl: [] },
     translations: { incl: [], excl: [] },
     years: { incl: [], excl: [] },
     statuses: { incl: [], excl: [] },
@@ -27,6 +30,7 @@ export default () => ({
     filters: {
       genres: [],
       studios: [],
+      countries: [],
       translations: [],
       years: [],
       statuses: [],

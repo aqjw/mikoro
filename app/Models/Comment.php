@@ -11,6 +11,10 @@ class Comment extends Model
 {
     use HasFactory;
 
+    public const MAX_DEPTH = 3;
+
+    public const REPLIES_LIMIT = 2;
+
     protected $fillable = [
         'user_id',
         'title_id',
@@ -38,13 +42,20 @@ class Comment extends Model
         return $this
             ->hasMany(Comment::class, 'parent_id')
             ->with([
+                'repliesLimited',
                 'userReactions',
+                'author.media' => fn ($query) => $query->where('collection_name', 'avatar'),
                 'reactions' => function ($query) {
                     $query->selectRaw('reaction, count(*) as count, comment_id')
                         ->groupBy('comment_id', 'reaction');
                 },
             ])
-            ->oldest();
+            ->take(self::REPLIES_LIMIT);
+    }
+
+    public function repliesLimited(): HasMany
+    {
+        return $this->replies()->take(2);
     }
 
     public function reports(): HasMany

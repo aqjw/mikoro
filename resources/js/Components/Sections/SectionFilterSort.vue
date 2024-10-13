@@ -63,7 +63,7 @@ watch(
 );
 
 onMounted(() => {
-  catalogStore.loadOptions();
+  catalogStore.$loadOptions();
 });
 
 const updateQuietly = (callback) => {
@@ -155,6 +155,7 @@ const toggleSortingDir = () => {
                 :options="options.filters.translations"
                 :items="filters.translations"
               />
+
               <v-divider
                 opacity="1"
                 class="my-4 -mx-4 border-gray-200 dark:border-gray-500/30"
@@ -164,6 +165,17 @@ const toggleSortingDir = () => {
                 title="Студия"
                 :options="options.filters.studios"
                 :items="filters.studios"
+              />
+
+              <v-divider
+                opacity="1"
+                class="my-4 -mx-4 border-gray-200 dark:border-gray-500/30"
+              />
+
+              <MenuFilterItem
+                title="Страны"
+                :options="options.filters.countries"
+                :items="filters.countries"
               />
 
               <v-divider

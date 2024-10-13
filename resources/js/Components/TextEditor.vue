@@ -10,6 +10,7 @@ import Italic from '@tiptap/extension-italic';
 import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import Spoiler from '@/Plugins/tiptap/extension-spoiler';
+import Blockquote from '@tiptap/extension-blockquote';
 
 const props = defineProps({
   modelValue: {
@@ -34,6 +35,7 @@ const editor = useEditor({
     Underline,
     Strike,
     Spoiler,
+    Blockquote,
     Placeholder.configure({
       placeholder: 'Add comment …',
     }),
@@ -82,6 +84,12 @@ const editorButtons = [
     icon: 'mdi-format-strikethrough-variant',
     action: () => editor.value.chain().focus().toggleStrike().run(),
   },
+  'divide',
+  {
+    name: 'blockquote',
+    icon: 'mdi-format-quote-close-outline',
+    action: () => editor.value.chain().focus().toggleBlockquote().run(),
+  },
   {
     name: 'spoiler',
     icon: 'mdi-creation-outline',
@@ -94,12 +102,12 @@ const setEditable = (state) => {
 };
 
 const focus = () => {
-    editor.value.chain().focus()
+  editor.value.chain().focus();
 };
 
 defineExpose({
-    setEditable,
-    focus,
+  setEditable,
+  focus,
 });
 
 onBeforeUnmount(() => {
@@ -117,16 +125,23 @@ onBeforeUnmount(() => {
     <div v-if="editor" class="actions-section">
       <div class="flex items-center">
         <div class="flex gap-3">
-          <v-btn
-            v-for="button in editorButtons"
-            :key="button.name"
-            density="comfortable"
-            rounded="sm"
-            :variant="editor.isActive(button.name) ? 'tonal' : 'text'"
-            color="grey-darken-1"
-            :icon="button.icon"
-            @click="button.action"
-          />
+          <template v-for="button in editorButtons" :key="button.name">
+            <div v-if="button === 'divide'" class="divider-vertical"></div>
+            <v-btn
+              v-else
+              density="comfortable"
+              rounded="sm"
+              :variant="editor.isActive(button.name) ? 'tonal' : 'text'"
+              color="grey-darken-1"
+              :icon="button.icon"
+              @click="button.action"
+            >
+              <v-icon :icon="button.icon" />
+              <v-tooltip activator="parent" location="bottom" :open-delay="300">
+                <span class="text-sm">{{ button.name }}</span>
+              </v-tooltip>
+            </v-btn>
+          </template>
         </div>
       </div>
 

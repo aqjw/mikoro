@@ -29,7 +29,8 @@
             'comments' => [
                 'reactions' => \App\Enums\CommentReaction::getCases(),
                 'report_reasons' => \App\Enums\CommentReportReason::getCases(),
-                'max_depth' => \App\Services\CommentService::MAX_DEPTH,
+                'max_depth' => \App\Models\Comment::MAX_DEPTH,
+                'replies_limit' => \App\Models\Comment::REPLIES_LIMIT,
             ],
         ])
     </script>

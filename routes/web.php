@@ -26,6 +26,7 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('genre/{genre:slug}', [CatalogController::class, 'genre'])->name('catalog.genre');
 Route::get('translation/{translation:slug}', [CatalogController::class, 'translation'])->name('catalog.translation');
 Route::get('studio/{studio:slug}', [CatalogController::class, 'studio'])->name('catalog.studio');
+Route::get('country/{country:slug}', [CatalogController::class, 'country'])->name('catalog.country');
 Route::get('year/{year}', [CatalogController::class, 'year'])->name('catalog.year');
 Route::get('status/{status}', [CatalogController::class, 'status'])->name('catalog.status');
 
@@ -40,6 +41,9 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
     Route::group(['prefix' => 'title', 'as' => 'title.'], function () {
         Route::get('catalog', [UPI\TitleController::class, 'catalog'])->name('catalog');
         Route::get('filters', [UPI\TitleController::class, 'filters'])->name('filters');
+
+        Route::get('genres', [UPI\TitleController::class, 'genres'])->name('genres');
+
         Route::get('episodes/{title:id}', [UPI\TitleController::class, 'episodes'])->name('episodes');
         Route::post('playback-state/{title:id}', [UPI\TitleController::class, 'playbackState'])
             ->middleware('auth')
@@ -47,7 +51,8 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
 
         Route::group(['prefix' => 'comments', 'as' => 'comments.'], function () {
             Route::get('{title:id}', [UPI\CommentController::class, 'index'])->name('get');
-            Route::group(['middleware' => 'auth'], function () {
+            Route::get('replies/{comment:id}/{last}', [UPI\CommentController::class, 'replies'])->name('replies');
+            Route::group(['middleware' => ['auth', 'throttle:comments']], function () {
                 Route::post('{title:id}', [UPI\CommentController::class, 'store'])->name('store');
                 Route::patch('{comment:id}', [UPI\CommentController::class, 'update'])->name('update');
                 Route::delete('{comment:id}', [UPI\CommentController::class, 'delete'])->name('delete');

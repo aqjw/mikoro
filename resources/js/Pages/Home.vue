@@ -4,10 +4,10 @@ import SectionFilterSort from '@/Components/Sections/SectionFilterSort.vue';
 import TitleRating from '@/Components/TitleRating.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import axios from 'axios';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, nextTick } from 'vue';
 import { useCatalogStore } from '@/Stores/CatalogStore';
 import { storeToRefs } from 'pinia';
+import InfiniteScroll from '@/Components/InfiniteScroll.vue';
 
 const UPDATE_DELAY_MS = 1000;
 
@@ -19,31 +19,30 @@ const props = defineProps({
 });
 
 const catalogStore = useCatalogStore();
-const { items, params } = storeToRefs(catalogStore);
+const { items, total, has_more } = storeToRefs(catalogStore);
 
 const infiniteScroll = ref(null);
 const timer = ref(null);
-const doneCallback = ref(null);
+const loading = ref(false);
 
 const onFilterSortUpdated = (isSorting) => {
+  const loadItems = () => {
+    catalogStore.$resetPage();
+    infiniteScroll.value?.load();
+  };
+
   clearTimeout(timer.value);
   if (isSorting) {
-    catalogStore.resetItems();
-    doneCallback.value?.('ok');
+    loadItems();
     return;
   }
 
-  timer.value = setTimeout(() => {
-    catalogStore.resetItems();
-    doneCallback.value?.('ok');
-  }, UPDATE_DELAY_MS);
+  timer.value = setTimeout(loadItems, UPDATE_DELAY_MS);
 };
 
 const onReset = () => {
-  catalogStore.resetSorting();
-  catalogStore.resetFilters();
-  catalogStore.resetItems();
-  doneCallback.value?.('ok');
+  catalogStore.$resetAll();
+  infiniteScroll.value?.reload();
 
   if (route().current().startsWith('catalog.')) {
     router.visit(route('home'));
@@ -52,15 +51,23 @@ const onReset = () => {
 
 onMounted(() => {
   if (props.filter?.key) {
-    catalogStore.setFilterValue(props.filter.key, props.filter.value);
-    catalogStore.resetItems();
+    catalogStore.$resetAll();
+    catalogStore.$setFilterValue(props.filter.key, props.filter.value);
+    nextTick(() => infiniteScroll.value?.load());
+  } else if (items.value.length === 0) {
+    nextTick(() => infiniteScroll.value?.load());
   }
 });
 
-const onLoadItems = ({ done }) => {
-  doneCallback.value = done;
-  catalogStore.loadItems((hasMore) => {
-    done(hasMore ? 'ok' : 'empty');
+const onLoad = (finish) => {
+  loading.value = true;
+  catalogStore.$loadItems({
+    success: () => {},
+    error: () => {},
+    finish: () => {
+      loading.value = false;
+      finish();
+    },
   });
 };
 </script>
@@ -69,15 +76,30 @@ const onLoadItems = ({ done }) => {
   <Head title="Anime" />
 
   <AppLayout>
-    <div>
+    <div class="mb-4">
       <SectionFilterSort @updated="onFilterSortUpdated" @reset="onReset" />
 
-      <v-infinite-scroll
+      <div class="my-4 flex justify-between">
+        <div>
+          <span class="mr-2">Всего найдено тайтлов:</span>
+          <span class="font-semibold">{{ total }}</span>
+        </div>
+        <div>
+          <v-progress-circular
+            v-if="loading"
+            color="primary"
+            indeterminate
+            :size="20"
+            :width="2"
+          />
+        </div>
+      </div>
+
+      <InfiniteScroll
         ref="infiniteScroll"
         :items="items"
-        :onLoad="onLoadItems"
-        :mode="items.length > 0 ? 'manual' : 'intersect'"
-        class="p-6 -m-6"
+        :has-more="has_more"
+        :on-load="onLoad"
       >
         <div class="grid grid-cols-4 gap-4 mb-4">
           <div
@@ -90,27 +112,7 @@ const onLoadItems = ({ done }) => {
             </Link>
           </div>
         </div>
-
-        <template v-slot:load-more="{ props }">
-          <v-btn
-            v-bind="props"
-            variant="flat"
-            class="text-none"
-            color="primary"
-            density="comfortable"
-          >
-            Load More
-          </v-btn>
-        </template>
-
-        <template v-slot:loading>
-          <v-progress-circular indeterminate :size="50" :width="2" color="primary" />
-        </template>
-
-        <template v-slot:empty>
-          <div v-if="items.length === 0">Ничего не найдено</div>
-        </template>
-      </v-infinite-scroll>
+      </InfiniteScroll>
     </div>
   </AppLayout>
 </template>

@@ -1,8 +1,3 @@
-export const DEFAULT_SORTING_STATE = {
-  option: 'latest',
-  dir: 'desc',
-};
-
 export default () => ({
   draft: {
     text: '',
@@ -13,17 +8,14 @@ export default () => ({
   //
   titleId: null,
   page: 1,
+  total: 0,
   items: [],
-  sorting: { ...DEFAULT_SORTING_STATE },
+  has_more: true,
+  sorting: 'latest',
 
-  options: {
-    sorting: [
-      { value: 'latest', title: 'Последние поступления' },
-      { value: 'rating', title: 'По рейтингу' },
-      // TODO: no comments yet
-      // { value: 'comments', title: 'По комментариям' },
-      { value: 'episodes_count', title: 'По количеству эпизодов' },
-      { value: 'seasons_count', title: 'По количеству сезонов' },
-    ],
-  },
+  sorting_options: [
+    { value: 'latest', title: 'Новые' },
+    { value: 'oldest', title: 'Старые' },
+    { value: 'reactions', title: 'Популярные' },
+  ],
 });

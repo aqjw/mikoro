@@ -30,7 +30,8 @@ class CommentResource extends JsonResource
                 ->mapWithKeys(fn (CommentReaction $item) => [
                     $item->reaction->getName() => $item->count,
                 ]),
-            'replies' => self::collection($this->replies),
+            'replies' => self::collection($this->repliesLimited),
+            'replies_total' => $this->replies_count,
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
         ];

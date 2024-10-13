@@ -1,6 +1,7 @@
 <script setup>
 import Navbar from '@/Components/Layout/Navbar.vue';
 import Sidebar from '@/Components/Layout/Sidebar.vue';
+import Footer from '@/Components/Layout/Footer.vue';
 </script>
 
 <template>
@@ -24,5 +25,7 @@ import Sidebar from '@/Components/Layout/Sidebar.vue';
         </v-row>
       </v-container>
     </v-main>
+
+    <Footer />
   </v-app>
 </template>

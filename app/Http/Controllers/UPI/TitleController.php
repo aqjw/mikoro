@@ -5,6 +5,7 @@ namespace App\Http\Controllers\UPI;
 use App\Enums\TitleStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TitleShortResource;
+use App\Models\Country;
 use App\Models\Genre;
 use App\Models\Studio;
 use App\Models\Title;
@@ -19,7 +20,7 @@ class TitleController extends Controller
     {
         $sorting = $request->sorting;
         $filters = $request->filters;
-        $filterKeys = ['genres', 'studios', 'translations', 'years', 'statuses'];
+        $filterKeys = ['genres', 'studios', 'countries', 'translations', 'years', 'statuses'];
 
         $result = $catalogService->get(
             sorting: [
@@ -36,26 +37,40 @@ class TitleController extends Controller
 
         return response()->json([
             'items' => TitleShortResource::collection($result->items()),
+            'total' => $result->total(),
             'has_more' => $result->hasMorePages(),
         ]);
     }
 
-    public function filters(Request $request): JsonResponse
+    public function filters(): JsonResponse
     {
         return response()->json([
-            'genres' => Genre::query()->get(['id', 'name']),
-            'studios' => Studio::query()->get(['id', 'name']),
-            'translations' => Translation::query()->get(['id', 'title']),
-            'years' => Title::groupBy('year')->pluck('year')->map(fn ($year) => [
-                'id' => $year,
-                'name' => $year,
-            ]),
+            'genres' => Genre::query()->orderBy('name')->get(['id', 'name']),
+            'studios' => Studio::query()->orderBy('name')->get(['id', 'name']),
+            'countries' => Country::query()->orderBy('name')->get(['id', 'name']),
+            'translations' => Translation::query()->orderBy('title')->get(['id', 'title']),
+            'years' => Title::query()
+                ->groupBy('year')
+                ->orderByDesc('year')
+                ->pluck('year')->map(fn ($year) => [
+                    'id' => $year,
+                    'name' => $year,
+                ]),
             'statuses' => TitleStatus::getCases(),
+        ]);
+    }
+
+    public function genres(): JsonResponse
+    {
+        return response()->json([
+            'genres' => Genre::query()->orderBy('name')->get(['slug', 'name']),
         ]);
     }
 
     public function episodes(Title $title, Request $request): JsonResponse
     {
+        $title->load('episodes.translation');
+
         $translations = $title->episodes
             ->groupBy('translation_id')
             ->map(fn ($episodes) => [

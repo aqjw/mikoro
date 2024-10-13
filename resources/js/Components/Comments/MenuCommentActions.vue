@@ -34,14 +34,14 @@ const items = ref([
     label: 'Edit',
     icon: 'mdi-pencil-outline',
     color: '',
-    can: () => isLogged.value && props.comment.author.id == user.value.id,
+    can: () => props.comment.author.id == user.value.id,
     action: () => emit('edit'),
   },
   {
     label: 'Delete',
     icon: 'mdi-delete-forever-outline',
     color: 'text-red-600 dark:text-red-400',
-    can: () => isLogged.value && props.comment.author.id == user.value.id,
+    can: () => props.comment.author.id == user.value.id,
     action: () => {
       deleteConfirm.value.open(getDeleteConfirmOptions(), (confirm) => {
         if (confirm) {

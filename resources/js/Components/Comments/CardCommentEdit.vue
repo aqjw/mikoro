@@ -3,21 +3,23 @@ import { computed, nextTick, ref, onMounted } from 'vue';
 import CardComment from '@/Components/Comments/CardComment.vue';
 import DateManager from '@/Plugins/DateManager';
 import { useCommentStore } from '@/Stores/CommentStore';
-import { initials, formatBbcodeToHtml } from '@/Utils';
+import { initials, formatBbcodeToHtml, handleResponseError } from '@/Utils';
 import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
 import { storeToRefs } from 'pinia';
 import TextEditor from '@/Components/TextEditor.vue';
-
-const commentStore = useCommentStore();
-const { edit: editComment, editTextLength } = storeToRefs(commentStore);
+import { useToast } from 'vue-toast-notification';
 
 const props = defineProps({
   comment: Object,
 });
 
+const $toast = useToast();
+
+const commentStore = useCommentStore();
+const { edit: editComment, editTextLength } = storeToRefs(commentStore);
+
 const isReply = computed(() => props.comment.parent_id != null);
 const hasReplies = computed(() => props.comment.replies.length > 0);
-
 
 // for new comment
 const textEditor = ref(false);
@@ -38,7 +40,7 @@ const onSave = () => {
     },
     error: (error) => {
       textEditor.value.setEditable(true);
-      console.error(error);
+      $toast.error(handleResponseError(error));
     },
     finish: () => {
       saving.value = false;
@@ -75,36 +77,34 @@ const onEditCancel = () => {
         </div>
       </div>
 
-      <div class="relative">
-        <div class="mt-2 text-editor-container !p-0">
-          <TextEditor ref="textEditor" v-model="editComment.draft">
-            <template #actions="">
-              <div class="flex gap-2">
-                <v-btn
-                  density="comfortable"
-                  variant="tonal"
-                  rounded="xl"
-                  class="text-none"
-                  @click="onEditCancel"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  :disabled="editTextLength < 10"
-                  :loading="saving"
-                  density="comfortable"
-                  color="primary"
-                  variant="tonal"
-                  rounded="xl"
-                  class="text-none"
-                  @click="onSave"
-                >
-                  Save
-                </v-btn>
-              </div>
-            </template>
-          </TextEditor>
-        </div>
+      <div class="mt-2">
+        <TextEditor ref="textEditor" v-model="editComment.draft">
+          <template #actions>
+            <div class="flex gap-2">
+              <v-btn
+                density="comfortable"
+                variant="tonal"
+                rounded="xl"
+                class="text-none"
+                @click="onEditCancel"
+              >
+                Cancel
+              </v-btn>
+              <v-btn
+                :disabled="editTextLength < 10"
+                :loading="saving"
+                density="comfortable"
+                color="primary"
+                variant="tonal"
+                rounded="xl"
+                class="text-none"
+                @click="onSave"
+              >
+                Save
+              </v-btn>
+            </div>
+          </template>
+        </TextEditor>
 
         <div v-if="hasReplies" class="mt-8">
           <div class="space-y-8">

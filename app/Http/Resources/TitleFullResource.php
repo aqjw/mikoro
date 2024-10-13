@@ -31,6 +31,7 @@ class TitleFullResource extends JsonResource
             'shikimori_rating' => $this->shikimori_rating,
             'genres' => $this->genres->select('slug', 'name'),
             'studios' => $this->studios->select('slug', 'name'),
+            'countries' => $this->countries->select('slug', 'name'),
             'related' => $this->related->select('slug', 'title', 'year'),
             'poster' => MediaService::getImageDetails($this->getMedia('poster'), true),
             'screenshots' => MediaService::getImageDetails($this->getMedia('screenshots')),

@@ -15,6 +15,7 @@ class TitleController extends Controller
             'media',
             'genres',
             'studios',
+            'countries',
             'related',
         ]);
 

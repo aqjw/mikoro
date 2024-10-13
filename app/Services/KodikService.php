@@ -6,6 +6,7 @@ use App\Enums\TitleStatus;
 use App\Enums\TitleType;
 use App\Enums\TranslationType;
 use App\Jobs\StoreMediaJob;
+use App\Models\Country;
 use App\Models\Genre;
 use App\Models\Studio;
 use App\Models\Title;
@@ -72,6 +73,10 @@ class KodikService
                     $studios = $this->createStudios($item);
                     $title->studios()->sync($studios);
 
+                    // create countries
+                    $countries = $this->createCountries($item);
+                    $title->countries()->sync($countries);
+
                     // create genres
                     $genres = $this->createGenres($item);
                     $title->genres()->sync($genres);
@@ -81,7 +86,7 @@ class KodikService
                 }
             }
 
-            if (Title::count() > 100) {
+            if (Title::count() > 200) {
                 break;
             }
             if (empty($url)) {
@@ -168,6 +173,17 @@ class KodikService
                 );
             }
         }
+    }
+
+    public function createCountries(array $data): array
+    {
+        return collect($data['material_data']['countries'] ?? [])
+            ->map(fn ($name) => Country::firstOrCreate(
+                ['slug' => Str::slug($name)],
+                ['name' => $name]
+            ))
+            ->pluck('id')
+            ->toArray();
     }
 
     public function createStudios(array $data): array

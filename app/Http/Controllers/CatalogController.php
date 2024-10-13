@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TitleStatus;
+use App\Models\Country;
 use App\Models\Genre;
 use App\Models\Studio;
 use App\Models\Translation;
@@ -37,6 +38,16 @@ class CatalogController extends Controller
             'filter' => [
                 'key' => 'studios',
                 'value' => $studio->id,
+            ],
+        ]);
+    }
+
+    public function country(Country $country): Response
+    {
+        return Inertia::render('Home', [
+            'filter' => [
+                'key' => 'countries',
+                'value' => $country->id,
             ],
         ]);
     }

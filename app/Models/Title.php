@@ -100,6 +100,11 @@ class Title extends Model implements HasMedia
         return $this->belongsToMany(Studio::class);
     }
 
+    public function countries(): BelongsToMany
+    {
+        return $this->belongsToMany(Country::class);
+    }
+
     public function genres(): BelongsToMany
     {
         return $this->belongsToMany(Genre::class);
@@ -117,14 +122,6 @@ class Title extends Model implements HasMedia
 
     public function comments(): HasMany
     {
-        return $this
-            ->hasMany(Comment::class)
-            ->with([
-                'userReactions',
-                'reactions' => function ($query) {
-                    $query->selectRaw('reaction, count(*) as count, comment_id')
-                        ->groupBy('comment_id', 'reaction');
-                },
-            ]);
+        return $this->hasMany(Comment::class);
     }
 }

@@ -23,6 +23,7 @@ const {
   last_episode,
   episodes_count,
   studios,
+  countries,
   genres,
   translations,
 } = toRefs(props.title);
@@ -143,6 +144,32 @@ const isReleased = computed(() => status.value === 'released');
                           @click="() => {}"
                         >
                           {{ studio.name }}
+                        </v-chip>
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="align-top py-2">
+                    <span class="font-semibold">Страны:</span>
+                  </td>
+                  <td class="align-top py-2">
+                    <div class="d-flex gap-1 flex-wrap">
+                      <Link
+                        v-for="country in countries"
+                        :key="country.slug"
+                        :href="route('catalog.country', country.slug)"
+                      >
+                        <v-chip
+                          size="small"
+                          label
+                          variant="tonal"
+                          color="primary"
+                          density="compact"
+                          @click="() => {}"
+                        >
+                          {{ country.name }}
                         </v-chip>
                       </Link>
                     </div>

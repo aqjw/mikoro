@@ -7,34 +7,97 @@ use App\Enums\CommentReportReason;
 use App\Models\Comment;
 use App\Models\Title;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class CommentService
 {
-    public const MAX_DEPTH = 3;
-
-    public function get(Title $title, array $sorting, int $limit = 28): LengthAwarePaginator
+    public function get(Title $title, string $sorting, int $limit = 28): LengthAwarePaginator
     {
         $query = $title
             ->comments()
             ->whereNull('parent_id')
             ->with([
-                'replies',
+                'repliesLimited',
+                'userReactions',
                 'author.media' => fn ($query) => $query->where('collection_name', 'avatar'),
+                'reactions' => function ($query) {
+                    $query->selectRaw('reaction, count(*) as count, comment_id')
+                        ->groupBy('comment_id', 'reaction');
+                },
             ]);
 
         $this->sorting($query, $sorting);
+        $result = $query->paginate($limit);
 
-        return $query->paginate($limit);
+        $result->setCollection(
+            $this->countReplies($result->getCollection())
+        );
+
+        return $result;
     }
 
-    public function sorting($query, array $data): void
+    public function countReplies(Collection $collection): Collection
     {
-        match ($data['option']) {
+        function getIds($items)
+        {
+            $ids = [];
+            foreach ($items as $item) {
+                $ids[] = $item->id;
+                if (! empty($item->repliesLimited)) {
+                    $ids = array_merge($ids, getIds($item->repliesLimited));
+                }
+            }
+
+            return $ids;
+        }
+
+        function populateRepliesCount($items, $repliesCount)
+        {
+            foreach ($items as $item) {
+                if (isset($repliesCount[$item->id])) {
+                    $item->replies_count = $repliesCount[$item->id];
+                }
+
+                if (! empty($item->repliesLimited)) {
+                    populateRepliesCount($item->repliesLimited, $repliesCount);
+                }
+            }
+        }
+
+        $ids = getIds($collection);
+
+        $repliesCount = Comment::whereIn('id', $ids)
+            ->withCount('replies')
+            ->pluck('replies_count', 'id');
+
+        populateRepliesCount($collection, $repliesCount);
+
+        return $collection;
+    }
+
+    public function sorting($query, string $sorting): void
+    {
+        match ($sorting) {
             'latest' => $query->latest(),
-            // TODO:
-            // 'rating' => $query->orderBy('shikimori_rating', $data['dir']),
+            'oldest' => $query->oldest(),
+            'reactions' => $query
+                ->withCount('reactions')
+                ->orderByDesc('reactions_count'),
             default => null
         };
+    }
+
+    public function getReplies(Comment $comment, int $lastCommentId, int $limit = 3): Collection
+    {
+        $result = $comment
+            ->replies()
+            ->where('id', '>', $lastCommentId)
+            ->take($limit)
+            ->get();
+
+        $result = $this->countReplies($result);
+
+        return $result;
     }
 
     public function store(Title $title, array $data): Comment
@@ -78,12 +141,12 @@ class CommentService
         $depth = 0;
         $parent = $comment;
 
-        while ($parent && $depth < self::MAX_DEPTH) {
+        while ($parent && $depth < Comment::MAX_DEPTH) {
             $depth++;
             $parent = $parent->parent;
         }
 
-        return $depth >= self::MAX_DEPTH ? $comment->parent : $comment;
+        return $depth >= Comment::MAX_DEPTH ? $comment->parent : $comment;
     }
 
     public function toggleReaction(Comment $comment, int $userId, CommentReaction $reaction): void
