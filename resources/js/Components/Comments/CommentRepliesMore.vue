@@ -1,18 +1,18 @@
 <script setup>
-import { computed, nextTick, toRefs, ref } from 'vue';
+import { computed, toRefs, ref } from 'vue';
 import { useCommentStore } from '@/Stores/CommentStore';
-import { storeToRefs } from 'pinia';
-
-const commentStore = useCommentStore();
-// const { items, params, replyTo, draft, replyToTextLength } = storeToRefs(commentStore);
-
+import { useToast } from 'vue-toast-notification';
+import { handleResponseError } from '@/Utils';
 const props = defineProps({
   comment: Object,
 });
 
 const { comment } = toRefs(props);
 
-const repliesLimit = window.config.comments.replies_limit;
+const $toast = useToast();
+const commentStore = useCommentStore();
+
+const repliesLimit = window.config.comments.replies_per_page;
 const loading = ref(false);
 
 const repliesTotal = computed(() => comment.value.replies_total);
@@ -30,8 +30,8 @@ const onLoadMore = () => {
     success: () => {
       //
     },
-    error: () => {
-      //
+    error: (error) => {
+      $toast.error(handleResponseError(error));
     },
     finish: () => {
       loading.value = false;

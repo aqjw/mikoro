@@ -42,8 +42,27 @@ class CommentController extends Controller
     public function store(Title $title, Request $request, CommentService $commentService): JsonResponse
     {
         $data = $request->validate([
-            // TODO: calc max without tags
-            'body' => ['required', 'string', 'min:10', 'max:5000'],
+            'body' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $cleanedBody = preg_replace('/\[[^\]]*\]/', '', $value);
+
+                    if (mb_strlen($cleanedBody) < config('comments.min_characters')) {
+                        $fail(__('validation.min.string', [
+                            'attribute' => $attribute,
+                            'min' => config('comments.min_characters'),
+                        ]));
+                    }
+
+                    if (mb_strlen($cleanedBody) > config('comments.max_characters')) {
+                        $fail(__('validation.max.string', [
+                            'attribute' => $attribute,
+                            'max' => config('comments.max_characters'),
+                        ]));
+                    }
+                },
+            ],
             'parent_id' => ['nullable', 'numeric', 'exists:comments,id'],
         ]);
 
@@ -59,8 +78,27 @@ class CommentController extends Controller
         abort_unless($comment->user_id == auth()->id(), 403);
 
         $data = $request->validate([
-            // TODO: calc max without tags
-            'body' => ['required', 'string', 'min:10', 'max:5000'],
+            'body' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $cleanedBody = preg_replace('/\[[^\]]*\]/', '', $value);
+
+                    if (mb_strlen($cleanedBody) < config('comments.min_characters')) {
+                        $fail(__('validation.min.string', [
+                            'attribute' => $attribute,
+                            'min' => config('comments.min_characters'),
+                        ]));
+                    }
+
+                    if (mb_strlen($cleanedBody) > config('comments.max_characters')) {
+                        $fail(__('validation.max.string', [
+                            'attribute' => $attribute,
+                            'max' => config('comments.max_characters'),
+                        ]));
+                    }
+                },
+            ],
         ]);
 
         $comment = $commentService->update($comment, $data['body']);

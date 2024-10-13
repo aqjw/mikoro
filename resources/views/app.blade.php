@@ -29,8 +29,10 @@
             'comments' => [
                 'reactions' => \App\Enums\CommentReaction::getCases(),
                 'report_reasons' => \App\Enums\CommentReportReason::getCases(),
-                'max_depth' => \App\Models\Comment::MAX_DEPTH,
-                'replies_limit' => \App\Models\Comment::REPLIES_LIMIT,
+                'max_depth' => config('comments.max_depth'),
+                'replies_per_page' => config('comments.replies_per_page'),
+                'min_characters' => config('comments.min_characters'),
+                'max_characters' => config('comments.max_characters'),
             ],
         ])
     </script>

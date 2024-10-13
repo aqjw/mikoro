@@ -5,6 +5,7 @@ import CardCommentEdit from '@/Components/Comments/CardCommentEdit.vue';
 import TextEditor from '@/Components/TextEditor.vue';
 import InfiniteScroll from '@/Components/InfiniteScroll.vue';
 import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
+import CharacterLimit from '@/Components/CharacterLimit.vue';
 import { useCommentStore } from '@/Stores/CommentStore';
 import { useUserStore } from '@/Stores/UserStore';
 import { storeToRefs } from 'pinia';
@@ -106,19 +107,30 @@ onBeforeUnmount(() => {
   <div class="comments-section">
     <div class="p-4">
       <TextEditor ref="textEditor" v-model="draft">
-        <template #actions="">
-          <v-btn
-            :disabled="draftTextLength < 10"
-            :loading="submitting"
-            density="comfortable"
-            color="primary"
-            variant="tonal"
-            rounded="xl"
-            class="text-none"
-            @click="onSubmit"
-          >
-            Submit
-          </v-btn>
+        <template #actions>
+          <div class="flex gap-4">
+            <CharacterLimit
+              :value="draftTextLength"
+              :min="$config.comments.min_characters"
+              :max="$config.comments.max_characters"
+            />
+
+            <v-btn
+              :disabled="
+                draftTextLength < $config.comments.min_characters ||
+                draftTextLength > $config.comments.max_characters
+              "
+              :loading="submitting"
+              density="comfortable"
+              color="primary"
+              variant="tonal"
+              rounded="xl"
+              class="text-none"
+              @click="onSubmit"
+            >
+              Submit
+            </v-btn>
+          </div>
         </template>
       </TextEditor>
     </div>

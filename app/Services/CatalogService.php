@@ -27,7 +27,7 @@ class CatalogService
         match ($data['option']) {
             'latest' => $query->orderBy('updated_at', $data['dir']),
             'rating' => $query->orderBy('shikimori_rating', $data['dir']),
-            'comments' => $query,
+            'comments_count' => $query->withCount('comments')->orderBy('comments_count', $data['dir']),
             'episodes_count' => $query->orderBy('last_episode', $data['dir']),
             'seasons_count' => $query->withCount('related')->orderBy('related_count', $data['dir']),
             default => null

@@ -11,10 +11,6 @@ class Comment extends Model
 {
     use HasFactory;
 
-    public const MAX_DEPTH = 3;
-
-    public const REPLIES_LIMIT = 2;
-
     protected $fillable = [
         'user_id',
         'title_id',
@@ -50,7 +46,7 @@ class Comment extends Model
                         ->groupBy('comment_id', 'reaction');
                 },
             ])
-            ->take(self::REPLIES_LIMIT);
+            ->take(config('comments.replies_per_page'));
     }
 
     public function repliesLimited(): HasMany

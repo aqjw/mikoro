@@ -7,6 +7,7 @@ import { initials, formatBbcodeToHtml, handleResponseError } from '@/Utils';
 import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
 import { storeToRefs } from 'pinia';
 import TextEditor from '@/Components/TextEditor.vue';
+import CharacterLimit from '@/Components/CharacterLimit.vue';
 import { useToast } from 'vue-toast-notification';
 
 const props = defineProps({
@@ -80,6 +81,13 @@ const onEditCancel = () => {
       <div class="mt-2">
         <TextEditor ref="textEditor" v-model="editComment.draft">
           <template #actions>
+            <div class="flex gap-4">
+            <CharacterLimit
+              :value="editTextLength"
+              :min="$config.comments.min_characters"
+              :max="$config.comments.max_characters"
+            />
+
             <div class="flex gap-2">
               <v-btn
                 density="comfortable"
@@ -90,8 +98,12 @@ const onEditCancel = () => {
               >
                 Cancel
               </v-btn>
+
               <v-btn
-                :disabled="editTextLength < 10"
+              :disabled="
+                editTextLength < $config.comments.min_characters ||
+                editTextLength > $config.comments.max_characters
+              "
                 :loading="saving"
                 density="comfortable"
                 color="primary"
@@ -102,6 +114,7 @@ const onEditCancel = () => {
               >
                 Save
               </v-btn>
+            </div>
             </div>
           </template>
         </TextEditor>

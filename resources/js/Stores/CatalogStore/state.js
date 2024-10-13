@@ -22,8 +22,7 @@ export default () => ({
     sorting: [
       { value: 'latest', title: 'Последние поступления' },
       { value: 'rating', title: 'По рейтингу' },
-      // TODO: no comments yet
-      // { value: 'comments', title: 'По комментариям' },
+      { value: 'comments_count', title: 'По комментариям' },
       { value: 'episodes_count', title: 'По количеству эпизодов' },
       { value: 'seasons_count', title: 'По количеству сезонов' },
     ],

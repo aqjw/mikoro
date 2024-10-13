@@ -53,6 +53,7 @@ function createAppInstance({ App, props, plugin }) {
 
   app.config.globalProperties.$media = useMedia();
   app.config.globalProperties.$appName = appName;
+  app.config.globalProperties.$config = window.config;
 
   return app;
 }

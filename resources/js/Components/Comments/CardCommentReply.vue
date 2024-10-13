@@ -15,6 +15,7 @@ import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
 import TextEditor from '@/Components/TextEditor.vue';
 import CardCommentReply from '@/Components/Comments/CardCommentReply.vue';
 import { useToast } from 'vue-toast-notification';
+import CharacterLimit from '@/Components/CharacterLimit.vue';
 
 const $toast = useToast();
 
@@ -85,28 +86,40 @@ const onReplyToCancel = () => {
           v-model="replyTo.draft"
         >
           <template #actions>
-            <div class="flex gap-2">
-              <v-btn
-                density="comfortable"
-                variant="tonal"
-                rounded="xl"
-                class="text-none"
-                @click="onReplyToCancel"
-              >
-                Cancel
-              </v-btn>
-              <v-btn
-                :disabled="replyToTextLength < 10"
-                :loading="submitting"
-                density="comfortable"
-                color="primary"
-                variant="tonal"
-                rounded="xl"
-                class="text-none"
-                @click="onSubmit"
-              >
-                Submit
-              </v-btn>
+            <div class="flex gap-4">
+              <CharacterLimit
+                :value="replyToTextLength"
+                :min="$config.comments.min_characters"
+                :max="$config.comments.max_characters"
+              />
+
+              <div class="flex gap-2">
+                <v-btn
+                  density="comfortable"
+                  variant="tonal"
+                  rounded="xl"
+                  class="text-none"
+                  @click="onReplyToCancel"
+                >
+                  Cancel
+                </v-btn>
+
+                <v-btn
+                  :disabled="
+                    replyToTextLength < $config.comments.min_characters ||
+                    replyToTextLength > $config.comments.max_characters
+                  "
+                  :loading="submitting"
+                  density="comfortable"
+                  color="primary"
+                  variant="tonal"
+                  rounded="xl"
+                  class="text-none"
+                  @click="onSubmit"
+                >
+                  Submit
+                </v-btn>
+              </div>
             </div>
           </template>
         </TextEditor>

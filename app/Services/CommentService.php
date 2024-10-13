@@ -140,13 +140,14 @@ class CommentService
     {
         $depth = 0;
         $parent = $comment;
+        $max_depth = config('comments.max_depth');
 
-        while ($parent && $depth < Comment::MAX_DEPTH) {
+        while ($parent && $depth < $max_depth) {
             $depth++;
             $parent = $parent->parent;
         }
 
-        return $depth >= Comment::MAX_DEPTH ? $comment->parent : $comment;
+        return $depth >= $max_depth ? $comment->parent : $comment;
     }
 
     public function toggleReaction(Comment $comment, int $userId, CommentReaction $reaction): void
