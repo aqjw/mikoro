@@ -32,7 +32,14 @@ class TitleFullResource extends JsonResource
             'genres' => $this->genres->select('slug', 'name'),
             'studios' => $this->studios->select('slug', 'name'),
             'countries' => $this->countries->select('slug', 'name'),
-            'related' => $this->related->select('slug', 'title', 'year'),
+            'related' => $this->related->select([
+                'id',
+                'slug',
+                'title',
+                'year',
+                'aired_at',
+                'shikimori_rating',
+            ]),
             'poster' => MediaService::getImageDetails($this->getMedia('poster'), true),
             'screenshots' => MediaService::getImageDetails($this->getMedia('screenshots')),
         ];

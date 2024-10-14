@@ -11,6 +11,8 @@ const onAction = (e, item) => {
   router.get(item.href);
 };
 
+// TODO: iaponiia | kitai
+
 const items = ref([
   {
     label: 'Новинки',
@@ -23,13 +25,13 @@ const items = ref([
     },
   },
   {
-    label: 'Аниме',
+    label: 'Япония',
     href: route('catalog.country', 'iaponiia'),
     isActive: () => route().current('catalog.country', 'iaponiia'),
     action: onAction,
   },
   {
-    label: 'Дунхуа',
+    label: 'Китай',
     href: route('catalog.country', 'kitai'),
     isActive: () => route().current('catalog.country', 'kitai'),
     action: onAction,
@@ -66,7 +68,7 @@ const items = ref([
         :title="item.label"
         :href="item.href"
         :active="item.isActive()"
-        active-color="primary"
+        color="primary"
         @click="(e) => item.action(e, item)"
       />
     </template>

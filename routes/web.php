@@ -6,13 +6,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TitleController;
 use App\Http\Controllers\UPI;
 use App\Notifications\NewEpisode;
-use App\Services\KodikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/kodik', function (KodikService $kodikService) {
-    $kodikService->list();
-});
 
 // Route::get('/notify', function (Request $request) {
 //     $titleId = 2;

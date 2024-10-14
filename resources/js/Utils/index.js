@@ -27,6 +27,7 @@ export const formatHtmlToBbcode = (htmlContent) => {
     .replace(/<u>(.*?)<\/u>/g, '[underline]$1[/underline]')
     .replace(/<s>(.*?)<\/s>/g, '[strike]$1[/strike]')
     .replace(/<spoiler>(.*?)<\/spoiler>/g, '[spoiler]$1[/spoiler]')
+    .replace(/<p><\/p>/g, '')
     .replace(/<br\s*\/?>/g, '[br]')
     .replace(/<\/p><p>/g, '[br]')
     .replace(/<\/?p>/g, '');

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Casts\ShikimoriRatingCast;
 use App\Enums\TitleStatus;
 use App\Enums\TitleType;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -33,6 +34,7 @@ class Title extends Model implements HasMedia
         'status',
         'minimal_age',
         'year',
+        'aired_at',
         'shikimori_id',
         'shikimori_rating',
         'group_id',
@@ -49,6 +51,7 @@ class Title extends Model implements HasMedia
         'blocked_countries' => 'array',
         'blocked_seasons' => 'array',
         'shikimori_rating' => ShikimoriRatingCast::class,
+        'aired_at' => 'date',
         'updated_at' => 'datetime',
     ];
 
@@ -105,6 +108,11 @@ class Title extends Model implements HasMedia
         return $this->belongsToMany(Country::class);
     }
 
+    public function translations(): BelongsToMany
+    {
+        return $this->belongsToMany(Translation::class);
+    }
+
     public function genres(): BelongsToMany
     {
         return $this->belongsToMany(Genre::class);
@@ -117,11 +125,19 @@ class Title extends Model implements HasMedia
 
     public function related(): HasMany
     {
-        return $this->hasMany(Title::class, 'group_id');
+        return $this->hasMany(Title::class, 'group_id', 'group_id')
+            ->orderByDesc('aired_at');
     }
 
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function singleEpisode(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->type->is(TitleType::Anime)
+        );
     }
 }

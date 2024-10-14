@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
@@ -29,5 +30,10 @@ class Studio extends Model
     public function searchableAs(): string
     {
         return 'studios_index';
+    }
+
+    public function titles(): BelongsToMany
+    {
+        return $this->belongsToMany(Title::class);
     }
 }

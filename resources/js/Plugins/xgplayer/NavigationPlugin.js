@@ -17,6 +17,7 @@ export default class NavigationPlugin extends Plugin {
 
   afterCreate() {
     this._d = {
+      single_episode: true,
       translations: [],
       episodes: [],
       selected: {
@@ -76,11 +77,16 @@ export default class NavigationPlugin extends Plugin {
   async fetchTitleEpisodes(titleId) {
     try {
       const { data } = await axios.get(route('upi.title.episodes', titleId));
+      this._d.single_episode = data.single_episode;
       this._d.translations = data.translations;
       this._d.episodes = data.episodes;
 
       this.populateDropdownOptions('translations', this._d.translations);
       this.populateDropdownOptions('episodes', this.filteredEpisodeOptions());
+
+      if (this._d.single_episode) {
+        this.removeDropdown('episodes');
+      }
 
       this.applyPlaybackState(
         this.config.isLogged
@@ -124,10 +130,20 @@ export default class NavigationPlugin extends Plugin {
     }
   }
 
-  getOptionLabel(selectId, option) {
+  getOptionLabel(selectId, option, withEpisodes = false) {
+    if (!option) return '';
+
     if (selectId === 'episodes') {
       return `${option.label} серия`;
     }
+
+    if (withEpisodes && !this._d.single_episode) {
+      return `<div class="with-episodes-count">
+                <div class="with-episodes-count__label">${option.label}</div>
+                <div class="with-episodes-count__count">${option.episodes_count}</div>
+            </div>`;
+    }
+
     return option.label;
   }
 
@@ -217,7 +233,7 @@ export default class NavigationPlugin extends Plugin {
     const html = options
       .map((option) => {
         const selectedClass = this.isSelected(selectId, option.id) ? 'selected' : '';
-        return Util.createDom('li', this.getOptionLabel(selectId, option), {
+        return Util.createDom('li', this.getOptionLabel(selectId, option, true), {
           class: `dropdown-option ${selectedClass}`,
           'data-sid': selectId,
           'data-oid': option.id,
@@ -226,6 +242,10 @@ export default class NavigationPlugin extends Plugin {
       .join('');
 
     this.find(`#${selectId} .dropdown`).innerHTML = html;
+  }
+
+  removeDropdown(selectId) {
+    this.find(`#${selectId}`).remove();
   }
 
   selectNode(selectId, width = 'short') {

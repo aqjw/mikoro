@@ -14,7 +14,9 @@ class CatalogService
             ->with([
                 'media' => fn ($query) => $query->where('collection_name', 'poster'),
                 'genres',
-            ]);
+            ])
+            ->select('titles.*')
+            ->groupBy('titles.id');
 
         $this->filters($query, $filters);
         $this->sorting($query, $sorting);
@@ -36,6 +38,23 @@ class CatalogService
 
     public function filters(Builder $query, array $data): void
     {
+        foreach ($data as $filter => $cases) {
+            $incl = $cases['incl'];
+            $excl = $cases['excl'];
+
+            match ($filter) {
+                'genres' => $query
+                    ->when(filled($incl) || filled($excl), fn ($query) => $query->join('genre_title', 'titles.id', '=', 'genre_title.title_id')),
+                'studios' => $query
+                    ->when(filled($incl) || filled($excl), fn ($query) => $query->join('studio_title', 'titles.id', '=', 'studio_title.title_id')),
+                'countries' => $query
+                    ->when(filled($incl) || filled($excl), fn ($query) => $query->join('country_title', 'titles.id', '=', 'country_title.title_id')),
+                'translations' => $query
+                    ->when(filled($incl) || filled($excl), fn ($query) => $query->join('title_translation', 'titles.id', '=', 'title_translation.title_id')),
+                default => null,
+            };
+        }
+
         $query->where(function ($query) use ($data) {
             foreach ($data as $filter => $cases) {
                 $incl = $cases['incl'];
@@ -43,59 +62,23 @@ class CatalogService
 
                 match ($filter) {
                     'genres' => $query
-                        ->when(
-                            filled($incl),
-                            fn ($query) => $query->whereHas('genres', fn ($query) => $query->whereIn('genres.id', $incl))
-                        )
-                        ->when(
-                            filled($excl),
-                            fn ($query) => $query->whereDoesntHave('genres', fn ($query) => $query->whereIn('genres.id', $excl))
-                        ),
+                        ->when(filled($incl), fn ($query) => $query->whereIn('genre_title.genre_id', $incl))
+                        ->when(filled($excl), fn ($query) => $query->whereNotIn('genre_title.genre_id', $excl)),
                     'studios' => $query
-                        ->when(
-                            filled($incl),
-                            fn ($query) => $query->whereHas('studios', fn ($query) => $query->whereIn('studios.id', $incl))
-                        )
-                        ->when(
-                            filled($excl),
-                            fn ($query) => $query->whereDoesntHave('studios', fn ($query) => $query->whereIn('studios.id', $excl))
-                        ),
+                        ->when(filled($incl), fn ($query) => $query->whereIn('studio_title.studio_id', $incl))
+                        ->when(filled($excl), fn ($query) => $query->whereNotIn('studio_title.studio_id', $excl)),
                     'countries' => $query
-                        ->when(
-                            filled($incl),
-                            fn ($query) => $query->whereHas('countries', fn ($query) => $query->whereIn('countries.id', $incl))
-                        )
-                        ->when(
-                            filled($excl),
-                            fn ($query) => $query->whereDoesntHave('countries', fn ($query) => $query->whereIn('countries.id', $excl))
-                        ),
+                        ->when(filled($incl), fn ($query) => $query->whereIn('country_title.country_id', $incl))
+                        ->when(filled($excl), fn ($query) => $query->whereNotIn('country_title.country_id', $excl)),
                     'translations' => $query
-                        ->when(
-                            filled($incl),
-                            fn ($query) => $query->whereHas('episodes', fn ($query) => $query->whereIn('translation_id', $incl))
-                        )
-                        ->when(
-                            filled($excl),
-                            fn ($query) => $query->whereDoesntHave('episodes', fn ($query) => $query->whereIn('translation_id', $excl))
-                        ),
+                        ->when(filled($incl), fn ($query) => $query->whereIn('title_translation.translation_id', $incl))
+                        ->when(filled($excl), fn ($query) => $query->whereNotIn('title_translation.translation_id', $excl)),
                     'years' => $query
-                        ->when(
-                            filled($incl),
-                            fn ($query) => $query->whereIn('year', $incl)
-                        )
-                        ->when(
-                            filled($excl),
-                            fn ($query) => $query->whereNotIn('year', $excl)
-                        ),
+                        ->when(filled($incl), fn ($query) => $query->whereIn('year', $incl))
+                        ->when(filled($excl), fn ($query) => $query->whereNotIn('year', $excl)),
                     'statuses' => $query
-                        ->when(
-                            filled($incl),
-                            fn ($query) => $query->whereIn('status', $incl)
-                        )
-                        ->when(
-                            filled($excl),
-                            fn ($query) => $query->whereNotIn('status', $excl)
-                        ),
+                        ->when(filled($incl), fn ($query) => $query->whereIn('status', $incl))
+                        ->when(filled($excl), fn ($query) => $query->whereNotIn('status', $excl)),
                     default => null
                 };
             }

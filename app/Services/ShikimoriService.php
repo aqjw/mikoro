@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
+
 class ShikimoriService
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
+    public function getRelated(int $shikimori_id): Collection
     {
-        // https://shikimori.one/api/animes/59765/related
+        $response = Http::get("https://shikimori.one/api/animes/{$shikimori_id}/franchise");
+        $result = $response->json('nodes');
+
+        return collect($result)->values();
     }
 }

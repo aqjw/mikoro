@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use UnitEnum;
+
 trait ExtendsEnum
 {
     public static function mapped(): array
@@ -9,9 +11,14 @@ trait ExtendsEnum
         return [];
     }
 
-    public static function fromName(string $name): ?self
+    public static function fromName(?string $name, $default = null): ?self
     {
-        return self::mapped()[$name] ?? null;
+        return self::mapped()[$name] ?? $default;
+    }
+
+    public function is(UnitEnum|int|string|null $enum): bool
+    {
+        return $this->value === ($enum instanceof UnitEnum ? $enum->value : $enum);
     }
 
     public function getName(): ?string

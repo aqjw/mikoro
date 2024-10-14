@@ -145,7 +145,7 @@ const onSpoilerClick = (event) => {
         </div>
       </div>
 
-      <div class="relative">
+      <div>
         <div class="mt-2" @click="onSpoilerClick">
           <p class="comment-body" v-html="formatBbcodeToHtml(comment.body)"></p>
         </div>

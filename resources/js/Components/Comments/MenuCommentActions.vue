@@ -16,13 +16,6 @@ const props = defineProps({
 const deleteConfirm = ref(null);
 const items = ref([
   {
-    label: 'Reply',
-    icon: 'mdi-message-reply-text',
-    color: '',
-    can: () => true,
-    action: () => emit('reply'),
-  },
-  {
     label: 'Report',
     icon: 'mdi-shield-alert-outline',
     color: '',
@@ -117,6 +110,15 @@ const getDeleteConfirmOptions = () => ({
       </v-list>
     </v-menu>
 
+    <v-btn
+      size="small"
+      variant="text"
+      density="comfortable"
+      text="Ответить"
+      class="text-none"
+      color="primary"
+      @click="emit('reply')"
+    />
     <DialogConfirm ref="deleteConfirm" />
   </div>
 </template>

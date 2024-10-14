@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\UPI;
 
-use App\Enums\TitleStatus;
+use App\Enums\TranslationType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TitleShortResource;
 use App\Models\Country;
@@ -13,6 +13,7 @@ use App\Models\Translation;
 use App\Services\CatalogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TitleController extends Controller
 {
@@ -45,18 +46,59 @@ class TitleController extends Controller
     public function filters(): JsonResponse
     {
         return response()->json([
-            'genres' => Genre::query()->orderBy('name')->get(['id', 'name']),
-            'studios' => Studio::query()->orderBy('name')->get(['id', 'name']),
-            'countries' => Country::query()->orderBy('name')->get(['id', 'name']),
-            'translations' => Translation::query()->orderBy('title')->get(['id', 'title']),
+            'genres' => Genre::query()
+                ->select('genres.id', 'genres.name', DB::raw('COUNT(*) as titles_count'))
+                ->leftJoin('genre_title', 'genres.id', '=', 'genre_title.genre_id')
+                ->groupBy('genres.id')
+                ->having('titles_count', '>', 0)
+                ->orderByDesc('titles_count')
+                ->get(),
+
+            'studios' => Studio::query()
+                ->select('studios.id', 'studios.name', DB::raw('COUNT(*) as titles_count'))
+                ->leftJoin('studio_title', 'studios.id', '=', 'studio_title.studio_id')
+                ->groupBy('studios.id')
+                ->having('titles_count', '>', 0)
+                ->orderByDesc('titles_count')
+                ->get(),
+
+            'countries' => Country::query()
+                ->select('countries.id', 'countries.name', DB::raw('COUNT(*) as titles_count'))
+                ->leftJoin('country_title', 'countries.id', '=', 'country_title.country_id')
+                ->groupBy('countries.id')
+                ->having('titles_count', '>', 0)
+                ->orderByDesc('titles_count')
+                ->get(),
+
+            'translations' => Translation::query()
+                ->select('translations.id', 'translations.title', DB::raw('COUNT(*) as titles_count'))
+                ->leftJoin('title_translation', 'translations.id', '=', 'title_translation.translation_id')
+                ->groupBy('translations.id')
+                ->having('titles_count', '>', 0)
+                ->orderByDesc('titles_count')
+                ->get(),
+
             'years' => Title::query()
+                ->select('year', DB::raw('COUNT(*) as titles_count'))
                 ->groupBy('year')
                 ->orderByDesc('year')
-                ->pluck('year')->map(fn ($year) => [
-                    'id' => $year,
-                    'name' => $year,
+                ->get()
+                ->map(fn ($item) => [
+                    'id' => $item->year,
+                    'name' => $item->year,
+                    'titles_count' => $item->titles_count,
                 ]),
-            'statuses' => TitleStatus::getCases(),
+
+            'statuses' => Title::query()
+                ->select('status', DB::raw('COUNT(*) as titles_count'))
+                ->groupBy('status')
+                ->orderByDesc('titles_count')
+                ->get()
+                ->map(fn ($item) => [
+                    'id' => $item->status,
+                    'name' => $item->status->getName(),
+                    'titles_count' => $item->titles_count,
+                ]),
         ]);
     }
 
@@ -69,15 +111,7 @@ class TitleController extends Controller
 
     public function episodes(Title $title, Request $request): JsonResponse
     {
-        $title->load('episodes.translation');
-
-        $translations = $title->episodes
-            ->groupBy('translation_id')
-            ->map(fn ($episodes) => [
-                'id' => $episodes->first()->translation->id,
-                'label' => $episodes->first()->translation->title,
-            ])
-            ->values();
+        $title->load('episodes', 'translations');
 
         $episodes = $title->episodes->map(fn ($episode) => [
             'id' => $episode->id,
@@ -86,12 +120,38 @@ class TitleController extends Controller
             'translation_id' => $episode->translation_id,
         ]);
 
+        $translations = $title->translations
+            ->map(fn ($translation) => [
+                'id' => $translation->id,
+                'label' => $translation->title,
+                'episodes_count' => $episodes
+                    ->where('translation_id', $translation->id)
+                    ->count(),
+                'type' => $translation->type,
+            ])
+            ->sort(function ($a, $b) {
+                // Sort by episode count in descending order
+                if ($a['episodes_count'] !== $b['episodes_count']) {
+                    return $b['episodes_count'] <=> $a['episodes_count'];
+                }
+                // If episode count is the same, sort by type
+                if ($a['type'] !== $b['type']) {
+                    return $a['type'] === TranslationType::Voice ? -1 : 1;
+                }
+
+                // If episode count and type are the same, sort by label
+                return strcmp($a['label'], $b['label']);
+            })
+            ->select('id', 'label', 'episodes_count')
+            ->values();
+
         $user = $request->user();
         $playbackState = $user?->playbackStates()
             ->where('title_id', $title->id)
             ->first();
 
         return response()->json([
+            'single_episode' => $title->singleEpisode,
             'translations' => $translations,
             'episodes' => $episodes,
             'playback_state' => $playbackState ? [

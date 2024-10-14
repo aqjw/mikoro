@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, toRefs, watch, onMounted } from 'vue';
+import { computed, ref, toRefs, watch, onMounted, nextTick } from 'vue';
 import CardTitle from '@/Components/Card/CardTitle.vue';
 import TitleRating from '@/Components/TitleRating.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
@@ -9,6 +9,7 @@ import { Carousel, Slide, Navigation } from 'vue3-carousel';
 import Player from '@/Components/Player.vue';
 import CardComment from '@/Components/Comments/CardComment.vue';
 import SectionComments from '@/Components/Comments/SectionComments.vue';
+import DateManager from '@/Plugins/DateManager';
 
 const props = defineProps({
   title: {
@@ -26,9 +27,24 @@ const {
   countries,
   genres,
   translations,
+  related,
 } = toRefs(props.title);
 
 const isReleased = computed(() => status.value === 'released');
+
+onMounted(() => {
+  if (related.value.length > 5) {
+    scrollRelated();
+  }
+});
+
+const scrollRelated = () => {
+  const item = document.querySelector('#related-list .v-list-item--active');
+  if (item) {
+    const list = document.getElementById('related-list');
+    list.scrollTop = item.offsetTop;
+  }
+};
 </script>
 
 <template>
@@ -59,13 +75,13 @@ const isReleased = computed(() => status.value === 'released');
                   <v-chip label density="comfortable" color="primary">
                     <div class="font-medium">
                       <span v-if="isReleased">
-                        Эпизод {{ last_episode + ' из ' + last_episode }}
+                        Серия {{ last_episode + ' из ' + last_episode }}
                       </span>
                       <span v-else-if="episodes_count > last_episode">
-                        Эпизод {{ last_episode + ' из ' + episodes_count }}
+                        Серия {{ last_episode + ' из ' + episodes_count }}
                       </span>
                       <span v-else-if="last_episode >= episodes_count">
-                        Эпизод {{ last_episode }}
+                        Серия {{ last_episode }}
                       </span>
                     </div>
                   </v-chip>
@@ -211,7 +227,9 @@ const isReleased = computed(() => status.value === 'released');
           </div>
         </div>
 
-        <div class="mt-8 w-full clear-left">
+        <div class="clear-left"></div>
+
+        <div v-if="title.description" class="mt-8 w-full">
           <div>
             <div class="text-xl font-medium mb-2">Описание:</div>
             <div class="opacity-80">{{ title.description }}</div>
@@ -243,8 +261,49 @@ const isReleased = computed(() => status.value === 'released');
         </div>
       </div>
 
+      <div v-if="related.length > 1" class="my-4">
+        <div class="mb-2">
+          <span class="text-xl font-medium"> Хронология </span>
+          <span>({{ related.length }})</span>
+        </div>
+        <div class="bg-second rounded-lg shadow-lg overflow-hidden">
+          <v-list class="spacerless" max-height="250px" id="related-list">
+            <v-list-item
+              v-for="(item, index) in related"
+              :key="index"
+              :title="item.title"
+              :active="item.id == title.id"
+              color="primary"
+              @click="$inertia.visit(route('title', item.slug))"
+            >
+              <template #subtitle>
+                <span v-if="item.aired_at" class=" capitalize">
+                  {{ DateManager.format(item.aired_at, 'LLLL y') }}
+                </span>
+                <span v-else>{{ item.year }}</span>
+              </template>
+              <template #prepend="{ isActive }">
+                <v-badge
+                  color="primary"
+                  :content="Math.abs(index - related.length)"
+                  inline
+                  class="scale-110 relative"
+                >
+                  <span
+                    v-if="isActive"
+                    class="absolute animate-ping inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"
+                  ></span>
+                </v-badge>
+              </template>
+              <template #append>
+                <TitleRating :value="item.shikimori_rating" />
+              </template>
+            </v-list-item>
+          </v-list>
+        </div>
+      </div>
+
       <div class="bg-gray-300 h-[30rem] my-4 rounded-lg shadow-lg overflow-hidden">
-        <!-- <div class="bg-gray-300 h-[20rem] my-4 rounded-lg shadow-lg overflow-hidden"> -->
         <Player :poster="$media.original(screenshots[0])" :title-id="title.id" />
       </div>
 

@@ -64,25 +64,25 @@ const getOptionLabels = (type) => {
             {{ title }}
           </span>
 
-          <div class=" rounded-md overflow-hidden">
-          <v-chip
-            v-if="items.incl.length"
-            density="compact"
-            :rounded="false"
-            variant="tonal"
-            color="green"
-          >
-            {{ items.incl.length }}
-          </v-chip>
-          <v-chip
-            v-if="items.excl.length"
-            density="compact"
-            :rounded="false"
-            variant="tonal"
-            color="red"
-          >
-            {{ items.excl.length }}
-          </v-chip>
+          <div class="rounded-md overflow-hidden">
+            <v-chip
+              v-if="items.incl.length"
+              density="compact"
+              :rounded="false"
+              variant="tonal"
+              color="green"
+            >
+              {{ items.incl.length }}
+            </v-chip>
+            <v-chip
+              v-if="items.excl.length"
+              density="compact"
+              :rounded="false"
+              variant="tonal"
+              color="red"
+            >
+              {{ items.excl.length }}
+            </v-chip>
           </div>
         </div>
         <v-btn
@@ -110,22 +110,31 @@ const getOptionLabels = (type) => {
       </div>
     </template>
 
-    <v-card max-width="250px" max-height="400px">
-      <v-card-text class="!p-1">
-        <div class="d-flex flex-col gap-1">
-          <v-chip
-            v-for="option in options"
-            :key="option.id"
-            :ripple="false"
-            :rounded="false"
-            :variant="getOptionVariant(option.id)"
-            :prepend-icon="getOptionIcon(option.id)"
-            :color="getOptionColor(option.id)"
-            @click="toggleOption(option.id)"
-          >
-            {{ option[labelKey] }}
-          </v-chip>
-        </div>
+    <v-card width="250px" max-height="400px">
+      <v-card-text class="!p-1 space-y-1">
+        <v-virtual-scroll :items="options">
+          <template v-slot:default="{ item }">
+            <v-chip
+              class="chip-content-full"
+              :ripple="false"
+              :rounded="false"
+              :variant="getOptionVariant(item.id)"
+              :color="getOptionColor(item.id)"
+              @click="toggleOption(item.id)"
+            >
+              <div class="flex justify-between items-center">
+                <div class="flex gap-2 items-center pr-6 w-[90%]">
+                  <v-icon :icon="getOptionIcon(item.id)" />
+                  <span class="truncate max-w-[190px]">{{ item[labelKey] }}</span>
+                </div>
+
+                <div>
+                  {{ item.titles_count }}
+                </div>
+              </div>
+            </v-chip>
+          </template>
+        </v-virtual-scroll>
       </v-card-text>
     </v-card>
   </v-menu>

@@ -24,6 +24,9 @@ const { isLogged } = storeToRefs(userStore);
 
 const player = ref(null);
 const playerContainer = ref(null);
+const videoUrl = ref(
+  'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+);
 
 onMounted(() => {
   nextTick(initPlayer);
@@ -38,8 +41,7 @@ onBeforeUnmount(() => {
 const initPlayer = () => {
   player.value = new Player({
     el: playerContainer.value,
-    url:
-      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    url: videoUrl.value,
     poster: poster.value && {
       poster: poster.value,
       isEndedShow: false,

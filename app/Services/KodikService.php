@@ -12,7 +12,6 @@ use App\Models\Studio;
 use App\Models\Title;
 use App\Models\Translation;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class KodikService
@@ -27,74 +26,6 @@ class KodikService
         'Яой',
     ];
 
-    public function list()
-    {
-        set_time_limit(0);
-        ini_set('max_execution_time', 0);
-        ignore_user_abort(true);
-
-        $queryParams = [
-            'token' => env('KODIK_API_KEY'),
-            'has_field' => 'shikimori_id',
-            'types' => 'anime-serial,anime',
-            'year' => implode(',', range(2005, 2024)),
-            'with_episodes' => true,
-            'limit' => 100,
-            'with_material_data' => true,
-        ];
-        $url = 'https://kodikapi.com/list?'.http_build_query($queryParams);
-        // dd($url);
-
-        while (true) {
-            $response = Http::get($url);
-            $url = $response->json('next_page');
-            $items = $response->json('results');
-
-            if (! $response->successful() || empty($items)) {
-                break;
-            }
-
-            foreach ($items as $item) {
-                if ($this->shouldSkip($item)) {
-                    continue;
-                }
-
-                // create title
-                $title = $this->createTitle($item);
-
-                // create translation
-                $translationId = $this->createTranslation($item);
-
-                // create episodes
-                $this->createEpisodes($title, $translationId, $item);
-
-                if ($title->wasRecentlyCreated) {
-                    // create studios
-                    $studios = $this->createStudios($item);
-                    $title->studios()->sync($studios);
-
-                    // create countries
-                    $countries = $this->createCountries($item);
-                    $title->countries()->sync($countries);
-
-                    // create genres
-                    $genres = $this->createGenres($item);
-                    $title->genres()->sync($genres);
-
-                    // store media
-                    $this->storeMedia($title->id, $item);
-                }
-            }
-
-            if (Title::count() > 200) {
-                break;
-            }
-            if (empty($url)) {
-                break;
-            }
-        }
-    }
-
     public function createTitle(array $data): Title
     {
         $material_data = $data['material_data'];
@@ -108,10 +39,10 @@ class KodikService
             'other_title' => $data['other_title'] ?? '',
             'description' => $material_data['description'] ?? null,
             'duration' => $material_data['duration'] ?? null,
-            'status' => TitleStatus::fromName($material_data['all_status'] ?? null),
+            'status' => TitleStatus::fromName($material_data['all_status'] ?? null, TitleStatus::Released),
             'year' => $data['year'],
+            'aired_at' => rescue(fn () => Carbon::parse($material_data['aired_at']), report: false),
             'shikimori_rating' => $material_data['shikimori_rating'] ?? 0,
-            // 'group_id' => $data['group_id'],
             'blocked_countries' => $data['blocked_countries'] ?? [],
             'blocked_seasons' => $data['blocked_seasons'] ?? [],
         ]);
@@ -119,11 +50,10 @@ class KodikService
         if (isset($data['updated_at'])) {
             $updated_at = Carbon::parse($data['updated_at']);
             if (! $title->updated_at || $updated_at->greaterThan($title->updated_at)) {
-                $title->updated_at = $updated_at;
+                $title->updated_at = $updated_at->setTimezone('UTC');
             }
         }
-
-        $title->updated_at ??= now();
+        $title->updated_at ??= now()->setTimezone('UTC');
 
         if ($title->wasRecentlyCreated) {
             $title->last_episode = $data['last_episode'] ?? null;
@@ -163,8 +93,24 @@ class KodikService
         return (int) $translation['id'];
     }
 
+    public function syncTranslations(Title $title): void
+    {
+        $title->load('episodes:translation_id,title_id');
+        $translationIds = $title->episodes->pluck('translation_id')->unique()->values();
+        $title->translations()->sync($translationIds);
+    }
+
     public function createEpisodes(Title $title, int $translation_id, array $data): void
     {
+        if ($title->singleEpisode) {
+            $title->episodes()->updateOrCreate([
+                'name' => null,
+                'translation_id' => $translation_id,
+            ], ['source' => $data['link']]);
+
+            return;
+        }
+
         foreach (array_values($data['seasons'] ?? []) as $season) {
             foreach ($season['episodes'] as $name => $source) {
                 $title->episodes()->updateOrCreate(

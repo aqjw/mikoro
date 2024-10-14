@@ -36,6 +36,10 @@
   background-color: rgb(var(--v-theme-surface));
 }
 
+.absolute-center {
+  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
+}
+
 .v-overlay__scrim {
   @apply dark:!bg-neutral-900;
 }
@@ -61,9 +65,12 @@
   --vc-nav-border-radius: 1rem;
 }
 
-.v-list.no-lines {
-  .v-list-item {
+.v-list {
+  &.no-lines .v-list-item {
     @apply min-h-0;
+  }
+  &.spacerless .v-list-item__spacer {
+    @apply !w-4;
   }
 }
 
@@ -74,7 +81,7 @@ blockquote {
 }
 
 .divider-vertical {
-    @apply w-px m-1 bg-slate-300 dark:bg-slate-600;
+  @apply w-px m-1 bg-slate-300 dark:bg-slate-600;
 }
 
 .comments-section {
@@ -152,6 +159,14 @@ blockquote {
         animation: unblur 200ms forwards;
       }
     }
+  }
+}
+
+.v-chip.chip-content-full {
+  @apply w-full !px-1;
+
+  .v-chip__content {
+    @apply w-full inline-block;
   }
 }
 

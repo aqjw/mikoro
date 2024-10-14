@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('episodes', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('title_id')->index();
+        Schema::create('title_translation', function (Blueprint $table) {
             $table->unsignedBigInteger('translation_id')->index();
-            $table->string('name')->nullable();
-            $table->string('source');
-            $table->timestamps();
+            $table->unsignedBigInteger('title_id')->index();
         });
     }
 
@@ -26,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('episodes');
+        Schema::dropIfExists('title_translation');
     }
 };

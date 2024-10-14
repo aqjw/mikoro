@@ -18,8 +18,14 @@ defineProps({
           {{ item.year }}
         </v-chip>
 
-        <v-chip size="small" variant="tonal" rounded="sm" density="compact">
-          эпизод {{ item.episodes }}
+        <v-chip
+          v-if="item.episodes"
+          size="small"
+          variant="tonal"
+          rounded="sm"
+          density="compact"
+        >
+          Серия {{ item.episodes }}
         </v-chip>
       </div>
 

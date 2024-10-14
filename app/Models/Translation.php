@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\TranslationType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Translation extends Model
 {
@@ -20,4 +21,9 @@ class Translation extends Model
     protected $casts = [
         'type' => TranslationType::class,
     ];
+
+    public function titles(): BelongsToMany
+    {
+        return $this->belongsToMany(Title::class);
+    }
 }

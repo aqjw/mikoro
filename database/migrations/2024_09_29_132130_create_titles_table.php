@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('status')->index();
             $table->unsignedTinyInteger('minimal_age')->default(0);
             $table->unsignedSmallInteger('year')->nullable();
+            $table->date('aired_at')->nullable();
             $table->unsignedBigInteger('shikimori_id')->index();
             $table->unsignedBigInteger('shikimori_rating')->nullable()->index();
             $table->unsignedBigInteger('group_id')->nullable()->index();
@@ -30,7 +31,9 @@ return new class extends Migration
             $table->json('blocked_seasons')->nullable();
             $table->unsignedSmallInteger('last_episode')->nullable();
             $table->unsignedSmallInteger('episodes_count')->nullable();
-            $table->timestamps();
+
+            $table->timestamp('updated_at')->nullable();
+            $table->timestamp('created_at')->nullable();
         });
     }
 

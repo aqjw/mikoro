@@ -15,18 +15,18 @@
       }
 
       &.w-long {
-        @apply w-32;
+        @apply min-w-32;
       }
 
       &.w-short {
-        @apply w-28;
+        @apply min-w-28;
       }
 
       .selected-option-container {
         @apply flex items-center justify-between h-full;
 
         .selected-option {
-          @apply text-gray-300 truncate w-[85%];
+          @apply text-gray-300 truncate mr-3;
         }
 
         .icon {
@@ -47,6 +47,17 @@
 
             &.selected {
               @apply bg-[#222];
+            }
+
+            .with-episodes-count{
+                @apply flex justify-between items-center;
+
+                &__label {
+                    @apply truncate pr-2;
+                }
+                &__count {
+                    @apply text-xs bg-black/20 px-1 rounded-sm;
+                }
             }
           }
         }
@@ -75,7 +86,6 @@
   }
 }
 
-@charset "UTF-8";
 .xgplayer.not-allow-autoplay .xgplayer-controls,
 .xgplayer.xgplayer-nostart .xgplayer-controls,
 .xgplayer.xgplayer-inactive .controls-autohide {
