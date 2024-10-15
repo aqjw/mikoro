@@ -21,6 +21,8 @@ class TitleSearchResource extends JsonResource
             'year' => $this->year,
             'episodes' => $this->last_episode,
             'shikimori_rating' => $this->shikimori_rating,
+            'rating' => $this->rating,
+            'single_episode' => $this->singleEpisode,
             'genres' => $this->genres->select(['slug', 'name']),
             'poster' => filled($this->media) ? MediaService::getImageDetails($this->media, true) : null,
         ];

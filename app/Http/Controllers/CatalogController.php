@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\TitleStatus;
 use App\Models\Country;
 use App\Models\Genre;
 use App\Models\Studio;
@@ -58,18 +57,6 @@ class CatalogController extends Controller
             'filter' => [
                 'key' => 'years',
                 'value' => (int) $year,
-            ],
-        ]);
-    }
-
-    public function status(string $status): Response
-    {
-        $case = TitleStatus::fromName($status);
-
-        return Inertia::render('Home', [
-            'filter' => [
-                'key' => 'statuses',
-                'value' => $case->value ?? null,
             ],
         ]);
     }

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Casts\ShikimoriRatingCast;
+use App\Casts\RatingCast;
 use App\Enums\TitleStatus;
 use App\Enums\TitleType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -34,9 +34,11 @@ class Title extends Model implements HasMedia
         'status',
         'minimal_age',
         'year',
-        'aired_at',
+        'released_at',
         'shikimori_id',
         'shikimori_rating',
+        'shikimori_votes',
+        'rating',
         'group_id',
         'blocked_countries',
         'blocked_seasons',
@@ -50,8 +52,9 @@ class Title extends Model implements HasMedia
         'status' => TitleStatus::class,
         'blocked_countries' => 'array',
         'blocked_seasons' => 'array',
-        'shikimori_rating' => ShikimoriRatingCast::class,
-        'aired_at' => 'date',
+        'shikimori_rating' => RatingCast::class,
+        'rating' => RatingCast::class,
+        'released_at' => 'date',
         'updated_at' => 'datetime',
     ];
 
@@ -77,17 +80,6 @@ class Title extends Model implements HasMedia
     {
         $this->addMediaCollection('poster')
             ->singleFile()
-            ->registerMediaConversions(function () {
-                $this->addMediaConversion('placeholder')
-                    ->format('jpeg')
-                    ->quality(40)
-                    ->width(100)
-                    ->blur(4)
-                    ->optimize();
-            });
-
-        $this->addMediaCollection('screenshots')
-            ->onlyKeepLatest(10)
             ->registerMediaConversions(function () {
                 $this->addMediaConversion('placeholder')
                     ->format('jpeg')
@@ -126,7 +118,7 @@ class Title extends Model implements HasMedia
     public function related(): HasMany
     {
         return $this->hasMany(Title::class, 'group_id', 'group_id')
-            ->orderByDesc('aired_at');
+            ->orderByDesc('released_at');
     }
 
     public function comments(): HasMany
@@ -134,10 +126,22 @@ class Title extends Model implements HasMedia
         return $this->hasMany(Comment::class);
     }
 
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(TitleRating::class);
+    }
+
     public function singleEpisode(): Attribute
     {
         return Attribute::make(
             fn () => $this->type->is(TitleType::Anime)
+        );
+    }
+
+    public function userVoted(): Attribute
+    {
+        return Attribute::make(
+            fn () => auth()->check() ? $this->ratings()->where('user_id', auth()->id())->exists() : false
         );
     }
 }

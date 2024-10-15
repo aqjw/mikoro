@@ -18,14 +18,9 @@ defineProps({
           {{ item.year }}
         </v-chip>
 
-        <v-chip
-          v-if="item.episodes"
-          size="small"
-          variant="tonal"
-          rounded="sm"
-          density="compact"
-        >
-          Серия {{ item.episodes }}
+        <v-chip size="small" variant="tonal" rounded="sm" density="compact">
+          <span v-if="item.single_episode">Фильм</span>
+          <span v-else>{{ item.episodes }} серия</span>
         </v-chip>
       </div>
 
@@ -62,7 +57,7 @@ defineProps({
     </template>
 
     <template #append>
-      <TitleRating :value="item.shikimori_rating" class="!p-1" />
+      <TitleRating :title="item" type="shikimori" />
     </template>
   </v-list-item>
 </template>

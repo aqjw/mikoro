@@ -32,7 +32,6 @@ export default {
         this.options.filters.studios = data.studios;
         this.options.filters.countries = data.countries;
         this.options.filters.translations = data.translations;
-        this.options.filters.statuses = data.statuses;
         this.options.filters.years = data.years;
       })
       .catch((error) => {

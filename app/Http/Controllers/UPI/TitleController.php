@@ -11,6 +11,7 @@ use App\Models\Studio;
 use App\Models\Title;
 use App\Models\Translation;
 use App\Services\CatalogService;
+use App\Services\TitleRatingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class TitleController extends Controller
     {
         $sorting = $request->sorting;
         $filters = $request->filters;
-        $filterKeys = ['genres', 'studios', 'countries', 'translations', 'years', 'statuses'];
+        $filterKeys = ['genres', 'studios', 'countries', 'translations', 'years'];
 
         $result = $catalogService->get(
             sorting: [
@@ -88,17 +89,6 @@ class TitleController extends Controller
                     'name' => $item->year,
                     'titles_count' => $item->titles_count,
                 ]),
-
-            'statuses' => Title::query()
-                ->select('status', DB::raw('COUNT(*) as titles_count'))
-                ->groupBy('status')
-                ->orderByDesc('titles_count')
-                ->get()
-                ->map(fn ($item) => [
-                    'id' => $item->status,
-                    'name' => $item->status->getName(),
-                    'titles_count' => $item->titles_count,
-                ]),
         ]);
     }
 
@@ -159,6 +149,26 @@ class TitleController extends Controller
                 'translation_id' => $playbackState->translation_id,
                 'time' => $playbackState->time,
             ] : null,
+        ]);
+    }
+
+    public function rating(Title $title, Request $request, TitleRatingService $titleRatingService): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['required', 'numeric', 'min:0.5', 'max:10'],
+        ]);
+
+        $titleRatingService->vote(
+            user: $request->user(),
+            title: $title,
+            value: $data['value']
+        );
+
+        $title = $title->fresh();
+
+        return response()->json([
+            'rating' => $title->rating,
+            'rating_votes' => $title->ratings()->count(),
         ]);
     }
 

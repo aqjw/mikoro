@@ -22,6 +22,8 @@ class TitleShortResource extends JsonResource
             'year' => $this->year,
             'last_episode' => $this->last_episode,
             'shikimori_rating' => $this->shikimori_rating,
+            'rating' => $this->rating,
+            'single_episode' => $this->singleEpisode,
             'poster' => filled($this->media) ? MediaService::getImageDetails($this->media, true) : null,
         ];
     }

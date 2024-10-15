@@ -15,6 +15,8 @@ class TitleFullResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $relatedFields = ['id', 'slug', 'title', 'year', 'released_at', 'shikimori_rating', 'rating'];
+
         return [
             'id' => $this->id,
             'slug' => $this->slug,
@@ -29,19 +31,21 @@ class TitleFullResource extends JsonResource
             'last_episode' => $this->last_episode,
             'episodes_count' => $this->episodes_count,
             'shikimori_rating' => $this->shikimori_rating,
+            'shikimori_votes' => $this->shikimori_votes,
+            'rating' => $this->rating,
+            'rating_votes' => $this->ratings_count,
+            'user_voted' => $this->userVoted,
+            'single_episode' => $this->singleEpisode,
             'genres' => $this->genres->select('slug', 'name'),
             'studios' => $this->studios->select('slug', 'name'),
             'countries' => $this->countries->select('slug', 'name'),
-            'related' => $this->related->select([
-                'id',
-                'slug',
-                'title',
-                'year',
-                'aired_at',
-                'shikimori_rating',
-            ]),
+            'related' => $this->related->isEmpty()
+                ? [$this->only($relatedFields)]
+                : $this->related->select($relatedFields),
             'poster' => MediaService::getImageDetails($this->getMedia('poster'), true),
-            'screenshots' => MediaService::getImageDetails($this->getMedia('screenshots')),
+            'screenshots' => MediaService::getImageDetails(
+                $this->episodes[0]->media ?? null
+            ),
         ];
     }
 }

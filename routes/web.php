@@ -6,8 +6,19 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TitleController;
 use App\Http\Controllers\UPI;
 use App\Notifications\NewEpisode;
+use App\Services\ShikimoriService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/test', function (ShikimoriService $shikimoriService) {
+    $id = 54857;
+    $franchise = $shikimoriService->getFranchise($id);
+    $related = $shikimoriService->getRelated($id);
+    dd([
+        'franchise' => $franchise->pluck('name', 'id')->sort()->toArray(),
+        'related' => $related->pluck('russian', 'id')->sort()->toArray(),
+    ]);
+});
 
 // Route::get('/notify', function (Request $request) {
 //     $titleId = 2;
@@ -23,7 +34,6 @@ Route::get('translation/{translation:slug}', [CatalogController::class, 'transla
 Route::get('studio/{studio:slug}', [CatalogController::class, 'studio'])->name('catalog.studio');
 Route::get('country/{country:slug}', [CatalogController::class, 'country'])->name('catalog.country');
 Route::get('year/{year}', [CatalogController::class, 'year'])->name('catalog.year');
-Route::get('status/{status}', [CatalogController::class, 'status'])->name('catalog.status');
 
 Route::get('title/{title:slug}', TitleController::class)->name('title');
 
@@ -38,11 +48,12 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
         Route::get('filters', [UPI\TitleController::class, 'filters'])->name('filters');
 
         Route::get('genres', [UPI\TitleController::class, 'genres'])->name('genres');
-
         Route::get('episodes/{title:id}', [UPI\TitleController::class, 'episodes'])->name('episodes');
-        Route::post('playback-state/{title:id}', [UPI\TitleController::class, 'playbackState'])
-            ->middleware('auth')
-            ->name('playback_state');
+
+        Route::group(['middleware' => 'auth'], function () {
+            Route::post('rating/{title:id}', [UPI\TitleController::class, 'rating'])->middleware('throttle:rating')->name('rating');
+            Route::post('playback-state/{title:id}', [UPI\TitleController::class, 'playbackState'])->name('playback_state');
+        });
 
         Route::group(['prefix' => 'comments', 'as' => 'comments.'], function () {
             Route::get('{title:id}', [UPI\CommentController::class, 'index'])->name('get');

@@ -62,17 +62,31 @@ export const scrollToElement = (element, duration) => {
 
 export const handleResponseError = (response) => {
   const data = response?.data;
-    const status = response?.status;
+  const status = response?.status;
 
-  if (!data || !data.message ||!status) {
+  if (!data || !data.message || !status) {
     return 'unknown error';
   }
 
-    // TODO:
-    // status === 401
-    // status === 403
-    // status === 422
-    // status === 500
+  // TODO:
+  // status === 401
+  // status === 403
+  // status === 422
+  // status === 500
 
   return data.message;
+};
+
+export const formatCompactNumber = (number, fractionDigits = 1) => {
+  if (number < 1000) {
+    return number;
+  } else if (number >= 1000 && number < 1_000_000) {
+    return (number / 1000).toFixed(fractionDigits) + 'K';
+  } else if (number >= 1_000_000 && number < 1_000_000_000) {
+    return (number / 1_000_000).toFixed(fractionDigits) + 'M';
+  } else if (number >= 1_000_000_000 && number < 1_000_000_000_000) {
+    return (number / 1_000_000_000).toFixed(fractionDigits) + 'B';
+  } else if (number >= 1_000_000_000_000 && number < 1_000_000_000_000_000) {
+    return (number / 1_000_000_000_000).toFixed(fractionDigits) + 'T';
+  }
 };

@@ -188,17 +188,6 @@ const toggleSortingDir = () => {
                 :options="options.filters.years"
                 :items="filters.years"
               />
-
-              <v-divider
-                opacity="1"
-                class="my-4 -mx-4 border-gray-200 dark:border-gray-500/30"
-              />
-
-              <MenuFilterItem
-                title="Статус"
-                :options="options.filters.statuses"
-                :items="filters.statuses"
-              />
             </v-card-text>
           </v-card>
         </v-menu>

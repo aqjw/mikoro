@@ -40,11 +40,11 @@ class ShikimoriLoadRelatedTitles extends Command
         $bar->start();
 
         foreach ($titles as $title) {
+            $bar->advance();
+
             if ($this->shouldSkipTitle($title)) {
                 continue;
             }
-
-            $bar->advance();
 
             $relatedIds = $this->getRelatedIds($title->shikimori_id, $shikimoriService);
             if (empty($relatedIds)) {
@@ -54,15 +54,10 @@ class ShikimoriLoadRelatedTitles extends Command
             }
 
             $this->skip = $this->skip->merge($relatedIds);
-
-            $bar->advance(count($relatedIds));
-
             $this->updateGroupIds($relatedIds);
         }
 
         $bar->finish();
-
-        Log::info('Shikimori related titles loaded and grouped.');
     }
 
     private function shouldSkipTitle($title)
@@ -73,7 +68,7 @@ class ShikimoriLoadRelatedTitles extends Command
     private function getRelatedIds(int $shikimoriId, ShikimoriService $shikimoriService)
     {
         try {
-            $items = $shikimoriService->getRelated($shikimoriId);
+            $items = $shikimoriService->getFranchise($shikimoriId);
 
             return $items->isEmpty() ? [] : $items->pluck('id')->toArray();
         } catch (\Exception $e) {

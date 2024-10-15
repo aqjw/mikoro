@@ -87,7 +87,7 @@ class KodikLoadTitles extends Command
             $genres = $kodikService->createGenres($item);
             $title->genres()->sync($genres);
 
-            $kodikService->storeMedia($title->id, $item);
+            $kodikService->storeTitleMedia($title->id, $item);
         }
     }
 
@@ -98,7 +98,7 @@ class KodikLoadTitles extends Command
             'has_field' => 'shikimori_id',
             'types' => 'anime-serial,anime',
             'year' => implode(',', range(2005, 2024)),
-            'with_episodes' => true,
+            'with_episodes_data' => true,
             'limit' => 100,
             'with_material_data' => true,
         ];

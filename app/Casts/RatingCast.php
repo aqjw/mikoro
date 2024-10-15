@@ -5,7 +5,7 @@ namespace App\Casts;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 
-class ShikimoriRatingCast implements CastsAttributes
+class RatingCast implements CastsAttributes
 {
     /**
      * Cast the given value.

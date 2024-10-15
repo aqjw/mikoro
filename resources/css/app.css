@@ -59,9 +59,15 @@
   }
 }
 
+.carousel__prev {
+  transform: translateX(-60%) translateY(-50%) !important;
+}
+.carousel__next {
+  transform: translateX(60%) translateY(-50%) !important;
+}
 .carousel__prev,
 .carousel__next {
-  --vc-nav-background: rgba(var(--v-border-color), var(--v-border-opacity));
+  @apply !m-0 !bg-slate-300 dark:!bg-slate-100;
   --vc-nav-border-radius: 1rem;
 }
 

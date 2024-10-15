@@ -5,7 +5,8 @@ namespace App\Services;
 use App\Enums\TitleStatus;
 use App\Enums\TitleType;
 use App\Enums\TranslationType;
-use App\Jobs\StoreMediaJob;
+use App\Jobs\StoreEpisodeMediaJob;
+use App\Jobs\StoreTitleMediaJob;
 use App\Models\Country;
 use App\Models\Genre;
 use App\Models\Studio;
@@ -41,8 +42,11 @@ class KodikService
             'duration' => $material_data['duration'] ?? null,
             'status' => TitleStatus::fromName($material_data['all_status'] ?? null, TitleStatus::Released),
             'year' => $data['year'],
-            'aired_at' => rescue(fn () => Carbon::parse($material_data['aired_at']), report: false),
+            'released_at' => rescue(fn () => Carbon::parse(
+                $material_data['released_at'] ?? $material_data['aired_at']
+            ), report: false),
             'shikimori_rating' => $material_data['shikimori_rating'] ?? 0,
+            'shikimori_votes' => $material_data['shikimori_votes'] ?? 0,
             'blocked_countries' => $data['blocked_countries'] ?? [],
             'blocked_seasons' => $data['blocked_seasons'] ?? [],
         ]);
@@ -103,20 +107,34 @@ class KodikService
     public function createEpisodes(Title $title, int $translation_id, array $data): void
     {
         if ($title->singleEpisode) {
-            $title->episodes()->updateOrCreate([
+            $episode = $title->episodes()->updateOrCreate([
                 'name' => null,
                 'translation_id' => $translation_id,
             ], ['source' => $data['link']]);
+
+            if ($episode->wasRecentlyCreated) {
+                $this->storeEpisodeMedia(
+                    episodeId: $episode->id,
+                    screenshots: array_slice($data['screenshots'], 0, 5)
+                );
+            }
 
             return;
         }
 
         foreach (array_values($data['seasons'] ?? []) as $season) {
-            foreach ($season['episodes'] as $name => $source) {
-                $title->episodes()->updateOrCreate(
+            foreach ($season['episodes'] as $name => $episodeData) {
+                $episode = $title->episodes()->updateOrCreate(
                     compact('name', 'translation_id'),
-                    compact('source')
+                    ['source' => $episodeData['link']]
                 );
+
+                if ($episode->wasRecentlyCreated) {
+                    $this->storeEpisodeMedia(
+                        episodeId: $episode->id,
+                        screenshots: array_slice($episodeData['screenshots'], 0, 5)
+                    );
+                }
             }
         }
     }
@@ -166,11 +184,16 @@ class KodikService
         return $skipGenre;
     }
 
-    public function storeMedia(int $titleId, array $data): void
+    public function storeEpisodeMedia(int $episodeId, array $screenshots): void
     {
-        StoreMediaJob::dispatch($titleId, [
-            'poster' => $data['material_data']['poster_url'] ?? null,
-            'screenshots' => $data['material_data']['screenshots'] ?? [],
-        ]);
+        StoreEpisodeMediaJob::dispatch($episodeId, $screenshots);
+    }
+
+    public function storeTitleMedia(int $titleId, array $data): void
+    {
+        $posterUrl = $data['material_data']['poster_url'] ?? null;
+        if ($posterUrl) {
+            StoreTitleMediaJob::dispatch($titleId, $posterUrl);
+        }
     }
 }

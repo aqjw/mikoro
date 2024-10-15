@@ -15,7 +15,6 @@ export default () => ({
     countries: { incl: [], excl: [] },
     translations: { incl: [], excl: [] },
     years: { incl: [], excl: [] },
-    statuses: { incl: [], excl: [] },
   },
 
   options: {
@@ -32,7 +31,6 @@ export default () => ({
       countries: [],
       translations: [],
       years: [],
-      statuses: [],
     },
   },
 });

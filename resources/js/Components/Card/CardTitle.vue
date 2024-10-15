@@ -29,12 +29,14 @@ defineProps({
         color="primary"
         class="!rounded-none !rounded-br-lg !absolute top-0 left-0"
       >
-        {{ item.last_episode }} серия
+        <span v-if="item.single_episode">Фильм</span>
+        <span v-else>{{ item.last_episode }} серия</span>
       </v-chip>
 
       <TitleRating
-        :value="item.shikimori_rating"
-        class="!absolute bottom-2 right-2 !p-1"
+        :title="item"
+        type="shikimori"
+        class="!absolute bottom-2 right-2"
       />
     </v-img>
 
