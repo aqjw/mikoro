@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('episode_release_notifications', function (Blueprint $table) {
+        Schema::create('episode_release_subscriptions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('title_id')->index();
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('episode_release_notifications');
+        Schema::dropIfExists('episode_release_subscriptions');
     }
 };

@@ -36,6 +36,15 @@
   background-color: rgb(var(--v-theme-surface));
 }
 
+.noti-badge {
+  .v-badge__badge {
+    font-size: 0.7rem !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    padding: 0 4px  !important;
+  }
+}
+
 .absolute-center {
   @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
 }

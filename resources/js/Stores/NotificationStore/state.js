@@ -1,4 +1,4 @@
 export default () => ({
-  lastItems: [],
-  unreadCount: 0,
+    unreadCount: 0,
+    items: [],
 });

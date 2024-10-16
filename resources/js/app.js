@@ -75,13 +75,13 @@ function setupEventListeners(app) {
 }
 
 function setupStores(props) {
-  const { user = null, notifications = [] } = props.auth ?? {};
+  const { user = null, notifications_unread = 0 } = props.auth ?? {};
 
   const notificationStore = useNotificationStore();
   const userStore = useUserStore();
 
   userStore.setUser(user);
-  notificationStore.setNotifications(notifications);
+  notificationStore.setNotificationsUnread(notifications_unread);
 }
 
 function toggleTheme(vuetify) {

@@ -3,8 +3,6 @@ import { computed, ref, toRefs, watch, onMounted, nextTick } from 'vue';
 import CardTitle from '@/Components/Card/CardTitle.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import 'vue3-carousel/dist/carousel.css';
-import { Carousel, Slide, Navigation } from 'vue3-carousel';
 import Player from '@/Components/Player.vue';
 import CardComment from '@/Components/Comments/CardComment.vue';
 import SectionComments from '@/Components/Comments/SectionComments.vue';

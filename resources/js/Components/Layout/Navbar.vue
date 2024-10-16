@@ -36,7 +36,7 @@ function toggleTheme() {
 </script>
 
 <template>
-  <v-app-bar flat density="compact" class="!shadow-">
+  <v-app-bar flat density="comfortable" class="!shadow-">
     <v-container>
       <v-row>
         <v-col cols="2" class="d-flex align-center">
@@ -66,7 +66,7 @@ function toggleTheme() {
                 density="comfortable"
                 icon="mdi-bookmark-outline"
                 variant="plain"
-                @click="toggleTheme"
+                :to="route('bookmarks')"
               />
 
               <MenuNotification />

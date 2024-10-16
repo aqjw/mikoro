@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\ProcessEpisodeReleaseSubscriptionJob;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,13 @@ class Episode extends Model implements HasMedia
         'translation_id',
     ];
 
+    protected static function booted()
+    {
+        static::created(function (Episode $episode) {
+            ProcessEpisodeReleaseSubscriptionJob::dispatch($episode->id);
+        });
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('screenshots')
@@ -30,6 +38,11 @@ class Episode extends Model implements HasMedia
                     ->blur(4)
                     ->optimize();
             });
+    }
+
+    public function title(): BelongsTo
+    {
+        return $this->belongsTo(Title::class);
     }
 
     public function translation(): BelongsTo

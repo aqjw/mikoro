@@ -48,7 +48,7 @@ class TitleFullResource extends JsonResource
                 ->select('id', 'title')
                 ->values(),
             'bookmark' => $this->bookmarkType,
-            'episode_release_notifications' => $this->episodeReleaseNotificationTranslationIds,
+            'episode_subscriptions' => $this->episodeReleaseSubscriptionTranslationIds,
             'genres' => $this->genres->select('slug', 'name'),
             'studios' => $this->studios->select('slug', 'name'),
             'countries' => $this->countries->select('slug', 'name'),

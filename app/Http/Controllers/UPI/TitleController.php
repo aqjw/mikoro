@@ -13,7 +13,7 @@ use App\Models\Title;
 use App\Models\Translation;
 use App\Services\BookmarkService;
 use App\Services\CatalogService;
-use App\Services\EpisodeReleaseNotificationService;
+use App\Services\EpisodeReleaseSubscriptionService;
 use App\Services\TitleRatingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -198,16 +198,16 @@ class TitleController extends Controller
         return response()->json('ok');
     }
 
-    public function episodeReleaseNotifications(Title $title, Request $request, EpisodeReleaseNotificationService $service): JsonResponse
+    public function episodeSubscriptionToggle(Title $title, Request $request, EpisodeReleaseSubscriptionService $service): JsonResponse
     {
         $data = $request->validate([
-            'translation_ids' => ['nullable', 'array', 'exists:translations,id'],
+            'value' => ['nullable', 'array', 'exists:translations,id'],
         ]);
 
         $service->subscribe(
             user: $request->user(),
             titleId: $title->id,
-            translationIds: $data['translation_ids']
+            translationIds: $data['value'] ?? []
         );
 
         return response()->json('ok');

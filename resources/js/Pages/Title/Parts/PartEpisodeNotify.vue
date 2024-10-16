@@ -20,7 +20,7 @@ const { isLogged } = storeToRefs(userStore);
 
 const loginRequires = ref(null);
 const loading = ref(false);
-const selected = ref(props.title.episode_release_notifications);
+const selected = ref(props.title.episode_subscriptions);
 const timer = ref(null);
 const skipWatch = ref(false);
 
@@ -54,8 +54,8 @@ const onUpdate = (value) => {
 
   loading.value = true;
   axios
-    .post(route('upi.title.episode_release_notifications', props.title.id), {
-      translation_ids: selected.value,
+    .post(route('upi.title.episode_subscription_toggle', props.title.id), {
+      value: selected.value,
     })
     .then(() => {
       $toast.success('Сохранено успешно');

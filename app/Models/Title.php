@@ -136,9 +136,9 @@ class Title extends Model implements HasMedia
         return $this->hasMany(TitleBookmark::class);
     }
 
-    public function episodeReleaseNotifications(): HasMany
+    public function EpisodeReleaseSubscriptions(): HasMany
     {
-        return $this->hasMany(EpisodeReleaseNotification::class);
+        return $this->hasMany(EpisodeReleaseSubscription::class);
     }
 
     public function singleEpisode(): Attribute
@@ -177,7 +177,7 @@ class Title extends Model implements HasMedia
         });
     }
 
-    public function episodeReleaseNotificationTranslationIds(): Attribute
+    public function EpisodeReleaseSubscriptionTranslationIds(): Attribute
     {
         return Attribute::make(function () {
             if (! auth()->check()) {
@@ -185,7 +185,7 @@ class Title extends Model implements HasMedia
             }
 
             return $this
-                ->episodeReleaseNotifications()
+                ->EpisodeReleaseSubscriptions()
                 ->where('user_id', auth()->id())
                 ->pluck('translation_id')
                 ->toArray();

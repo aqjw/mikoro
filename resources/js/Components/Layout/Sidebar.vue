@@ -8,7 +8,7 @@ const catalogStore = useCatalogStore();
 
 const onAction = (e, item) => {
   e.preventDefault();
-  router.get(item.href);
+  router.visit(item.href);
 };
 
 // TODO: iaponiia | kitai
@@ -45,7 +45,7 @@ const items = ref([
       });
     },
     actionItem: (item) => {
-      router.get(route('catalog.genre', item.slug));
+      router.visit(route('catalog.genre', item.slug));
     },
   },
   //   'Пересказы',

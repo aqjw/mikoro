@@ -1,33 +1,106 @@
 <script setup>
+import { ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
 import { storeToRefs } from 'pinia';
 import { useNotificationStore } from '@/Stores/NotificationStore';
+import { useToast } from 'vue-toast-notification';
+import { handleResponseError } from '@/Utils';
 
+const $toast = useToast();
 const notificationStore = useNotificationStore();
-const { lastItems, unreadCount } = storeToRefs(notificationStore);
+const { items, unreadCount } = storeToRefs(notificationStore);
 
-const items = [
-  {
-    prependAvatar: 'https://animestars.org/uploads/posts/2024-04/97d5fb3943_1.webp',
-    title: 'Операция: Семейка Ёдзакура',
-    subtitle: `Вышла 3 серия в озвучке AnimeVost`,
-  },
-  {
-    prependAvatar: 'https://animestars.org/uploads/posts/2024-08/e17f4fa7e2_11.webp',
-    title: 'Палач богов: Между смертным и божественным царством',
-    subtitle: `Вышла 7 серия в озвучке AniMaunt`,
-  },
-  {
-    prependAvatar: 'https://animestars.org/uploads/posts/2024-07/3b6a62433f_1.webp',
-    title: 'Расколотая битвой синева небес 5 сезон',
-    subtitle: `Вышла 114 серия в озвучке АниСтар Многоголосый`,
-  },
-];
+const loading = ref(false);
+const loadingAll = ref(false);
+const isMenuOpen = ref(false);
+
+watch(isMenuOpen, (newValue) => {
+  if (newValue) {
+    loadItems();
+  }
+});
+
+const loadItems = () => {
+  const len = items.value.length;
+  if (len > 0 && len === unreadCount.value) {
+    return;
+  }
+
+  loading.value = true;
+  notificationStore.$loadItems({
+    success: () => {},
+    error: (error) => {
+      $toast.error(handleResponseError(error));
+    },
+    finish: () => {
+      loading.value = false;
+    },
+  });
+};
+
+const markReadAll = () => {
+  loadingAll.value = true;
+  notificationStore.$markReadAll({
+    success: () => {},
+    error: (error) => {
+      $toast.error(handleResponseError(error));
+    },
+    finish: () => {
+      loadingAll.value = false;
+    },
+  });
+};
+
+const markRead = (item, success = null) => {
+  if (loadingAll.value) {
+    return;
+  }
+
+  item.loading = true;
+  notificationStore.$markRead(item.id, {
+    success: () => {
+      if (success) {
+        success();
+      }
+    },
+    error: (error) => {
+      $toast.error(handleResponseError(error));
+    },
+    finish: () => {
+      item.loading = false;
+    },
+  });
+};
+
+const openNotification = (item) => {
+  markRead(item, () => {
+    if (item.type == 'new-episode') {
+      router.visit(route('title', item.data.title_slug), {
+        data: {
+          episode_id: item.data.episode_id,
+          translation_id: item.data.translation_id,
+        },
+      });
+    }
+  });
+};
 </script>
 
 <template>
-  <v-menu rounded location="bottom end" origin="auto" :close-on-content-click="false">
+  <v-menu
+    v-model="isMenuOpen"
+    rounded
+    location="bottom end"
+    origin="auto"
+    :close-on-content-click="false"
+  >
     <template v-slot:activator="{ props }">
-      <v-badge v-if="unreadCount > 0" color="primary" :content="unreadCount">
+      <v-badge
+        v-if="unreadCount > 0"
+        color="primary"
+        class="noti-badge"
+        :content="unreadCount"
+      >
         <v-btn
           density="comfortable"
           icon="mdi-bell-outline"
@@ -44,33 +117,44 @@ const items = [
       />
     </template>
 
-    <v-card min-width="450" max-width="450">
-      <!-- <v-card class="mx-auto" max-width="450"> -->
-      <v-toolbar color="primary" density="comfortable">
-        <!-- <v-btn icon="mdi-bell-outline" variant="text"></v-btn> -->
-        <v-toolbar-title>Notifications</v-toolbar-title>
-
-        <!-- <v-spacer></v-spacer> -->
-
-        <!-- <v-btn icon="mdi-magnify" variant="text"></v-btn> -->
+    <v-card width="450" rounded="lg">
+      <v-toolbar density="compact">
+        <v-toolbar-title>Уведомления</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn
+          v-if="items.length > 0"
+          icon="mdi-delete-empty-outline"
+          color="red"
+          variant="text"
+          :loading="loadingAll"
+          @click="markReadAll"
+        />
       </v-toolbar>
 
-      <v-list lines="two" density="comfortable">
+      <div v-if="loading">loading</div>
+
+      <v-list v-else lines="two" density="comfortable" max-height="450">
+        <v-list-item v-if="items.length == 0" class="text-center">
+          Нету уведомлений
+        </v-list-item>
+
         <v-list-item
+          v-else
           v-for="(item, index) in items"
           :key="index"
-          :title="item.title"
-          :subtitle="item.subtitle"
-          @click="() => {}"
+          :title="item.data.title"
+          :subtitle="item.data.subtitle"
+          :disabled="item.loading"
+          @click="openNotification(item)"
         >
           <template #prepend>
             <v-img
               :width="50"
-              :height="50"
+              :height="70"
               rounded
-              aspect-ratio="1/1"
               cover
-              :src="item.prependAvatar"
+              :lazy-src="$media.placeholder(item.data.image)"
+              :src="$media.original(item.data.image)"
               class="mr-4"
             />
           </template>
@@ -81,6 +165,8 @@ const items = [
               variant="tonal"
               icon="mdi-close"
               class="ml-4"
+              :loading="item.loading"
+              @click.stop="markRead(item)"
             />
           </template>
         </v-list-item>

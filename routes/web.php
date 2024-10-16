@@ -1,13 +1,12 @@
 <?php
 
+use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TitleController;
 use App\Http\Controllers\UPI;
-use App\Notifications\NewEpisode;
 use App\Services\ShikimoriService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/test', function (ShikimoriService $shikimoriService) {
@@ -20,14 +19,6 @@ Route::get('/test', function (ShikimoriService $shikimoriService) {
     ]);
 });
 
-// Route::get('/notify', function (Request $request) {
-//     $titleId = 2;
-//     $episodeId = 2;
-//     $request->user()->notify(new NewEpisode($titleId, $episodeId));
-
-//     // Notification::send($users, new NewEpisode($title, $episode));
-// });
-
 Route::get('/', HomeController::class)->name('home');
 Route::get('genre/{genre:slug}', [CatalogController::class, 'genre'])->name('catalog.genre');
 Route::get('translation/{translation:slug}', [CatalogController::class, 'translation'])->name('catalog.translation');
@@ -36,11 +27,18 @@ Route::get('country/{country:slug}', [CatalogController::class, 'country'])->nam
 Route::get('year/{year}', [CatalogController::class, 'year'])->name('catalog.year');
 
 Route::get('title/{title:slug}', TitleController::class)->name('title');
+Route::get('bookmarks/{type?}', BookmarkController::class)->middleware('auth')->name('bookmarks');
 
 Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
     Route::group(['prefix' => 'search', 'as' => 'search.'], function () {
         Route::get('random', [UPI\SearchController::class, 'random'])->name('random');
         Route::get('q/{type}/{query}', [UPI\SearchController::class, 'query'])->name('query');
+    });
+
+    Route::group(['prefix' => 'notifications', 'as' => 'notifications.'], function () {
+        Route::get('', [UPI\NotificationController::class, 'index'])->name('get');
+        Route::post('read/{notification:id}', [UPI\NotificationController::class, 'read'])->name('read');
+        Route::post('read-all', [UPI\NotificationController::class, 'readAll'])->name('read_all');
     });
 
     Route::group(['prefix' => 'title', 'as' => 'title.'], function () {
@@ -53,7 +51,7 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
         Route::group(['middleware' => 'auth'], function () {
             Route::post('rating/{title:id}', [UPI\TitleController::class, 'rating'])->middleware('throttle:rating')->name('rating');
             Route::post('playback-state/{title:id}', [UPI\TitleController::class, 'playbackState'])->name('playback_state');
-            Route::post('episode-release-notifications/{title:id}', [UPI\TitleController::class, 'episodeReleaseNotifications'])->name('episode_release_notifications');
+            Route::post('episode-subscriptions/{title:id}', [UPI\TitleController::class, 'episodeSubscriptionToggle'])->name('episode_subscription_toggle');
             Route::post('bookmark/{title:id}', [UPI\TitleController::class, 'bookmark'])->name('bookmark');
         });
 

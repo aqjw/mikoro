@@ -50,12 +50,12 @@ class NewEpisode extends Notification
 
         return [
             'title' => $this->title->title,
-            'subtitle' => "Вышла {$ep->number} серия в озвучке {$ep->translation->title}",
+            'subtitle' => "Вышла {$ep->name} серия в озвучке {$ep->translation->title}",
             'image' => $this->title->poster,
             //
             'title_id' => $this->title->id,
             'episode_id' => $ep->id,
-            'translation_id' => $ep->translation->title,
+            'translation_id' => $ep->translation->id,
         ];
     }
 }
