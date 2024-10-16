@@ -53,6 +53,8 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
         Route::group(['middleware' => 'auth'], function () {
             Route::post('rating/{title:id}', [UPI\TitleController::class, 'rating'])->middleware('throttle:rating')->name('rating');
             Route::post('playback-state/{title:id}', [UPI\TitleController::class, 'playbackState'])->name('playback_state');
+            Route::post('episode-release-notifications/{title:id}', [UPI\TitleController::class, 'episodeReleaseNotifications'])->name('episode_release_notifications');
+            Route::post('bookmark/{title:id}', [UPI\TitleController::class, 'bookmark'])->name('bookmark');
         });
 
         Route::group(['prefix' => 'comments', 'as' => 'comments.'], function () {

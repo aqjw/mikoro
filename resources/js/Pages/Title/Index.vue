@@ -12,6 +12,8 @@ import PartRating from './Parts/PartRating.vue';
 import PartRelated from './Parts/PartRelated.vue';
 import PartDetails from './Parts/PartDetails.vue';
 import PartScreenshots from './Parts/PartScreenshots.vue';
+import PartBookmark from './Parts/PartBookmark.vue';
+import PartEpisodeNotify from './Parts/PartEpisodeNotify.vue';
 
 const props = defineProps({
   title: {
@@ -108,10 +110,22 @@ const isReleased = computed(() => status.value === 'released');
             <PartRelated :title="title" />
           </div>
 
-          <div class="w-4/12 bg-second rounded-lg shadow-lg overflow-hidden flex items-center justify-center">
+          <div
+            :class="[
+              'w-4/12 overflow-hidden relative',
+              'bg-second rounded-lg shadow-lg',
+              'flex items-center justify-center',
+            ]"
+          >
             <PartRating :title="title" />
           </div>
         </div>
+      </div>
+
+      <div class="bg-second rounded-lg shadow-lg my-4 p-4 flex relative">
+        <PartBookmark :title="title" class="w-5/12" />
+        <div class="divider-vertical mx-4"></div>
+        <PartEpisodeNotify :title="title" class="w-7/12" />
       </div>
 
       <div class="bg-gray-300 h-[30rem] my-4 rounded-lg shadow-lg overflow-hidden">

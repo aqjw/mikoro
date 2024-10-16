@@ -19,6 +19,7 @@ class TitleController extends Controller
                 'studios',
                 'countries',
                 'related',
+                'translations',
                 'episodes' => fn ($query) => $query->limit(1)->with('media'),
             ]);
 

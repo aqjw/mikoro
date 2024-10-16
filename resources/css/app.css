@@ -87,7 +87,11 @@ blockquote {
 }
 
 .divider-vertical {
-  @apply w-px m-1 bg-slate-300 dark:bg-slate-600;
+  @apply w-px bg-stone-300 dark:bg-stone-600;
+}
+
+.divider-horizontal {
+  @apply h-px bg-stone-300 dark:bg-stone-600;
 }
 
 .comments-section {

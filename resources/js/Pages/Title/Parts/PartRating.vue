@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { formatCompactNumber } from '@/Utils';
+import { formatCompactNumber, handleResponseError } from '@/Utils';
 import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
 import { useToast } from 'vue-toast-notification';
 import { useUserStore } from '@/Stores/UserStore';
@@ -32,8 +32,8 @@ const onUpdate = (value) => {
       props.title.rating_votes = data.rating_votes;
       props.title.user_voted = true;
     })
-    .catch(() => {
-      //
+    .catch(({ response }) => {
+      $toast.error(handleResponseError(response));
     })
     .finally(() => {
       loading.value = false;
@@ -54,7 +54,7 @@ const getColor = (value) => {
 </script>
 
 <template>
-  <div class="py-4 relative">
+  <div class="py-4">
     <div v-if="loading" class="absolute right-2 top-2">
       <v-progress-circular color="primary" indeterminate :size="20" :width="2" />
     </div>
@@ -80,7 +80,7 @@ const getColor = (value) => {
       <div v-if="title.user_voted" class="mt-1 text-xs opacity-50">Ваш голос учтен</div>
     </div>
 
-    <v-divider class="my-4" />
+    <div class="divider-horizontal my-4"></div>
 
     <div class="flex align-center flex-col">
       <div class="text-h3">

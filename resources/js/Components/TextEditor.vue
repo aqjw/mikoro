@@ -126,7 +126,7 @@ onBeforeUnmount(() => {
       <div class="flex items-center">
         <div class="flex gap-3">
           <template v-for="button in editorButtons" :key="button.name">
-            <div v-if="button === 'divide'" class="divider-vertical"></div>
+            <div v-if="button === 'divide'" class="divider-vertical m-1"></div>
             <v-btn
               v-else
               density="comfortable"

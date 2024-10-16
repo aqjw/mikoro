@@ -66,4 +66,14 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     {
         return $this->hasMany(PlaybackState::class);
     }
+
+    public function episodeReleaseNotifications(): HasMany
+    {
+        return $this->hasMany(EpisodeReleaseNotification::class);
+    }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(TitleBookmark::class);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\TranslationType;
 use App\Services\MediaService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -36,6 +37,18 @@ class TitleFullResource extends JsonResource
             'rating_votes' => $this->ratings_count,
             'user_voted' => $this->userVoted,
             'single_episode' => $this->singleEpisode,
+            'translations' => $this->translations
+                ->sort(function ($a, $b) {
+                    if (! $a->type->is($b->type)) {
+                        return $a->type->is(TranslationType::Voice) ? -1 : 1;
+                    }
+
+                    return strcmp($a->title, $b->title);
+                })
+                ->select('id', 'title')
+                ->values(),
+            'bookmark' => $this->bookmarkType,
+            'episode_release_notifications' => $this->episodeReleaseNotificationTranslationIds,
             'genres' => $this->genres->select('slug', 'name'),
             'studios' => $this->studios->select('slug', 'name'),
             'countries' => $this->countries->select('slug', 'name'),

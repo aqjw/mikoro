@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\UPI;
 
+use App\Enums\BookmarkType;
 use App\Enums\TranslationType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TitleShortResource;
@@ -10,11 +11,14 @@ use App\Models\Genre;
 use App\Models\Studio;
 use App\Models\Title;
 use App\Models\Translation;
+use App\Services\BookmarkService;
 use App\Services\CatalogService;
+use App\Services\EpisodeReleaseNotificationService;
 use App\Services\TitleRatingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class TitleController extends Controller
 {
@@ -190,6 +194,36 @@ class TitleController extends Controller
                     'time' => $request->time,
                 ]
             );
+
+        return response()->json('ok');
+    }
+
+    public function episodeReleaseNotifications(Title $title, Request $request, EpisodeReleaseNotificationService $service): JsonResponse
+    {
+        $data = $request->validate([
+            'translation_ids' => ['nullable', 'array', 'exists:translations,id'],
+        ]);
+
+        $service->subscribe(
+            user: $request->user(),
+            titleId: $title->id,
+            translationIds: $data['translation_ids']
+        );
+
+        return response()->json('ok');
+    }
+
+    public function bookmark(Title $title, Request $request, BookmarkService $bookmarkService): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['nullable', Rule::enum(BookmarkType::class)],
+        ]);
+
+        $bookmarkService->toggle(
+            user: $request->user(),
+            titleId: $title->id,
+            type: $data['value'] ?? null
+        );
 
         return response()->json('ok');
     }

@@ -26,6 +26,7 @@
     @inertiaHead
     <script>
         window.config = @js([
+            'bookmarks' => \App\Enums\BookmarkType::getCases(),
             'comments' => [
                 'reactions' => \App\Enums\CommentReaction::getCases(),
                 'report_reasons' => \App\Enums\CommentReportReason::getCases(),

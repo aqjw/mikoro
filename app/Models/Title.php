@@ -131,6 +131,16 @@ class Title extends Model implements HasMedia
         return $this->hasMany(TitleRating::class);
     }
 
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(TitleBookmark::class);
+    }
+
+    public function episodeReleaseNotifications(): HasMany
+    {
+        return $this->hasMany(EpisodeReleaseNotification::class);
+    }
+
     public function singleEpisode(): Attribute
     {
         return Attribute::make(
@@ -140,8 +150,45 @@ class Title extends Model implements HasMedia
 
     public function userVoted(): Attribute
     {
-        return Attribute::make(
-            fn () => auth()->check() ? $this->ratings()->where('user_id', auth()->id())->exists() : false
-        );
+        return Attribute::make(function () {
+            if (! auth()->check()) {
+                return false;
+            }
+
+            return $this
+                ->ratings()
+                ->where('user_id', auth()->id())
+                ->exists();
+        });
+    }
+
+    public function bookmarkType(): Attribute
+    {
+        return Attribute::make(function () {
+            if (! auth()->check()) {
+                return false;
+            }
+
+            return $this
+                ->bookmarks()
+                ->where('user_id', auth()->id())
+                ->first()
+                ->type ?? null;
+        });
+    }
+
+    public function episodeReleaseNotificationTranslationIds(): Attribute
+    {
+        return Attribute::make(function () {
+            if (! auth()->check()) {
+                return [];
+            }
+
+            return $this
+                ->episodeReleaseNotifications()
+                ->where('user_id', auth()->id())
+                ->pluck('translation_id')
+                ->toArray();
+        });
     }
 }

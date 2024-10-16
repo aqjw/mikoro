@@ -20,7 +20,7 @@ const scrollRelated = () => {
   const item = document.querySelector('#related-list .v-list-item--active');
   if (item) {
     const list = document.getElementById('related-list');
-    list.scrollTop = item.offsetTop;
+    list.scrollTop = item.offsetTop-45;
   }
 };
 </script>
