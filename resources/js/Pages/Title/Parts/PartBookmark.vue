@@ -1,9 +1,10 @@
 <script setup>
 import { nextTick, ref, watch } from 'vue';
-import { formatCompactNumber, handleResponseError } from '@/Utils';
+import { formatCompactNumber, handleResponseError, getBookmarkIcon } from '@/Utils';
 import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
 import { useToast } from 'vue-toast-notification';
 import { useUserStore } from '@/Stores/UserStore';
+import { useBookmarkStore } from '@/Stores/BookmarkStore';
 import { storeToRefs } from 'pinia';
 import { toRefs } from 'vue';
 
@@ -15,6 +16,7 @@ const props = defineProps({
 });
 
 const $toast = useToast();
+const bookmarkStore = useBookmarkStore();
 const userStore = useUserStore();
 const { isLogged } = storeToRefs(userStore);
 
@@ -45,19 +47,17 @@ const onUpdate = (value) => {
   }
 
   loading.value = true;
-  axios
-    .post(route('upi.title.bookmark', props.title.id), {
-      value: selected.value,
-    })
-    .then(() => {
+  bookmarkStore.$toggle(props.title.id, selected.value, {
+    success: () => {
       $toast.success('Сохранено успешно');
-    })
-    .catch(({ response }) => {
-      $toast.error(handleResponseError(response));
-    })
-    .finally(() => {
+    },
+    error: (error) => {
+      $toast.error(handleResponseError(error));
+    },
+    finish: () => {
       loading.value = false;
-    });
+    },
+  });
 };
 </script>
 
@@ -80,7 +80,13 @@ const onUpdate = (value) => {
         :value="item.id"
         v-slot="{ selectedClass, toggle }"
       >
-        <v-chip :class="selectedClass" density="compact" label @click="toggle">
+        <v-chip
+          :class="selectedClass"
+          density="compact"
+          label
+          @click="toggle"
+          :prepend-icon="getBookmarkIcon(item.name)"
+        >
           {{ item.name }}
         </v-chip>
       </v-item>

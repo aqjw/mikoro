@@ -23,7 +23,7 @@ class CommentResource extends JsonResource
             'author' => [
                 'id' => $this->user_id,
                 'name' => $this->author->name,
-                'avatar' => MediaService::getImageDetails($this->author->getMedia('avatar'), true),
+                'avatar' => MediaService::getImageDetails($this->author->media, true),
             ],
             'userReactions' => $this->userReactions->pluck('reaction'),
             'reactions' => $this->reactions

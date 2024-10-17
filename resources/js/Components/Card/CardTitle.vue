@@ -33,11 +33,7 @@ defineProps({
         <span v-else>{{ item.last_episode }} серия</span>
       </v-chip>
 
-      <TitleRating
-        :title="item"
-        type="shikimori"
-        class="!absolute bottom-2 right-2"
-      />
+      <TitleRating :value="item.shikimori_rating" class="!absolute bottom-2 right-2" />
     </v-img>
 
     <div class="truncate px-2 pt-1">

@@ -28,7 +28,7 @@ class NotificationController extends Controller
                 $title = $titles->where('id', $item->data['title_id'])->first();
                 if ($title) {
                     $item->extra = [
-                        'image' => MediaService::getImageDetails($title->media[0] ?? null, true),
+                        'image' => MediaService::getImageDetails($title->media, true),
                         'title_slug' => $title->slug,
                     ];
                 }

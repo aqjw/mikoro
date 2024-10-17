@@ -27,7 +27,10 @@ Route::get('country/{country:slug}', [CatalogController::class, 'country'])->nam
 Route::get('year/{year}', [CatalogController::class, 'year'])->name('catalog.year');
 
 Route::get('title/{title:slug}', TitleController::class)->name('title');
-Route::get('bookmarks/{type?}', BookmarkController::class)->middleware('auth')->name('bookmarks');
+
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('bookmarks/{bookmark?}', BookmarkController::class)->name('bookmarks');
+});
 
 Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
     Route::group(['prefix' => 'search', 'as' => 'search.'], function () {
@@ -52,7 +55,6 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
             Route::post('rating/{title:id}', [UPI\TitleController::class, 'rating'])->middleware('throttle:rating')->name('rating');
             Route::post('playback-state/{title:id}', [UPI\TitleController::class, 'playbackState'])->name('playback_state');
             Route::post('episode-subscriptions/{title:id}', [UPI\TitleController::class, 'episodeSubscriptionToggle'])->name('episode_subscription_toggle');
-            Route::post('bookmark/{title:id}', [UPI\TitleController::class, 'bookmark'])->name('bookmark');
         });
 
         Route::group(['prefix' => 'comments', 'as' => 'comments.'], function () {
@@ -66,6 +68,11 @@ Route::group(['prefix' => 'upi', 'as' => 'upi.'], function () {
                 Route::post('report/{comment:id}/{reason}', [UPI\CommentController::class, 'report'])->name('report');
             });
         });
+    });
+
+    Route::group(['prefix' => 'bookmarks', 'as' => 'bookmarks.', 'middleware' => 'auth'], function () {
+        Route::get('get/{bookmark}', [UPI\BookmarkController::class, 'index'])->name('get');
+        Route::post('{title:id}', [UPI\BookmarkController::class, 'toggle'])->name('toggle');
     });
 });
 

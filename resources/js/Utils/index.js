@@ -90,3 +90,18 @@ export const formatCompactNumber = (number, fractionDigits = 1) => {
     return (number / 1_000_000_000_000).toFixed(fractionDigits) + 'T';
   }
 };
+
+export const getBookmarkIcon = (state) => {
+  switch (state.toLowerCase()) {
+    case 'planned':
+      return 'mdi-calendar-clock-outline';
+    case 'watching':
+      return 'mdi-eye-outline';
+    case 'dropped':
+      return 'mdi-heart-broken-outline';
+    case 'completed':
+      return 'mdi-check-all';
+    default:
+      return 'mdi-bookmark';
+  }
+};

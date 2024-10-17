@@ -55,7 +55,7 @@ const items = ref([
 </script>
 
 <template>
-  <v-list rounded="lg">
+  <v-list rounded="lg" class="!shadow-md">
     <template v-for="(item, index) in items" :key="index">
       <MenuList
         v-if="item.list"

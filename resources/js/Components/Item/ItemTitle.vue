@@ -57,7 +57,7 @@ defineProps({
     </template>
 
     <template #append>
-      <TitleRating :title="item" type="shikimori" />
+      <TitleRating :value="item.shikimori_rating" />
     </template>
   </v-list-item>
 </template>

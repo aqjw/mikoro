@@ -7,9 +7,10 @@ import { createVuetify, useTheme } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
+import { en, uk, ru } from 'vuetify/locale';
 
 // Core Vue and inertiajs
-import { createApp, h } from 'vue';
+import { createApp, h, provide } from 'vue';
 import { createInertiaApp, router } from '@inertiajs/vue3';
 
 // Helpers and plugins
@@ -21,6 +22,7 @@ import { Settings } from 'luxon';
 // Stores and custom plugins
 import { useUserStore } from '@/Stores/UserStore';
 import { useNotificationStore } from '@/Stores/NotificationStore';
+import { useConfigStore } from '@/Stores/ConfigStore';
 // import laravelEcho from '@/Plugins/laravelEcho';
 import useMedia from '@/Plugins/useMedia.js';
 import useSession from '@/Composables/useSession';
@@ -35,6 +37,10 @@ const vuetify = createVuetify({
   directives,
   icons: {
     defaultSet: 'mdi',
+  },
+  locale: {
+    locale: import.meta.env.VITE_APP_LOCALE,
+    messages: { en, uk, ru },
   },
 });
 
@@ -77,9 +83,11 @@ function setupEventListeners(app) {
 function setupStores(props) {
   const { user = null, notifications_unread = 0 } = props.auth ?? {};
 
+  const configStore = useConfigStore();
   const notificationStore = useNotificationStore();
   const userStore = useUserStore();
 
+  configStore.$setConfig(window.config);
   userStore.setUser(user);
   notificationStore.setNotificationsUnread(notifications_unread);
 }

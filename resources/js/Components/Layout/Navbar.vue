@@ -66,6 +66,8 @@ function toggleTheme() {
                 density="comfortable"
                 icon="mdi-bookmark-outline"
                 variant="plain"
+                :active="route().current('bookmarks')"
+                active-color="primary"
                 :to="route('bookmarks')"
               />
 

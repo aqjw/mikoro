@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\BookmarkType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TitleBookmark extends Model
 {
@@ -19,4 +20,9 @@ class TitleBookmark extends Model
     protected $casts = [
         'type' => BookmarkType::class,
     ];
+
+    public function title(): BelongsTo
+    {
+        return $this->belongsTo(Title::class);
+    }
 }

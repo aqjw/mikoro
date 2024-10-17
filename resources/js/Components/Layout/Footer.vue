@@ -8,8 +8,7 @@ const links = ['Home', 'About Us', 'Team', 'Services', 'Blog', 'Contact Us'];
       <v-btn
         v-for="link in links"
         :key="link"
-        class="mx-2"
-        color="white"
+        class="mx-2 text-none"
         rounded="xl"
         variant="text"
       >

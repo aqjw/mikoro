@@ -41,7 +41,7 @@
     font-size: 0.7rem !important;
     height: 16px !important;
     min-width: 16px !important;
-    padding: 0 4px  !important;
+    padding: 0 4px !important;
   }
 }
 
@@ -207,4 +207,8 @@ blockquote {
     filter: blur(0px);
     opacity: 1;
   }
+}
+
+.break-anywhere {
+  overflow-wrap: anywhere;
 }

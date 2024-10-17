@@ -131,7 +131,9 @@ const openNotification = (item) => {
         />
       </v-toolbar>
 
-      <div v-if="loading">loading</div>
+      <div v-if="loading" class="flex justify-center items-center p-12">
+        <v-progress-circular color="primary" indeterminate :size="30" :width="2" />
+      </div>
 
       <v-list v-else lines="two" density="comfortable" max-height="450">
         <v-list-item v-if="items.length == 0" class="text-center">
