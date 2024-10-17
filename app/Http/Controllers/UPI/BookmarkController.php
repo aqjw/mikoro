@@ -31,7 +31,6 @@ class BookmarkController extends Controller
         return response()->json([
             'items' => BookmarkResource::collection($result->items()),
             'total' => $result->total(),
-            'has_more' => $result->hasMorePages(),
             'items_per_page' => $limit,
         ]);
     }

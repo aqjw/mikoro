@@ -81,6 +81,10 @@ const firstLoading = computed(() => {
 });
 
 const loadItems = ({ page, sortBy }) => {
+  if (loading.value) {
+    return;
+  }
+
   loading.value = true;
   bookmarkStore.$loadItems(
     props.bookmark,

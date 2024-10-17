@@ -8,7 +8,7 @@ import PartTab from './Parts/PartTab.vue';
 import { getBookmarkIcon } from '@/Utils';
 
 const configStore = useConfigStore();
-const { bookmarks } = storeToRefs(configStore);
+const { bookmarks: rawBookmarks } = storeToRefs(configStore);
 
 const props = defineProps({
   bookmark: {
@@ -18,6 +18,7 @@ const props = defineProps({
 });
 
 const tab = ref(props.bookmark);
+const bookmarks = ref([]);
 
 watch(tab, () => {
   window.history.replaceState({}, '', route('bookmarks', tab.value));
@@ -25,7 +26,7 @@ watch(tab, () => {
 
 onMounted(() => {
   nextTick(() => {
-    bookmarks.value = bookmarks.value.map((item) => {
+    bookmarks.value = rawBookmarks.value.map((item) => {
       item.key = item.name;
       return item;
     });
