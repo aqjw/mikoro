@@ -34,8 +34,8 @@ return new class extends Migration
             $table->unsignedSmallInteger('last_episode')->nullable();
             $table->unsignedSmallInteger('episodes_count')->nullable();
 
-            $table->timestamp('updated_at')->nullable();
-            $table->timestamp('created_at')->nullable();
+            $table->timestamp('last_episode_at')->nullable();
+            $table->timestamps();
         });
     }
 

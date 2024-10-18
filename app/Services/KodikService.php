@@ -52,12 +52,12 @@ class KodikService
         ]);
 
         if (isset($data['updated_at'])) {
-            $updated_at = Carbon::parse($data['updated_at']);
-            if (! $title->updated_at || $updated_at->greaterThan($title->updated_at)) {
-                $title->updated_at = $updated_at->setTimezone('UTC');
+            $datetime = Carbon::parse($data['updated_at']);
+            if (! $title->last_episode_at) {
+                $title->last_episode_at = $datetime->setTimezone('UTC');
             }
         }
-        $title->updated_at ??= now()->setTimezone('UTC');
+        $title->last_episode_at ??= now()->setTimezone('UTC');
 
         if ($title->wasRecentlyCreated) {
             $title->last_episode = $data['last_episode'] ?? null;

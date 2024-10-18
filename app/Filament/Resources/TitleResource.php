@@ -64,7 +64,7 @@ class TitleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('updated_at', 'desc')
+            ->defaultSort('last_episode_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID'),
@@ -72,7 +72,7 @@ class TitleResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('last_episode_at')
                     ->dateTimeTooltip()
                     ->sortable()
                     ->since(),

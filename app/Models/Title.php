@@ -21,8 +21,6 @@ class Title extends Model implements HasMedia
     use HasFactory, InteractsWithMedia;
     use Searchable;
 
-    const UPDATED_AT = null;
-
     protected $fillable = [
         'slug',
         'type',
@@ -44,7 +42,7 @@ class Title extends Model implements HasMedia
         'blocked_seasons',
         'last_episode',
         'episodes_count',
-        'updated_at',
+        'last_episode_at',
     ];
 
     protected $casts = [
@@ -55,7 +53,7 @@ class Title extends Model implements HasMedia
         'shikimori_rating' => RatingCast::class,
         'rating' => RatingCast::class,
         'released_at' => 'date',
-        'updated_at' => 'datetime',
+        'last_episode_at' => 'datetime',
     ];
 
     #[SearchUsingFullText(['description'])]

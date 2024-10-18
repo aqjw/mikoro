@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
+/**
+ * @property int $id
+ * @property Title $title
+ */
 class Episode extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
@@ -22,6 +26,7 @@ class Episode extends Model implements HasMedia
     protected static function booted()
     {
         static::created(function (Episode $episode) {
+            $episode->title->touch('last_episode_at');
             ProcessEpisodeReleaseSubscriptionJob::dispatch($episode->id);
         });
     }

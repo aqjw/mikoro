@@ -27,7 +27,7 @@ class CatalogService
     public function sorting(Builder $query, array $data): void
     {
         match ($data['option']) {
-            'latest' => $query->orderBy('updated_at', $data['dir']),
+            'latest' => $query->orderBy('last_episode_at', $data['dir']),
             // TODO: sort by rating when we have data
             'rating' => $query->orderBy('shikimori_rating', $data['dir']),
             'comments_count' => $query->withCount('comments')->orderBy('comments_count', $data['dir']),

@@ -44,7 +44,7 @@ class BookmarkService
             'released_at' => $query->orderBy('titles.released_at', $order),
             'rating' => $query->orderBy('titles.shikimori_rating', $order),
             'last_episode' => $query->orderBy('titles.last_episode', $order),
-            'updated_at' => $query->orderBy('updated_at', $order),
+            'updated_at' => $query->orderBy('title_bookmarks.updated_at', $order),
             default => null
         };
     }
