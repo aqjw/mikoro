@@ -1,6 +1,6 @@
 <script setup>
 import { router, usePage } from '@inertiajs/vue3';
-import { useCatalogStore } from '@/Stores/CatalogStore';
+import { useCatalogStore } from '@/Stores';
 import { computed, ref } from 'vue';
 import MenuList from '../Menu/MenuList.vue';
 

@@ -2,10 +2,8 @@
 import { computed, nextTick, ref, onMounted } from 'vue';
 import CardComment from '@/Components/Comments/CardComment.vue';
 import DateManager from '@/Plugins/DateManager';
-import { useCommentStore } from '@/Stores/CommentStore';
+import { storeToRefs, useAppStore, useCommentStore } from '@/Stores';
 import { initials, formatBbcodeToHtml, handleResponseError } from '@/Utils';
-import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
-import { storeToRefs } from 'pinia';
 import TextEditor from '@/Components/TextEditor.vue';
 import CharacterLimit from '@/Components/CharacterLimit.vue';
 import { useToast } from 'vue-toast-notification';
@@ -16,7 +14,9 @@ const props = defineProps({
 
 const $toast = useToast();
 
+const appStore = useAppStore();
 const commentStore = useCommentStore();
+const { getConfig } = storeToRefs(appStore);
 const { edit: editComment, editTextLength } = storeToRefs(commentStore);
 
 const isReply = computed(() => props.comment.parent_id != null);
@@ -82,39 +82,39 @@ const onEditCancel = () => {
         <TextEditor ref="textEditor" v-model="editComment.draft">
           <template #actions>
             <div class="flex gap-4">
-            <CharacterLimit
-              :value="editTextLength"
-              :min="$config.comments.min_characters"
-              :max="$config.comments.max_characters"
-            />
+              <CharacterLimit
+                :value="editTextLength"
+                :min="getConfig.comments.minCharacters"
+                :max="getConfig.comments.maxCharacters"
+              />
 
-            <div class="flex gap-2">
-              <v-btn
-                density="comfortable"
-                variant="tonal"
-                rounded="xl"
-                class="text-none"
-                @click="onEditCancel"
-              >
-                Cancel
-              </v-btn>
+              <div class="flex gap-2">
+                <v-btn
+                  density="comfortable"
+                  variant="tonal"
+                  rounded="xl"
+                  class="text-none"
+                  @click="onEditCancel"
+                >
+                  Cancel
+                </v-btn>
 
-              <v-btn
-              :disabled="
-                editTextLength < $config.comments.min_characters ||
-                editTextLength > $config.comments.max_characters
-              "
-                :loading="saving"
-                density="comfortable"
-                color="primary"
-                variant="tonal"
-                rounded="xl"
-                class="text-none"
-                @click="onSave"
-              >
-                Save
-              </v-btn>
-            </div>
+                <v-btn
+                  :disabled="
+                    editTextLength < getConfig.comments.minCharacters ||
+                    editTextLength > getConfig.comments.maxCharacters
+                  "
+                  :loading="saving"
+                  density="comfortable"
+                  color="primary"
+                  variant="tonal"
+                  rounded="xl"
+                  class="text-none"
+                  @click="onSave"
+                >
+                  Save
+                </v-btn>
+              </div>
             </div>
           </template>
         </TextEditor>

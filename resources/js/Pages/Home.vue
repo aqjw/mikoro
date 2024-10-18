@@ -5,8 +5,7 @@ import TitleRating from '@/Components/TitleRating.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { onMounted, ref, watch, nextTick } from 'vue';
-import { useCatalogStore } from '@/Stores/CatalogStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useCatalogStore } from '@/Stores';
 import InfiniteScroll from '@/Components/InfiniteScroll.vue';
 
 const UPDATE_DELAY_MS = 1000;

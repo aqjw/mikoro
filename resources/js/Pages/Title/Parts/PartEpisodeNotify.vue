@@ -3,9 +3,7 @@ import { nextTick, ref, watch } from 'vue';
 import { formatCompactNumber, handleResponseError } from '@/Utils';
 import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
 import { useToast } from 'vue-toast-notification';
-import { useUserStore } from '@/Stores/UserStore';
-import { storeToRefs } from 'pinia';
-import { toRefs } from 'vue';
+import { storeToRefs, useUserStore } from '@/Stores';
 
 const props = defineProps({
   title: {

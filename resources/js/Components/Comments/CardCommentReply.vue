@@ -2,16 +2,13 @@
 import { computed, nextTick, onMounted, ref } from 'vue';
 import CardComment from '@/Components/Comments/CardComment.vue';
 import DateManager from '@/Plugins/DateManager';
-import { useCommentStore } from '@/Stores/CommentStore';
-import { useUserStore } from '@/Stores/UserStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useAppStore, useCommentStore, useUserStore } from '@/Stores';
 import {
   initials,
   scrollToElement,
   formatHtmlToBbcode,
   handleResponseError,
 } from '@/Utils';
-import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
 import TextEditor from '@/Components/TextEditor.vue';
 import CardCommentReply from '@/Components/Comments/CardCommentReply.vue';
 import { useToast } from 'vue-toast-notification';
@@ -19,8 +16,10 @@ import CharacterLimit from '@/Components/CharacterLimit.vue';
 
 const $toast = useToast();
 
+const appStore = useAppStore();
 const commentStore = useCommentStore();
 const userStore = useUserStore();
+const { getConfig } = storeToRefs(appStore);
 const { items, params, replyTo, draft, replyToTextLength } = storeToRefs(commentStore);
 const { user } = storeToRefs(userStore);
 
@@ -89,8 +88,8 @@ const onReplyToCancel = () => {
             <div class="flex gap-4">
               <CharacterLimit
                 :value="replyToTextLength"
-                :min="$config.comments.min_characters"
-                :max="$config.comments.max_characters"
+                :min="getConfig.comments.minCharacters"
+                :max="getConfig.comments.maxCharacters"
               />
 
               <div class="flex gap-2">
@@ -106,8 +105,8 @@ const onReplyToCancel = () => {
 
                 <v-btn
                   :disabled="
-                    replyToTextLength < $config.comments.min_characters ||
-                    replyToTextLength > $config.comments.max_characters
+                    replyToTextLength < getConfig.comments.minCharacters ||
+                    replyToTextLength > getConfig.comments.maxCharacters
                   "
                   :loading="submitting"
                   density="comfortable"

@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from 'vue';
 import DialogConfirm from '@/Components/Dialogs/DialogConfirm.vue';
-import { useUserStore } from '@/Stores/UserStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useAppStore, useUserStore } from '@/Stores';
 
+const appStore = useAppStore();
 const userStore = useUserStore();
+const { getConfig } = storeToRefs(appStore);
 const { isLogged, user } = storeToRefs(userStore);
 
 const emit = defineEmits(['reply', 'report', 'edit', 'delete']);
@@ -14,12 +15,13 @@ const props = defineProps({
 });
 
 const deleteConfirm = ref(null);
+
 const items = ref([
   {
     label: 'Report',
     icon: 'mdi-shield-alert-outline',
     color: '',
-    subitems: window.config.comments.report_reasons,
+    subitems: getConfig.value.comments.reportReasons,
     can: () => true,
     action: (reasonId) => emit('report', reasonId),
   },

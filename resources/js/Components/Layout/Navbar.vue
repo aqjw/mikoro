@@ -1,13 +1,11 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import { useTheme } from 'vuetify';
-import { useUserStore } from '@/Stores/UserStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useUserStore } from '@/Stores';
 import MenuProfile from '@/Components/Menu/MenuProfile.vue';
 import MenuNotification from '@/Components/Menu/MenuNotification.vue';
 import useSession from '@/Composables/useSession';
-import { compile } from 'vue';
 import DialogSearch from '../Dialogs/DialogSearch.vue';
 
 const theme = useTheme();

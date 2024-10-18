@@ -1,8 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { storeToRefs } from 'pinia';
-import { useNotificationStore } from '@/Stores/NotificationStore';
+import { storeToRefs, useNotificationStore } from '@/Stores';
 import { useToast } from 'vue-toast-notification';
 import { handleResponseError } from '@/Utils';
 

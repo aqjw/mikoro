@@ -3,9 +3,7 @@ import { nextTick, ref, watch } from 'vue';
 import { formatCompactNumber, handleResponseError, getBookmarkIcon } from '@/Utils';
 import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
 import { useToast } from 'vue-toast-notification';
-import { useUserStore } from '@/Stores/UserStore';
-import { useBookmarkStore } from '@/Stores/BookmarkStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useAppStore, useUserStore, useBookmarkStore } from '@/Stores';
 import { toRefs } from 'vue';
 
 const props = defineProps({
@@ -16,8 +14,10 @@ const props = defineProps({
 });
 
 const $toast = useToast();
+const appStore = useAppStore();
 const bookmarkStore = useBookmarkStore();
 const userStore = useUserStore();
+const { getConfig } = storeToRefs(appStore);
 const { isLogged } = storeToRefs(userStore);
 
 const loginRequires = ref(null);
@@ -75,7 +75,7 @@ const onUpdate = (value) => {
       class="flex flex-wrap gap-2"
     >
       <v-item
-        v-for="(item, index) in $config.bookmarks"
+        v-for="(item, index) in getConfig.bookmarks"
         :key="index"
         :value="item.id"
         v-slot="{ selectedClass, toggle }"

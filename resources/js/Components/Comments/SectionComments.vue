@@ -6,9 +6,7 @@ import TextEditor from '@/Components/TextEditor.vue';
 import InfiniteScroll from '@/Components/InfiniteScroll.vue';
 import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
 import CharacterLimit from '@/Components/CharacterLimit.vue';
-import { useCommentStore } from '@/Stores/CommentStore';
-import { useUserStore } from '@/Stores/UserStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useAppStore, useCommentStore, useUserStore } from '@/Stores';
 import { formatHtmlToBbcode, handleResponseError } from '@/Utils';
 import { useToast } from 'vue-toast-notification';
 
@@ -21,8 +19,10 @@ const props = defineProps({
 
 const $toast = useToast();
 
+const appStore = useAppStore();
 const userStore = useUserStore();
 const commentStore = useCommentStore();
+const { getConfig } = storeToRefs(appStore);
 const { isLogged } = storeToRefs(userStore);
 const {
   items,
@@ -111,14 +111,14 @@ onBeforeUnmount(() => {
           <div class="flex gap-4">
             <CharacterLimit
               :value="draftTextLength"
-              :min="$config.comments.min_characters"
-              :max="$config.comments.max_characters"
+              :min="getConfig.comments.minCharacters"
+              :max="getConfig.comments.maxCharacters"
             />
 
             <v-btn
               :disabled="
-                draftTextLength < $config.comments.min_characters ||
-                draftTextLength > $config.comments.max_characters
+                draftTextLength < getConfig.comments.minCharacters ||
+                draftTextLength > getConfig.comments.maxCharacters
               "
               :loading="submitting"
               density="comfortable"

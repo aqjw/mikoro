@@ -1,4 +1,5 @@
 import { formatHtmlToBbcode, formatBbcodeToHtml } from '@/Utils';
+import { useAppStore } from '@/Stores';
 
 export default {
   $setTitleId(id) {
@@ -44,13 +45,11 @@ export default {
     if (comment) {
       this.$setEdit(null);
 
-      const maxDepth = window.config.comments.max_depth;
+      const appStore = useAppStore();
+        const maxDepth = appStore.getConfig.comments.maxDepth;
       const parentId = this._findValidParentId(this.items, comment.id, maxDepth);
       comment.real_id = parentId || comment.id;
-      comment.draft = {
-        text: '',
-        html: '',
-      };
+      comment.draft = { text: '', html: '' };
     }
 
     this.replyTo = comment;

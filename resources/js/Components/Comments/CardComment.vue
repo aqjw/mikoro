@@ -2,11 +2,9 @@
 import { computed, nextTick, ref } from 'vue';
 import CardComment from '@/Components/Comments/CardComment.vue';
 import DateManager from '@/Plugins/DateManager';
-import { useCommentStore } from '@/Stores/CommentStore';
-import { useUserStore } from '@/Stores/UserStore';
+import { storeToRefs, useAppStore, useUserStore, useCommentStore } from '@/Stores';
 import { initials, formatBbcodeToHtml, handleResponseError } from '@/Utils';
 import MenuCommentActions from '@/Components/Comments/MenuCommentActions.vue';
-import { storeToRefs } from 'pinia';
 import CardCommentEdit from '@/Components/Comments/CardCommentEdit.vue';
 import CardCommentReply from '@/Components/Comments/CardCommentReply.vue';
 import CommentRepliesMore from '@/Components/Comments/CommentRepliesMore.vue';
@@ -17,15 +15,18 @@ const props = defineProps({
   comment: Object,
 });
 
+const $toast = useToast();
+
+const appStore = useAppStore();
 const commentStore = useCommentStore();
 const userStore = useUserStore();
+const { getConfig } = storeToRefs(appStore);
 const { replyTo, edit: editComment } = storeToRefs(commentStore);
 const { isLogged } = storeToRefs(userStore);
-const $toast = useToast();
 
 const loginRequires = ref(null);
 const loadingReaction = ref(
-  window.config.comments.reactions.reduce((obj, { name }) => {
+  getConfig.value.comments.reactions.reduce((obj, { name }) => {
     obj[name] = false;
     return obj;
   }, {})
@@ -44,7 +45,7 @@ const toggleReaction = (reactionName) => {
     return;
   }
 
-  const reaction = window.config.comments.reactions.find(
+  const reaction = getConfig.value.comments.reactions.find(
     (reaction) => reaction.name === reactionName
   );
   let loadingTimeout;
@@ -69,7 +70,7 @@ const toggleReaction = (reactionName) => {
 };
 
 const isReactionActive = (reactionName) => {
-  const reaction = window.config.comments.reactions.find(
+  const reaction = getConfig.value.comments.reactions.find(
     (reaction) => reaction.name === reactionName
   );
   return props.comment.userReactions.includes(reaction.id);

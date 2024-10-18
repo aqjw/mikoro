@@ -1,4 +1,4 @@
-// import { useNavigationStore } from '@/Stores/NavigationStore';
+// import { useNavigationStore } from '@/Stores';
 
 export default {
   setUser(payload) {

@@ -1,8 +1,7 @@
 <script setup>
 import { nextTick, onMounted, ref, watch } from 'vue';
 import MenuFilterItem from '../Menu/MenuFilterItem.vue';
-import { useCatalogStore } from '@/Stores/CatalogStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useCatalogStore } from '@/Stores';
 
 const emit = defineEmits(['updated', 'reset']);
 

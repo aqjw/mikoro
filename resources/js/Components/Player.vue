@@ -1,8 +1,7 @@
 <script setup>
 import { ref, toRefs, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { NavigationPlugin, OverlayPlugin } from '@/Plugins/xgplayer';
-import { useUserStore } from '@/Stores/UserStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useUserStore } from '@/Stores';
 import Player from 'xgplayer';
 import '@/../css/player.css';
 

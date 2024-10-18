@@ -3,8 +3,7 @@ import { ref } from 'vue';
 import { formatCompactNumber, handleResponseError } from '@/Utils';
 import DialogLoginRequires from '@/Components/Dialogs/DialogLoginRequires.vue';
 import { useToast } from 'vue-toast-notification';
-import { useUserStore } from '@/Stores/UserStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useUserStore } from '@/Stores';
 
 const props = defineProps({
   title: Object,

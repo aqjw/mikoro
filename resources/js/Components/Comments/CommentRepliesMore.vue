@@ -1,6 +1,6 @@
 <script setup>
 import { computed, toRefs, ref } from 'vue';
-import { useCommentStore } from '@/Stores/CommentStore';
+import { storeToRefs, useAppStore, useCommentStore } from '@/Stores';
 import { useToast } from 'vue-toast-notification';
 import { handleResponseError } from '@/Utils';
 const props = defineProps({
@@ -10,9 +10,11 @@ const props = defineProps({
 const { comment } = toRefs(props);
 
 const $toast = useToast();
+const appStore = useAppStore();
 const commentStore = useCommentStore();
+const { getConfig } = storeToRefs(appStore);
 
-const repliesLimit = window.config.comments.replies_per_page;
+const repliesLimit = getConfig.value.comments.repliesPerPage;
 const loading = ref(false);
 
 const repliesTotal = computed(() => comment.value.replies_total);

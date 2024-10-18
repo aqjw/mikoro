@@ -6,7 +6,7 @@ import TitleRating from '@/Components/TitleRating.vue';
 import { format } from '@/Plugins/DateManager';
 import { formatCompactNumber, handleResponseError, getBookmarkIcon } from '@/Utils';
 import { useToast } from 'vue-toast-notification';
-import { useBookmarkStore } from '@/Stores/BookmarkStore';
+import { useBookmarkStore } from '@/Stores';
 import { computed } from 'vue';
 
 const props = defineProps({

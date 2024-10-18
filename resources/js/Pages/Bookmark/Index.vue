@@ -2,13 +2,12 @@
 import { computed, ref, toRefs, watch, onMounted, nextTick } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { useConfigStore } from '@/Stores/ConfigStore';
-import { storeToRefs } from 'pinia';
+import { storeToRefs, useAppStore } from '@/Stores';
 import PartTab from './Parts/PartTab.vue';
 import { getBookmarkIcon } from '@/Utils';
 
-const configStore = useConfigStore();
-const { bookmarks: rawBookmarks } = storeToRefs(configStore);
+const appStore = useAppStore();
+const { getConfig } = storeToRefs(appStore);
 
 const props = defineProps({
   bookmark: {
@@ -18,19 +17,15 @@ const props = defineProps({
 });
 
 const tab = ref(props.bookmark);
-const bookmarks = ref([]);
+const bookmarks = ref(
+  getConfig.value.bookmarks.map((item) => {
+    item.key = item.name;
+    return item;
+  })
+);
 
 watch(tab, () => {
   window.history.replaceState({}, '', route('bookmarks', tab.value));
-});
-
-onMounted(() => {
-  nextTick(() => {
-    bookmarks.value = rawBookmarks.value.map((item) => {
-      item.key = item.name;
-      return item;
-    });
-  });
 });
 
 const refreshTab = (tab) => {
