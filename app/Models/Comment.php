@@ -68,6 +68,7 @@ class Comment extends Model
     {
         $this->replies->each->purge();
 
+        $this->reports()->delete();
         $this->reactions()->delete();
         $this->delete();
     }

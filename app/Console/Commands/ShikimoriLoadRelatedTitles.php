@@ -25,7 +25,7 @@ class ShikimoriLoadRelatedTitles extends Command
         $this->maxGroupId = Title::max('group_id') ?? 0;
     }
 
-    public function handle(ShikimoriService $shikimoriService)
+    public function handle(ShikimoriService $shikimoriService): void
     {
         set_time_limit(0);
         ini_set('max_execution_time', 0);
@@ -60,12 +60,12 @@ class ShikimoriLoadRelatedTitles extends Command
         $bar->finish();
     }
 
-    private function shouldSkipTitle($title)
+    private function shouldSkipTitle(Title $title): bool
     {
         return $this->skip->contains($title->shikimori_id);
     }
 
-    private function getRelatedIds(int $shikimoriId, ShikimoriService $shikimoriService)
+    private function getRelatedIds(int $shikimoriId, ShikimoriService $shikimoriService): array
     {
         try {
             $items = $shikimoriService->getFranchise($shikimoriId);
@@ -78,15 +78,26 @@ class ShikimoriLoadRelatedTitles extends Command
         }
     }
 
-    private function updateGroupIds($shikimoriIds)
+    private function updateGroupIds(array $shikimoriIds): void
     {
         $relatedTitles = Title::whereIn('shikimori_id', $shikimoriIds)->get();
-        if ($relatedTitles->whereNull('group_id')->isNotEmpty()) {
-            $this->maxGroupId++;
-            Title::whereIn('shikimori_id', $shikimoriIds)
-                ->update(['group_id' => $this->maxGroupId]);
 
-            Log::info("Group ID {$this->maxGroupId} assigned to titles: ".implode(',', $shikimoriIds));
+        if ($relatedTitles->whereNull('group_id')->isEmpty()) {
+            return;
         }
+
+        $this->maxGroupId++;
+
+        Title::whereIn('shikimori_id', $shikimoriIds)
+            ->update(['group_id' => $this->maxGroupId]);
+
+        Title::where('group_id', $this->maxGroupId)
+            ->orderBy('released_at')
+            ->get()
+            ->each(function ($title, $index) {
+                $title->update(['group_sort' => $index + 1]);
+            });
+
+        Log::info("Group ID {$this->maxGroupId} assigned to titles: ".implode(',', $shikimoriIds));
     }
 }

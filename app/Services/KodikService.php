@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\TitleKind;
+use App\Enums\TitleState;
 use App\Enums\TitleStatus;
 use App\Enums\TitleType;
 use App\Enums\TranslationType;
@@ -25,16 +27,24 @@ class KodikService
         'Юри',
         'Хентай',
         'Яой',
+        'Детское',
     ];
 
-    public function createTitle(array $data): Title
+    public function updateOrCreateTitle(array $data): Title
     {
         $material_data = $data['material_data'];
+
+        $type = TitleType::fromName($data['type']);
+        $kind = TitleKind::fromName($material_data['anime_kind']);
+        if (! $kind) {
+            $kind = TitleType::Anime->is($type) ? TitleKind::Movie : TitleKind::ONA;
+        }
+
         $title = Title::updateOrCreate([
             'shikimori_id' => $data['shikimori_id'],
         ], [
-            'slug' => Str::slug($data['title']),
-            'type' => TitleType::fromName($data['type']),
+            'kind' => $kind,
+            'type' => $type,
             'title' => $data['title'],
             'title_orig' => $data['title_orig'],
             'other_title' => $data['other_title'] ?? '',
@@ -51,18 +61,19 @@ class KodikService
             'blocked_seasons' => $data['blocked_seasons'] ?? [],
         ]);
 
-        if (isset($data['updated_at'])) {
-            $datetime = Carbon::parse($data['updated_at']);
-            if (! $title->last_episode_at) {
+        if (! $title->last_episode_at) {
+            if (isset($data['updated_at'])) {
+                $datetime = Carbon::parse($data['updated_at']);
                 $title->last_episode_at = $datetime->setTimezone('UTC');
             }
+            $title->last_episode_at ??= now()->setTimezone('UTC');
         }
-        $title->last_episode_at ??= now()->setTimezone('UTC');
 
         if ($title->wasRecentlyCreated) {
+            $title->slug = $this->getSlug($data['title']);
             $title->last_episode = $data['last_episode'] ?? null;
             $title->episodes_count = $data['episodes_count'] ?? null;
-            $title->save();
+            $title->state = TitleState::Active;
         } else {
             if (isset($data['last_episode'])) {
                 $title->last_episode = $data['last_episode'] > $title->last_episode
@@ -80,6 +91,21 @@ class KodikService
         $title->save();
 
         return $title;
+    }
+
+    public function getSlug(string $title): string
+    {
+        $originSlug = Str::slug($title);
+        $slug = $originSlug;
+
+        $counter = 1;
+
+        while (Title::where('slug', $slug)->exists()) {
+            $slug = "{$originSlug}-{$counter}";
+            $counter++;
+        }
+
+        return $slug;
     }
 
     public function createTranslation(array $data): int

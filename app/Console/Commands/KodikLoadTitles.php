@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\TitleKind;
 use App\Services\KodikService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -72,7 +73,7 @@ class KodikLoadTitles extends Command
 
     private function processItem(KodikService $kodikService, array $item): void
     {
-        $title = $kodikService->createTitle($item);
+        $title = $kodikService->updateOrCreateTitle($item);
         $translationId = $kodikService->createTranslation($item);
         $kodikService->createEpisodes($title, $translationId, $item);
         $kodikService->syncTranslations($title);
@@ -95,11 +96,17 @@ class KodikLoadTitles extends Command
     {
         return [
             'token' => env('KODIK_API_KEY'),
+            // uncomment for initial load titles
+            // 'sort' => 'updated_at',
+            // 'order' => 'asc',
+            //
             'has_field' => 'shikimori_id',
             'types' => 'anime-serial,anime',
+            'anime_kind' => implode(',', array_keys(TitleKind::mapped())),
             'year' => implode(',', range(2005, 2024)),
-            'with_episodes_data' => true,
+            'duration' => '5-200',
             'limit' => 100,
+            'with_episodes_data' => true,
             'with_material_data' => true,
         ];
     }

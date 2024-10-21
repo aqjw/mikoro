@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Casts\RatingCast;
+use App\Enums\TitleKind;
+use App\Enums\TitleState;
 use App\Enums\TitleStatus;
 use App\Enums\TitleType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -24,12 +26,14 @@ class Title extends Model implements HasMedia
     protected $fillable = [
         'slug',
         'type',
+        'kind',
         'title',
         'title_orig',
         'other_title',
         'description',
         'duration',
         'status',
+        'state',
         'minimal_age',
         'year',
         'released_at',
@@ -38,6 +42,7 @@ class Title extends Model implements HasMedia
         'shikimori_votes',
         'rating',
         'group_id',
+        'group_sort',
         'blocked_countries',
         'blocked_seasons',
         'last_episode',
@@ -47,7 +52,9 @@ class Title extends Model implements HasMedia
 
     protected $casts = [
         'type' => TitleType::class,
+        'kind' => TitleKind::class,
         'status' => TitleStatus::class,
+        'state' => TitleState::class,
         'blocked_countries' => 'array',
         'blocked_seasons' => 'array',
         'shikimori_rating' => RatingCast::class,
@@ -115,8 +122,9 @@ class Title extends Model implements HasMedia
 
     public function related(): HasMany
     {
-        return $this->hasMany(Title::class, 'group_id', 'group_id')
-            ->orderByDesc('released_at');
+        return $this
+            ->hasMany(Title::class, 'group_id', 'group_id')
+            ->orderByDesc('group_sort');
     }
 
     public function comments(): HasMany
@@ -134,9 +142,14 @@ class Title extends Model implements HasMedia
         return $this->hasMany(TitleBookmark::class);
     }
 
-    public function EpisodeReleaseSubscriptions(): HasMany
+    public function episodeReleaseSubscriptions(): HasMany
     {
         return $this->hasMany(EpisodeReleaseSubscription::class);
+    }
+
+    public function playbackStates(): HasMany
+    {
+        return $this->hasMany(PlaybackState::class);
     }
 
     public function singleEpisode(): Attribute
@@ -183,10 +196,23 @@ class Title extends Model implements HasMedia
             }
 
             return $this
-                ->EpisodeReleaseSubscriptions()
+                ->episodeReleaseSubscriptions()
                 ->where('user_id', auth()->id())
                 ->pluck('translation_id')
                 ->toArray();
         });
+    }
+
+    public function purge(): void
+    {
+        $this->episodes->each->purge();
+        $this->comments->each->purge();
+
+        $this->episodeReleaseSubscriptions()->delete();
+        $this->bookmarks()->delete();
+        $this->ratings()->delete();
+        $this->playbackStates()->delete();
+        $this->media()->delete();
+        $this->delete();
     }
 }

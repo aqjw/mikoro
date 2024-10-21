@@ -21,13 +21,18 @@ class EditTitle extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $relatedIds = $this->record->related()->pluck('id')->toArray();
+        $data['related'] = array_map('intval', $data['related']);
 
-        if (filled(array_diff($relatedIds, $data['related']))) {
+        $removedIds = array_diff($relatedIds, $data['related']);
+        $addedIds = array_diff($data['related'], $relatedIds);
+
+        if (filled($removedIds) || filled($addedIds)) {
             Title::query()
                 ->where('group_id', $this->record->group_id)
                 ->update(['group_id' => null]);
 
             $groupId = Title::max('group_id') ?? 0;
+
             Title::query()
                 ->whereIn('id', $data['related'])
                 ->update(['group_id' => $groupId + 1]);

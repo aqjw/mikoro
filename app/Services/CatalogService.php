@@ -28,7 +28,7 @@ class CatalogService
     {
         match ($data['option']) {
             'latest' => $query->orderBy('last_episode_at', $data['dir']),
-            // TODO: sort by rating when we have data
+            // TODO: sort by rating when we have data (not shikimori_rating)
             'rating' => $query->orderBy('shikimori_rating', $data['dir']),
             'comments_count' => $query->withCount('comments')->orderBy('comments_count', $data['dir']),
             'episodes_count' => $query->orderBy('last_episode', $data['dir']),

@@ -54,4 +54,10 @@ class Episode extends Model implements HasMedia
     {
         return $this->belongsTo(Translation::class);
     }
+
+    public function purge(): void
+    {
+        $this->media()->delete();
+        $this->delete();
+    }
 }
