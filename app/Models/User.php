@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\UserSettingsService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,38 +15,32 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
 {
     use HasFactory, InteractsWithMedia, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'settings',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'settings' => 'array',
         ];
+    }
+
+    protected static function booted()
+    {
+        static::creating(function (self $user) {
+            $user->settings = app(UserSettingsService::class)->getDefault();
+        });
     }
 
     public function registerMediaCollections(): void

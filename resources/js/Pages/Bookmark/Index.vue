@@ -42,7 +42,7 @@ const refreshTab = (tab) => {
   <Head title="Bookmark" />
 
   <AppLayout>
-    <div class="">
+    <div>
       <div class="text-xl font-medium mb-4">Bookmarks</div>
       <div class="bg-second rounded-lg shadow-lg overflow-hidden">
         <v-card elevation="0">

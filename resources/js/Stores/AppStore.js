@@ -13,10 +13,16 @@ export const useAppStore = defineStore('appStore', {
         maxCharacters: window.config.comments.max_characters || 1000,
       },
     },
+    // settings: {
+    //   //
+    // },
   }),
   getters: {
     getConfig() {
       return this.config;
     },
+    // getSettings() {
+    //   return this.settings;
+    // },
   },
 });

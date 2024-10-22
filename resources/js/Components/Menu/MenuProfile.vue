@@ -16,33 +16,44 @@ defineProps({
       </v-btn>
     </template>
 
-    <v-card min-width="200px">
-      <v-card-text>
-        <div class="mx-auto text-center">
-          <v-avatar color="brown">
+    <v-card width="200px">
+      <v-card-text class="!p-0">
+        <div class="mx-auto text-center p-4">
+          <v-avatar color="brown" size="large">
             <span class="text-base">{{ initials(user.name) }}</span>
           </v-avatar>
-          <h3>{{ user.name }}</h3>
-          <p class="text-caption mt-1">
-            {{ user.email }}
-          </p>
 
-          <v-divider class="my-3 -mx-4"></v-divider>
-          <v-btn variant="text" rounded> Edit Account </v-btn>
+          <div class="text-lg mt-2">{{ user.name }}</div>
+        </div>
 
-          <v-divider class="my-3 -mx-4"></v-divider>
-          <v-btn
+        <v-list density="compact" class="!pt-0">
+          <v-list-item @click="() => {}">
+            <div class="flex items-center gap-4 pr-2">
+              <v-icon size="small" icon="mdi-account-outline" variant="tonal" />
+              <span class="text-sm">{{ 'Profile' }}</span>
+            </div>
+          </v-list-item>
+
+          <v-list-item :to="route('settings')">
+            <div class="flex items-center gap-4 pr-2">
+              <v-icon size="small" icon="mdi-cog-outline" variant="tonal" />
+              <span class="text-sm">{{ 'Settings' }}</span>
+            </div>
+          </v-list-item>
+
+          <v-list-item
+            base-color="red-lighten-1"
             :to="{
               href: route('logout'),
               method: 'post',
             }"
-            variant="tonal"
-            color="red-lighten-1"
-            class="text-none"
           >
-            Log out
-          </v-btn>
-        </div>
+            <div class="flex items-center gap-4 pr-2">
+              <v-icon size="small" icon="mdi-logout" variant="tonal" />
+              <span class="text-sm">{{ 'Log out' }}</span>
+            </div>
+          </v-list-item>
+        </v-list>
       </v-card-text>
     </v-card>
   </v-menu>
