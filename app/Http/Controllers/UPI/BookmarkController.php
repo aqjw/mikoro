@@ -4,7 +4,7 @@ namespace App\Http\Controllers\UPI;
 
 use App\Enums\BookmarkType;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\BookmarkResource;
+use App\Http\Resources\BookmarkTableResource;
 use App\Models\Title;
 use App\Services\BookmarkService;
 use Illuminate\Http\JsonResponse;
@@ -29,7 +29,7 @@ class BookmarkController extends Controller
         );
 
         return response()->json([
-            'items' => BookmarkResource::collection($result->items()),
+            'items' => BookmarkTableResource::collection($result->items()),
             'total' => $result->total(),
             'items_per_page' => $limit,
         ]);

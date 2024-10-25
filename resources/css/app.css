@@ -212,3 +212,22 @@ blockquote {
 .break-anywhere {
   overflow-wrap: anywhere;
 }
+
+.v-timeline-item__body {
+  @apply !pl-2 w-full text-left;
+}
+
+.link {
+    /* @apply text-blue-900; */
+    padding-bottom: 1px;
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0% 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    transition: background-size .3s;
+
+  &:hover {
+    background-size: 100% 1px;
+  }
+}

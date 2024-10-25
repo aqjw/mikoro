@@ -2,21 +2,24 @@
 
 namespace App\Services;
 
+use App\Enums\ActivityHistoryType;
 use App\Enums\BookmarkType;
+use App\Models\Title;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class BookmarkService
 {
-    public function get(User $user, BookmarkType $bookmarkType, array $sorting, int $limit = 28): LengthAwarePaginator
+    public function get(User $user, BookmarkType $bookmarkType, array $sorting, int $limit = 28, bool $withMedia = false): LengthAwarePaginator
     {
-        $query = $user
-            ->bookmarks()
+        $query = Title::query()
+            ->join('title_bookmarks', 'title_bookmarks.title_id', '=', 'titles.id')
             ->where('title_bookmarks.type', $bookmarkType)
-            ->join('titles', 'title_bookmarks.title_id', '=', 'titles.id')
+            ->where('title_bookmarks.user_id', $user->id)
             ->select([
                 'title_bookmarks.updated_at',
-                'title_bookmarks.title_id',
+                'titles.id',
                 'titles.slug',
                 'titles.title',
                 'titles.released_at',
@@ -25,6 +28,12 @@ class BookmarkService
                 'titles.shikimori_votes',
                 'titles.type',
             ]);
+
+        if ($withMedia) {
+            $query->with([
+                'media' => fn ($query) => $query->where('collection_name', 'poster'),
+            ]);
+        }
 
         $this->sorting($query, $sorting);
         $result = $query->paginate($limit);
@@ -58,6 +67,27 @@ class BookmarkService
                 ['title_id' => $titleId],
                 ['type' => $type],
             );
+
+            app(ActivityHistoryService::class)->store(
+                user: $user,
+                titleId: $titleId,
+                type: ActivityHistoryType::Bookmark,
+                context: BookmarkType::tryFrom($type)->getName(),
+            );
         }
+    }
+
+    public function summary(User $user): array
+    {
+        return $user
+            ->bookmarks()
+            ->groupBy('type')
+            ->select([
+                DB::raw('count(*) as count'),
+                'type',
+            ])
+            ->get()
+            ->pluck('count', 'type.value')
+            ->toArray();
     }
 }

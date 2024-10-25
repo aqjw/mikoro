@@ -39,7 +39,7 @@ Route::get('title/{title:slug}', TitleController::class)->name('title');
 Route::middleware('auth')->group(function () {
     Route::get('bookmarks/{bookmark?}', BookmarkController::class)->name('bookmarks');
     Route::get('settings', SettingsController::class)->name('settings');
-    // Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('profile', ProfileController::class)->name('profile');
 });
 
 require __DIR__.'/upi.php';

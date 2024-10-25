@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref, toRefs, watch, onMounted, nextTick } from 'vue';
-import CardTitle from '@/Components/Card/CardTitle.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import Player from '@/Components/Player.vue';

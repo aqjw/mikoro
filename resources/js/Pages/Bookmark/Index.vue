@@ -6,15 +6,15 @@ import { storeToRefs, useAppStore } from '@/Stores';
 import PartTab from './Parts/PartTab.vue';
 import { getBookmarkIcon } from '@/Utils';
 
-const appStore = useAppStore();
-const { getConfig } = storeToRefs(appStore);
-
 const props = defineProps({
   bookmark: {
     type: String,
     default: 'planed',
   },
 });
+
+const appStore = useAppStore();
+const { getConfig } = storeToRefs(appStore);
 
 const tab = ref(props.bookmark);
 const bookmarks = ref(

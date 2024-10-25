@@ -10,16 +10,16 @@ enum BookmarkType: int
 
     case Planned = 1;
     case Watching = 2;
-    case Dropped = 3;
-    case Completed = 5;
+    case Completed = 4;
+    case Dropped = 5;
 
     public static function mapped(): array
     {
         return [
             'planned' => self::Planned,
             'watching' => self::Watching,
-            'dropped' => self::Dropped,
             'completed' => self::Completed,
+            'dropped' => self::Dropped,
         ];
     }
 }

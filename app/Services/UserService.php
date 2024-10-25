@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
-class UserSettingsService
+use App\Models\User;
+use Illuminate\Support\Str;
+
+class UserService
 {
-    public function getDefault(): array
+    public function getDefaultSettings(): array
     {
         return [
             'notifications' => [
@@ -21,5 +24,20 @@ class UserSettingsService
                 'history_visibility' => 1,
             ],
         ];
+    }
+
+    public function getSlug(string $email): string
+    {
+        $originSlug = Str::of($email)->explode('@')->first();
+        $slug = $originSlug;
+
+        $counter = 1;
+
+        while (User::where('slug', $slug)->exists()) {
+            $slug = "{$originSlug}-{$counter}";
+            $counter++;
+        }
+
+        return $slug;
     }
 }

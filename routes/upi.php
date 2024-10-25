@@ -3,6 +3,7 @@
 use App\Http\Controllers\UPI\BookmarkController;
 use App\Http\Controllers\UPI\CommentController;
 use App\Http\Controllers\UPI\NotificationController;
+use App\Http\Controllers\UPI\ProfileController;
 use App\Http\Controllers\UPI\SearchController;
 use App\Http\Controllers\UPI\SettingsController;
 use App\Http\Controllers\UPI\TitleController;
@@ -45,10 +46,18 @@ Route::prefix('upi')->as('upi.')->group(function () {
         });
     });
 
-    Route::prefix('bookmarks')->as('bookmarks.')->middleware('auth')->group(function () {
-        Route::get('get/{bookmark}', [BookmarkController::class, 'index'])->name('get');
-        Route::post('{title:id}', [BookmarkController::class, 'toggle'])->name('toggle');
-    });
+    Route::middleware('auth')->group(function () {
+        Route::post('settings', SettingsController::class)->name('settings.save');
 
-    Route::post('settings', SettingsController::class)->name('settings.save');
+        Route::prefix('bookmarks')->as('bookmarks.')->group(function () {
+            Route::get('get/{bookmark}', [BookmarkController::class, 'index'])->name('get');
+            Route::post('{title:id}', [BookmarkController::class, 'toggle'])->name('toggle');
+        });
+
+        Route::prefix('profile/{user:id}')->as('profile.')->group(function () {
+            Route::get('bookmarks/{bookmark}', [ProfileController::class, 'bookmarks'])->name('bookmarks');
+            Route::get('activity-histories', [ProfileController::class, 'activityHistories'])->name('activity_histories');
+            Route::get('heatmap', [ProfileController::class, 'heatmap'])->name('heatmap');
+        });
+    });
 });

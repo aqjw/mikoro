@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Services\UserSettingsService;
+use App\Services\UserService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +19,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
         'name',
         'email',
         'password',
+        'slug',
         'settings',
     ];
 
@@ -39,7 +40,9 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     protected static function booted()
     {
         static::creating(function (self $user) {
-            $user->settings = app(UserSettingsService::class)->getDefault();
+            $service = app(UserService::class);
+            $user->settings = $service->getDefaultSettings();
+            $user->slug = $service->getSlug($user->email);
         });
     }
 
@@ -70,5 +73,10 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     public function bookmarks(): HasMany
     {
         return $this->hasMany(TitleBookmark::class);
+    }
+
+    public function activityHistories(): HasMany
+    {
+        return $this->hasMany(ActivityHistory::class);
     }
 }

@@ -27,7 +27,7 @@ defineProps({
         </div>
 
         <v-list density="compact" class="!pt-0">
-          <v-list-item @click="() => {}">
+          <v-list-item :to="route('profile')">
             <div class="flex items-center gap-4 pr-2">
               <v-icon size="small" icon="mdi-account-outline" variant="tonal" />
               <span class="text-sm">{{ 'Profile' }}</span>

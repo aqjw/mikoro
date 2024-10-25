@@ -11,6 +11,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property int $id
+ * @property string $name
  * @property Title $title
  */
 class Episode extends Model implements HasMedia

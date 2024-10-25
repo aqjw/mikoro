@@ -6,7 +6,7 @@ use App\Enums\TitleType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class BookmarkResource extends JsonResource
+class BookmarkTableResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,12 +17,12 @@ class BookmarkResource extends JsonResource
     {
         return [
             'updated_at' => $this->updated_at->toISOString(),
-            'title_id' => $this->title_id,
+            'title_id' => $this->id,
             'slug' => $this->slug,
             'title' => $this->title,
             'released_at' => $this->released_at,
             'last_episode' => $this->last_episode,
-            'shikimori_rating' => $this->shikimori_rating / 100,
+            'shikimori_rating' => $this->shikimori_rating,
             'shikimori_votes' => $this->shikimori_votes,
             'single_episode' => TitleType::Anime->is($this->type),
         ];

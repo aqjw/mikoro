@@ -171,7 +171,7 @@ const updateSettings = () => {
               <v-tabs-window-item value="privacy" class="p-4 inline-flex gap-4">
                 <v-select
                   v-model="settings.privacy.list_visibility"
-                  label="Кто может видеть мои списки"
+                  label="Кто может видеть мои закладки"
                   :items="options.visibility"
                   variant="filled"
                   density="comfortable"
@@ -182,7 +182,7 @@ const updateSettings = () => {
                 />
                 <v-select
                   v-model="settings.privacy.history_visibility"
-                  label="Кто может видеть мою историю просмотров"
+                  label="Кто может видеть мою историю"
                   :items="options.visibility"
                   variant="filled"
                   density="comfortable"

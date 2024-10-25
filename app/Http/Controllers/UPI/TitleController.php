@@ -4,12 +4,15 @@ namespace App\Http\Controllers\UPI;
 
 use App\Enums\TranslationType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UPI\PlaybackStateRequest;
 use App\Http\Resources\TitleShortResource;
 use App\Models\Country;
+use App\Models\Episode;
 use App\Models\Genre;
 use App\Models\Studio;
 use App\Models\Title;
 use App\Models\Translation;
+use App\Services\ActivityHistoryService;
 use App\Services\CatalogService;
 use App\Services\EpisodeReleaseSubscriptionService;
 use App\Services\TitleRatingService;
@@ -173,24 +176,26 @@ class TitleController extends Controller
         ]);
     }
 
-    public function playbackState(Title $title, Request $request): JsonResponse
+    public function playbackState(Title $title, PlaybackStateRequest $request, ActivityHistoryService $activityHistoryService): JsonResponse
     {
-        $request->validate([
-            'episode_id' => ['required'],
-            'translation_id' => ['required'],
-            'time' => ['required'],
-        ]);
+        $data = $request->validated();
+        $user = $request->user();
 
-        $request->user()
-            ->playbackStates()
+        $user->playbackStates()
             ->updateOrCreate(
                 ['title_id' => $title->id],
                 [
-                    'episode_id' => $request->episode_id,
-                    'translation_id' => $request->translation_id,
-                    'time' => $request->time,
+                    'episode_id' => $data['episode_id'],
+                    'translation_id' => $data['translation_id'],
+                    'time' => $data['time'],
                 ]
             );
+
+        $activityHistoryService->storeEpisodeOrNone(
+            user: $user,
+            titleId: $title->id,
+            episodeId: $data['episode_id'],
+        );
 
         return response()->json('ok');
     }

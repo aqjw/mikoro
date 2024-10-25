@@ -105,3 +105,19 @@ export const getBookmarkIcon = (state) => {
       return 'mdi-bookmark';
   }
 };
+
+export const getBookmarkColor = (state, isDark = false) => {
+  const theme = isDark ? 'lighten' : 'darken';
+  switch (state.toLowerCase()) {
+    case 'planned':
+      return `blue-grey-${theme}-3`;
+    case 'watching':
+      return `green-${theme}-3`;
+    case 'dropped':
+      return `red-${theme}-3`;
+    case 'completed':
+      return `blue-${theme}-3`;
+    default:
+      return `brown-${theme}-3`;
+  }
+};

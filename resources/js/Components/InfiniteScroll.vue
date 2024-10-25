@@ -50,7 +50,7 @@ defineExpose({ load, reload });
       </slot>
 
       <slot v-if="!hasMore && !items.length" name="empty">
-        <div v-if="items.length === 0">Ничего не найдено</div>
+        <div>Ничего не найдено</div>
       </slot>
     </div>
   </div>

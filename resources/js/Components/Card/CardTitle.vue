@@ -1,25 +1,30 @@
 <script setup>
+import { ref } from 'vue';
 import TitleRating from '@/Components/TitleRating.vue';
 
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
     required: true,
   },
+  small: Boolean,
 });
+
+const tooltipMinLength = ref(props.small ? 13 : 22);
 </script>
 
 <template>
   <v-card
-    class="bg-zinc-200 rounded-md h-80"
+    :class="['bg-zinc-200 rounded-md', small ? 'h-52' : 'h-80']"
     rounded="lg"
-    elevation="6"
+    :elevation="small ? 4 : 6"
     @click="() => {}"
   >
     <v-img
-      height="90%"
+      :height="small ? '85%' : '90%'"
       :lazy-src="$media.placeholder(item.poster)"
       :src="$media.original(item.poster)"
+      class="bg-gray-200 dark:bg-gray-700"
       cover
     >
       <v-chip
@@ -37,9 +42,9 @@ defineProps({
     </v-img>
 
     <div class="truncate px-2 pt-1">
-      <span class="font-semibold">{{ item.title }}</span>
+      <span :class="['font-semibold', small ? 'text-sm' : '']">{{ item.title }}</span>
       <v-tooltip
-        v-if="item.title.length > 22"
+        v-if="item.title.length > tooltipMinLength"
         activator="parent"
         location="top"
         :open-delay="350"

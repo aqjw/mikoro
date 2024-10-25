@@ -112,10 +112,17 @@ export default class NavigationPlugin extends Plugin {
   async updatePlaybackState() {
     if (this.player.currentTime > 0) {
       try {
+        const translationId = this._d.selected.translations;
+
+        if (this._d.single_episode) {
+          const episodeId = this.filteredEpisodeOptions(translationId)[0]?.id;
+          this._d.selected.episodes = episodeId ?? this._d.selected.episodes;
+        }
+
         const titleId = this.config.titleId;
         const params = {
           episode_id: this._d.selected.episodes,
-          translation_id: this._d.selected.translations,
+          translation_id: translationId,
           time: Math.floor(this.player.currentTime),
         };
 
