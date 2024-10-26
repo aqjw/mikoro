@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,7 +36,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => $user ? [
-                'user' => $user,
+                'user' => new UserResource($user),
                 'notifications_unread' => $user->unreadNotifications()->count(),
             ] : null,
         ];

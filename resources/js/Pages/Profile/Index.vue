@@ -2,9 +2,10 @@
 import { ref, computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import FullLayout from '@/Layouts/FullLayout.vue';
-import PartBookmarkTabs from './Parts/PartBookmarkTabs.vue';
-import PartHistory from './Parts/PartHistory.vue';
-import PartHeatmap from './Parts/PartHeatmap.vue';
+import PartBookmarkTabs from './Parts/Profile/PartBookmarkTabs.vue';
+import PartHistory from './Parts/Profile/PartHistory.vue';
+import PartHeatmap from './Parts/Profile/PartHeatmap.vue';
+import { initials } from '@/Utils';
 
 const props = defineProps({
   user: Object,
@@ -21,7 +22,17 @@ const tab = ref('bookmarks');
       <div class="flex gap-6 items-start">
         <div class="flex-shrink-0 flex justify-center flex-col text-center w-[16rem]">
           <div class="bg-second shadow-lg p-4 rounded-full overflow-hidden">
-            <div class="h-56 w-56 bg-stone-300 rounded-full"></div>
+            <v-img
+              class="h-56 w-56 bg-zinc-400 dark:bg-zinc-500 rounded-full"
+              :src="$media.image(user.avatar)"
+            >
+              <span
+                v-if="!user.avatar"
+                class="text-4xl font-semibold text-white absolute-center"
+              >
+                {{ initials(user.name) }}
+              </span>
+            </v-img>
           </div>
 
           <div class="text-xl font-bold mt-4">

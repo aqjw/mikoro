@@ -67,7 +67,7 @@ const onUpdate = (value) => {
       <v-progress-circular color="primary" indeterminate :size="20" :width="2" />
     </div>
 
-    <div class="text-caption mb-2">Оставить метку на тайтле</div>
+    <div class="text-caption mb-2">Добавить в закладки</div>
 
     <v-item-group
       v-model="selected"

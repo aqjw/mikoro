@@ -22,8 +22,7 @@ const tooltipMinLength = ref(props.small ? 13 : 22);
   >
     <v-img
       :height="small ? '85%' : '90%'"
-      :lazy-src="$media.placeholder(item.poster)"
-      :src="$media.original(item.poster)"
+      :src="$media.image(item.poster)"
       class="bg-gray-200 dark:bg-gray-700"
       cover
     >

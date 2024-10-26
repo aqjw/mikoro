@@ -1,10 +1,23 @@
 const useMedia = {
+  image(image) {
+    if (!image) return null;
+    if (typeof image === 'string') {
+      return image;
+    }
+    return {
+      src: useMedia.original(image),
+      lazySrc: useMedia.placeholder(image),
+    };
+  },
   /**
    * Generates the placeholder URL for an image
    * @param {Object} image - The image object
    * @returns {string} - The placeholder URL or an empty string
    */
   placeholder(image) {
+    if (typeof image === 'string') {
+      return image;
+    }
     return image && image.placeholder
       ? `${image.storage_url}conversions/${image.placeholder}`
       : '';
@@ -16,6 +29,9 @@ const useMedia = {
    * @returns {string} - The original URL or an empty string
    */
   original(image) {
+    if (typeof image === 'string') {
+      return image;
+    }
     return image && image.original ? image.storage_url + image.original : '';
   },
 

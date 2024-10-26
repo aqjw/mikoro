@@ -52,7 +52,7 @@ const useFormError = (form) => {
     }
 
     return {
-    //   error: true,
+      class: 'show-details',
       errorMessages: getError(propertyName),
       onFocus: () => clearError(propertyName),
     };

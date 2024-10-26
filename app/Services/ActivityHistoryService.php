@@ -63,6 +63,7 @@ class ActivityHistoryService
             ->where('title_id', $titleId)
             // TODO: context is string column without index(sql)
             ->where('context', $episodeName)
+            ->whereDate('created_at', '>', now()->subDay())
             ->exists();
 
         if ($alreadyExists) {

@@ -10,18 +10,28 @@ defineProps({
   <v-menu rounded location="bottom end" origin="auto" :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-btn icon v-bind="props">
-        <v-avatar color="brown" size="small">
-          <span class="text-xs">{{ initials(user.name) }}</span>
-        </v-avatar>
+        <v-img
+          class="h-10 w-10 bg-zinc-400 dark:bg-zinc-500 rounded-full mx-auto"
+          :src="$media.image(user.avatar)"
+        >
+          <span
+            v-if="!user.avatar"
+            class="text-lg font-semibold text-white absolute-center"
+          >
+            {{ initials(user.name) }}
+          </span>
+        </v-img>
       </v-btn>
     </template>
 
     <v-card width="200px">
       <v-card-text class="!p-0">
         <div class="mx-auto text-center p-4">
-          <v-avatar color="brown" size="large">
-            <span class="text-base">{{ initials(user.name) }}</span>
-          </v-avatar>
+          <v-img
+            v-if="user.avatar"
+            class="h-16 w-16 bg-zinc-400 dark:bg-zinc-500 rounded-full mx-auto"
+            :src="$media.image(user.avatar)"
+          />
 
           <div class="text-lg mt-2">{{ user.name }}</div>
         </div>
@@ -30,7 +40,19 @@ defineProps({
           <v-list-item :to="route('profile')">
             <div class="flex items-center gap-4 pr-2">
               <v-icon size="small" icon="mdi-account-outline" variant="tonal" />
-              <span class="text-sm">{{ 'Profile' }}</span>
+              <div class="flex justify-between items-center w-full">
+                <span class="text-sm">{{ 'Profile' }}</span>
+                <v-btn
+                  variant="tonal"
+                  density="comfortable"
+                  size="small"
+                  class="text-none !min-w-0 !px-2"
+                  :to="route('profile.edit')"
+                  @click.stop.prevent
+                >
+                  Ред.
+                </v-btn>
+              </div>
             </div>
           </v-list-item>
 

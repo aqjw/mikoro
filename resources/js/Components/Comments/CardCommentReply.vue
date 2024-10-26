@@ -67,9 +67,17 @@ const onReplyToCancel = () => {
 <template>
   <div class="comment-card is-reply">
     <div>
-      <v-avatar color="brown" size="small">
-        <span class="text-xs">{{ initials(user.name) }}</span>
-      </v-avatar>
+      <v-img
+        class="h-8 w-8 bg-zinc-400 dark:bg-zinc-500 rounded-full mx-auto"
+        :src="$media.image(user.avatar)"
+      >
+        <span
+          v-if="!user.avatar"
+          class="text-lg font-semibold text-white absolute-center"
+        >
+          {{ initials(user.name) }}
+        </span>
+      </v-img>
     </div>
 
     <div class="mt-1 ml-2 flex-grow">

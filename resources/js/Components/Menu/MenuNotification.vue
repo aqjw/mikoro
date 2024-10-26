@@ -154,8 +154,7 @@ const openNotification = (item) => {
               :height="70"
               rounded
               cover
-              :lazy-src="$media.placeholder(item.data.image)"
-              :src="$media.original(item.data.image)"
+              :src="$media.image(item.data.image)"
               class="mr-4"
             />
           </template>

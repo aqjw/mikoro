@@ -4,13 +4,17 @@ namespace App\Http\Controllers\UPI;
 
 use App\Enums\BookmarkType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UPI\UpdateProfileInformationRequest;
 use App\Http\Resources\ActivityHistoryResource;
 use App\Http\Resources\BookmarkCardResource;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\ActivityHistoryService;
 use App\Services\BookmarkService;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ProfileController extends Controller
 {
@@ -56,6 +60,55 @@ class ProfileController extends Controller
 
         return response()->json([
             'items' => $result,
+        ]);
+    }
+
+    public function updateInformation(UpdateProfileInformationRequest $request, UserService $userService)
+    {
+        $userService->updateInfo(
+            user: $request->user(),
+            data: $request->validated()
+        );
+
+        return back();
+    }
+
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'base64' => ['required', 'string'],
+        ]);
+
+        /** @var User $user */
+        $user = $request->user();
+        $user->media()->delete();
+        $user->addMediaFromBase64($data['base64'])->toMediaCollection('avatar');
+
+        return response()->json([
+            'user' => new UserResource($user),
+        ]);
+    }
+
+    public function deleteAvatar(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $user->media()->delete();
+
+        return response()->json([
+            'user' => new UserResource($user),
+        ]);
+    }
+
+    public function destroy(Request $request)
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        // TODO:
+        throw ValidationException::withMessages([
+            'message' => 'error',
         ]);
     }
 }

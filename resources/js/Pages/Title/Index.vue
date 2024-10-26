@@ -46,11 +46,7 @@ const isReleased = computed(() => status.value === 'released');
             class="rounded-br-3xl float-left w-96 -ml-8 -mt-8 mb-4 p-4 mr-4 bg-main"
           >
             <div class="rounded-lg overflow-hidden shadow-lg shadow-black/40">
-              <v-img
-                :lazy-src="$media.placeholder(poster)"
-                :src="$media.original(poster)"
-                cover
-              />
+              <v-img :src="$media.image(poster)" cover />
             </div>
           </div>
 

@@ -16,7 +16,7 @@ class UserService
                 'news_alerts' => true,
             ],
             'player' => [
-                'default_quality' => '1080p',
+                'default_quality' => 1080,
                 'default_translation' => null,
             ],
             'privacy' => [
@@ -39,5 +39,11 @@ class UserService
         }
 
         return $slug;
+    }
+
+    public function updateInfo(User $user, array $data): void
+    {
+        $user->update($data);
+        // TODO: check if email changed - send verification email
     }
 }

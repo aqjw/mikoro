@@ -25,12 +25,7 @@ defineExpose({ open });
   <v-dialog v-model="dialog" width="60%" :opacity="0.6">
     <carousel :model-value="index">
       <slide v-for="(image, _index) in images" :key="_index">
-        <v-img
-          :src="$media.original(image)"
-          :lazy-src="$media.placeholder(image)"
-          cover
-          class="rounded-md"
-        />
+        <v-img :src="$media.image(image)" cover class="rounded-md" />
       </slide>
 
       <template #addons>

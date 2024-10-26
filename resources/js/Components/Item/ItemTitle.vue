@@ -50,8 +50,7 @@ defineProps({
         rounded
         aspect-ratio="1/1"
         cover
-        :lazy-src="$media.placeholder(item.poster)"
-        :src="$media.original(item.poster)"
+        :src="$media.image(item.poster)"
         class="mr-4"
       />
     </template>

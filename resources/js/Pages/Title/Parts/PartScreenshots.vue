@@ -29,12 +29,7 @@ defineProps({
         v-ripple
         @click="() => dialogGallery.open(index)"
       >
-        <v-img
-          :src="$media.original(screenshot)"
-          :lazy-src="$media.placeholder(screenshot)"
-          cover
-          class="rounded-md"
-        />
+        <v-img :src="$media.image(screenshot)" cover class="rounded-md" />
       </slide>
       <slide
         v-if="title.screenshots.length < 3"

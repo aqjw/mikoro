@@ -54,10 +54,17 @@ Route::prefix('upi')->as('upi.')->group(function () {
             Route::post('{title:id}', [BookmarkController::class, 'toggle'])->name('toggle');
         });
 
-        Route::prefix('profile/{user:id}')->as('profile.')->group(function () {
-            Route::get('bookmarks/{bookmark}', [ProfileController::class, 'bookmarks'])->name('bookmarks');
-            Route::get('activity-histories', [ProfileController::class, 'activityHistories'])->name('activity_histories');
-            Route::get('heatmap', [ProfileController::class, 'heatmap'])->name('heatmap');
+        Route::prefix('profile')->as('profile.')->group(function () {
+            Route::prefix('{user:id}')->group(function () {
+                Route::get('bookmarks/{bookmark}', [ProfileController::class, 'bookmarks'])->name('bookmarks');
+                Route::get('activity-histories', [ProfileController::class, 'activityHistories'])->name('activity_histories');
+                Route::get('heatmap', [ProfileController::class, 'heatmap'])->name('heatmap');
+            });
+
+            Route::post('information', [ProfileController::class, 'updateInformation'])->name('update_information');
+            Route::post('avatar', [ProfileController::class, 'updateAvatar'])->name('update_avatar');
+            Route::delete('avatar', [ProfileController::class, 'deleteAvatar'])->name('delete_avatar');
+            Route::delete('destroy', [ProfileController::class, 'destroy'])->name('destroy');
         });
     });
 });
