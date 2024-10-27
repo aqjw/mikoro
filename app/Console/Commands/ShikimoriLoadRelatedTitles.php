@@ -17,16 +17,11 @@ class ShikimoriLoadRelatedTitles extends Command
 
     protected $maxGroupId;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->skip = collect();
-        $this->maxGroupId = Title::max('group_id') ?? 0;
-    }
-
     public function handle(ShikimoriService $shikimoriService): void
     {
+        $this->skip = collect();
+        $this->maxGroupId = Title::max('group_id') ?? 0;
+
         set_time_limit(0);
         ini_set('max_execution_time', 0);
         ignore_user_abort(true);
@@ -72,7 +67,7 @@ class ShikimoriLoadRelatedTitles extends Command
 
             return $items->isEmpty() ? [] : $items->pluck('id')->toArray();
         } catch (\Exception $e) {
-            Log::error("Failed to fetch related titles for ID {$shikimoriId}: ".$e->getMessage());
+            Log::error("Failed to fetch related titles for ID {$shikimoriId}: " . $e->getMessage());
 
             return [];
         }
@@ -98,6 +93,6 @@ class ShikimoriLoadRelatedTitles extends Command
                 $title->update(['group_sort' => $index + 1]);
             });
 
-        Log::info("Group ID {$this->maxGroupId} assigned to titles: ".implode(',', $shikimoriIds));
+        Log::info("Group ID {$this->maxGroupId} assigned to titles: " . implode(',', $shikimoriIds));
     }
 }
