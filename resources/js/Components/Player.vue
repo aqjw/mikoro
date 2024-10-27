@@ -24,7 +24,7 @@ const { isLogged } = storeToRefs(userStore);
 const player = ref(null);
 const playerContainer = ref(null);
 const videoUrl = ref(
-  '//cloud.kodik-storage.com/useruploads/ba2c1fec-cdae-410c-855c-9f60f790937e/b16c171865ad9e40772fc683b382a591:2024102721/720.mp4:hls:manifest.m3u8'
+  'https://cloud.kodik-storage.com/useruploads/ba2c1fec-cdae-410c-855c-9f60f790937e/b16c171865ad9e40772fc683b382a591:2024102721/720.mp4:hls:manifest.m3u8'
 );
 
 onMounted(() => {
