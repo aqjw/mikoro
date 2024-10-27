@@ -106,7 +106,7 @@ class ProfileController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        // TODO:
+        // TODO: delete profile
         throw ValidationException::withMessages([
             'message' => 'error',
         ]);

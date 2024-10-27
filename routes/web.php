@@ -8,22 +8,6 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TitleController;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/sort', function () {
-//     Title::whereNotNull('group_id')
-//         // ->whereNull('group_sort')
-//         ->get()
-//         ->groupBy('group_id')
-//         ->filter(fn ($group) => $group->count() > 1)
-//         ->each(function ($group) {
-//             $index = 1;
-//             foreach ($group->reverse() as $title) {
-//                 $title->update(['group_sort' => $index]);
-//                 $index += 1;
-//             }
-//         })
-//         ->dd();
-// });
-
 Route::get('/', HomeController::class)->name('home');
 
 Route::prefix('catalog')->as('catalog.')->group(function () {
@@ -39,12 +23,10 @@ Route::get('title/{title:slug}', TitleController::class)->name('title');
 Route::middleware('auth')->group(function () {
     Route::get('bookmarks/{bookmark?}', BookmarkController::class)->name('bookmarks');
     Route::get('settings', SettingsController::class)->name('settings');
+    Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
 });
 
-Route::prefix('profile')->group(function () {
-    Route::get('edit', [ProfileController::class, 'edit'])->middleware('auth')->name('profile.edit');
-    Route::get('{user:slug?}', [ProfileController::class, 'profile'])->name('profile');
-});
+Route::get('profile/{user:slug?}', [ProfileController::class, 'profile'])->name('profile');
 
-require __DIR__.'/upi.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/upi.php';
+require __DIR__ . '/auth.php';

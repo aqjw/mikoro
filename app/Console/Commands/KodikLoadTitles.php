@@ -19,7 +19,7 @@ class KodikLoadTitles extends Command
         ini_set('max_execution_time', 0);
         ignore_user_abort(true);
 
-        $url = 'https://kodikapi.com/list?'.http_build_query($this->getQueryParams());
+        $url = 'https://kodikapi.com/list?' . http_build_query($this->getQueryParams());
         $bar = null;
 
         while ($url) {
@@ -95,7 +95,7 @@ class KodikLoadTitles extends Command
     private function getQueryParams(): array
     {
         return [
-            'token' => env('KODIK_API_KEY'),
+            'token' => env('KODIK_API_PUBLIC_KEY'),
             // uncomment for initial load titles
             // 'sort' => 'updated_at',
             // 'order' => 'asc',

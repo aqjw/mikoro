@@ -24,7 +24,7 @@ const { isLogged } = storeToRefs(userStore);
 const player = ref(null);
 const playerContainer = ref(null);
 const videoUrl = ref(
-  'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+  '//cloud.kodik-storage.com/useruploads/ee6d7c5f-1a78-4224-bb98-709537ea2397/4201c5d6b62d189590fbfc21aab8db1c:2024102719/720.mp4:hls:manifest.m3u8'
 );
 
 onMounted(() => {

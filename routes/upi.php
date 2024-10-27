@@ -26,6 +26,8 @@ Route::prefix('upi')->as('upi.')->group(function () {
         Route::get('filters', [TitleController::class, 'filters'])->name('filters');
         Route::get('genres', [TitleController::class, 'genres'])->name('genres');
         Route::get('episodes/{title:id}', [TitleController::class, 'episodes'])->name('episodes');
+        Route::get('episode-media/{episode:id}', [TitleController::class, 'episodeMedia'])->name('episode_media');
+        Route::get('recommendations/{title:id}', [TitleController::class, 'recommendations'])->name('recommendations');
 
         Route::middleware('auth')->group(function () {
             Route::post('rating/{title:id}', [TitleController::class, 'rating'])->middleware('throttle:rating')->name('rating');
@@ -61,9 +63,9 @@ Route::prefix('upi')->as('upi.')->group(function () {
                 Route::get('heatmap', [ProfileController::class, 'heatmap'])->name('heatmap');
             });
 
-            Route::post('information', [ProfileController::class, 'updateInformation'])->name('update_information');
             Route::post('avatar', [ProfileController::class, 'updateAvatar'])->name('update_avatar');
             Route::delete('avatar', [ProfileController::class, 'deleteAvatar'])->name('delete_avatar');
+            Route::post('information', [ProfileController::class, 'updateInformation'])->name('update_information');
             Route::delete('destroy', [ProfileController::class, 'destroy'])->name('destroy');
         });
     });

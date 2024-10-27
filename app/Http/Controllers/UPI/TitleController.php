@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\UPI;
 
+use App\Enums\TitleType;
 use App\Enums\TranslationType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UPI\PlaybackStateRequest;
@@ -19,6 +20,7 @@ use App\Services\TitleRatingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class TitleController extends Controller
 {
@@ -103,6 +105,33 @@ class TitleController extends Controller
         ]);
     }
 
+    public function recommendations(Title $title, Request $request): JsonResponse
+    {
+        $genreIds = $title->genres()->pluck('id');
+
+        $titles = Title::query()
+            ->with([
+                'media' => fn ($query) => $query->where('collection_name', 'poster'),
+            ])
+            ->where('id', '!=', $title->id)
+            ->where('type', TitleType::AnimeSerial)
+            ->when($title->group_id, fn ($query) => $query->where('group_id', '!=', $title->group_id))
+            ->whereHas('genres', fn ($query) => $query->whereIn('id', $genreIds))
+            ->withCount([
+                'genres as genre_match_count' => fn ($query) => $query->whereIn('id', $genreIds)
+            ])
+            ->orderByDesc('genre_match_count')
+            ->orderByDesc('shikimori_rating')
+            ->groupBy('group_id')
+            ->take(7)
+            ->get();
+
+        return response()->json([
+            'items' => TitleShortResource::collection($titles),
+        ]);
+    }
+
+
     public function episodes(Title $title, Request $request): JsonResponse
     {
         $title->load('episodes', 'translations');
@@ -155,6 +184,43 @@ class TitleController extends Controller
             ] : null,
         ]);
     }
+
+    public function episodeMedia(Episode $episode, Request $request): JsonResponse
+    {
+        $link = $episode->source;
+        $apiKey = env('KODIK_API_PUBLIC_KEY');
+        $privateKey = env('KODIK_API_PRIVATE_KEY');
+        $userIp = $request->ip();
+
+        // Set deadline (current UTC + 6 hours)
+        $deadline = now('UTC')->addHours(6)->format('YmdH');
+
+        // Generate signature
+        $signatureString = "{$link}:{$userIp}:{$deadline}";
+        $signature = hash_hmac('sha256', $signatureString, $privateKey);
+
+        // Form request URL
+        $url = "https://kodik.biz/api/video-links";
+        $params = [
+            'link' => $link,
+            'p' => $apiKey,
+            'ip' => $userIp,
+            'd' => $deadline,
+            's' => $signature,
+        ];
+
+        // Make the GET request
+        $response = Http::get($url, $params);
+
+        dd($response->json());
+
+        // Return URL or error
+        return response()->json([
+            'url' => $response->json('url') ?? null,
+            'error' => $response->successful() ? null : 'Failed to retrieve video link',
+        ]);
+    }
+
 
     public function rating(Title $title, Request $request, TitleRatingService $titleRatingService): JsonResponse
     {

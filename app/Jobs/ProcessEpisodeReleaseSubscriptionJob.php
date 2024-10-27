@@ -20,7 +20,7 @@ class ProcessEpisodeReleaseSubscriptionJob implements ShouldQueue
     public function __construct(
         protected int $episodeId
     ) {
-        //
+        $this->queue = 'release-subscription';
     }
 
     /**

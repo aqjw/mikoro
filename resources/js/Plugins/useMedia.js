@@ -1,14 +1,18 @@
+import { toDisplayString } from 'vue';
+
 const useMedia = {
   image(image) {
     if (!image) return null;
     if (typeof image === 'string') {
       return image;
     }
-    return {
-      src: useMedia.original(image),
-      lazySrc: useMedia.placeholder(image),
-    };
+
+    const src = useMedia.original(image);
+    const lazySrc = useMedia.placeholder(image);
+
+    return { src, lazySrc };
   },
+
   /**
    * Generates the placeholder URL for an image
    * @param {Object} image - The image object

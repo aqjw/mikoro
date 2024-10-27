@@ -19,7 +19,7 @@ class StoreTitleMediaJob implements ShouldQueue
         protected int $titleId,
         protected string $posterUrl
     ) {
-        //
+        $this->queue = 'title-media';
     }
 
     /**

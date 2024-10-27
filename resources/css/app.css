@@ -77,7 +77,10 @@
 .carousel__prev,
 .carousel__next {
   @apply !m-0 !bg-slate-300 dark:!bg-slate-100;
-  --vc-nav-border-radius: 1rem;
+  --vc-nav-border-radius: 3rem;
+  --vc-icn-width: 3em;
+  --vc-nav-width: 3rem;
+  --vc-nav-height: 3rem;
 }
 
 .v-list {

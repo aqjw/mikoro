@@ -11,6 +11,7 @@ import PartDetails from './Parts/PartDetails.vue';
 import PartScreenshots from './Parts/PartScreenshots.vue';
 import PartBookmark from './Parts/PartBookmark.vue';
 import PartEpisodeNotify from './Parts/PartEpisodeNotify.vue';
+import PartRecommendations from './Parts/PartRecommendations.vue';
 
 const props = defineProps({
   title: {
@@ -127,8 +128,15 @@ const isReleased = computed(() => status.value === 'released');
 
       <PartScreenshots v-if="screenshots.length > 1" class="my-4" :title="title" />
 
-      <div class="bg-second rounded-lg shadow-lg my-4">
-        <SectionComments :title="title" />
+      <div class="my-4">
+        <div class="text-xl font-medium mb-2">Рекомендации</div>
+          <PartRecommendations :title-id="title.id" />
+      </div>
+
+      <div class="mb-4 mt-6">
+        <div class="bg-second rounded-lg shadow-lg">
+          <SectionComments :title="title" />
+        </div>
       </div>
     </div>
   </AppLayout>

@@ -46,11 +46,18 @@ const compressImageToBase64 = (file, maxWidth = 230, maxHeight = 230) => {
         // Draw the cropped image to fit within the 1:1 canvas
         ctx.drawImage(
           img,
-          offsetX, offsetY, cropSize, cropSize, // Crop source image
-          0, 0, maxWidth, maxHeight // Draw to canvas with max dimensions
+          offsetX,
+          offsetY,
+          cropSize,
+          cropSize, // Crop source image
+          0,
+          0,
+          maxWidth,
+          maxHeight // Draw to canvas with max dimensions
         );
 
-        const base64String = canvas.toDataURL('image/jpeg', 0.7); // Adjust quality as needed
+        // Adjust quality as needed
+        const base64String = canvas.toDataURL('image/jpeg', 0.7);
         resolve(base64String);
       };
       img.onerror = reject;
@@ -61,13 +68,16 @@ const compressImageToBase64 = (file, maxWidth = 230, maxHeight = 230) => {
   });
 };
 
-
 const uploadAvatar = async (e) => {
   const file = e.target.files[0] ?? null;
+  fileInput.value.value = null;
   if (!file) return;
 
-  fileInput.value.value = null;
-  processing.value = true;
+  // Ensure the file is an image
+  if (!file.type.startsWith('image/')) {
+    $toast.error('Please select a valid image file');
+    return;
+  }
 
   const base64Avatar = await compressImageToBase64(file);
 
@@ -75,6 +85,7 @@ const uploadAvatar = async (e) => {
     avatar.value = base64Avatar;
   });
 
+  processing.value = true;
   axios
     .post(route('upi.profile.update_avatar'), {
       base64: base64Avatar,
@@ -105,7 +116,6 @@ const deleteAvatar = async () => {
       });
     })
     .catch(({ response }) => {
-      //
       $toast.error('Failed to delete avatar');
     })
 
@@ -162,7 +172,13 @@ const bounceOnceAndStopProcessing = (halfCallback) => {
           @click="fileInput.click()"
         />
 
-        <input type="file" ref="fileInput" class="hidden" @change="uploadAvatar" />
+        <input
+          type="file"
+          ref="fileInput"
+          class="hidden"
+          accept="image/*"
+          @change="uploadAvatar"
+        />
 
         <v-btn
           v-if="avatar"
