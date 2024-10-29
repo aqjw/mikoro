@@ -31,6 +31,10 @@ class PlaybackStateService
 
     public function save(User $user, Title $title, array $data): void
     {
+        if ($data['time'] === 0) {
+            return;
+        }
+
         $user
             ->playbackStates()
             ->updateOrCreate(

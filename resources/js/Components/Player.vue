@@ -108,10 +108,6 @@ const initPlayer = (definitionList, playbackManager) => {
   player.value.registerPlugin(VolumePlugin);
   player.value.registerPlugin(PlaylistPlugin, { playbackManager });
 
-  player.value.on('timeupdate', (time) => {
-    console.log('timeupdate', time);
-  });
-
   player.value.usePluginHooks('error', 'errorRetry', () => {
     return new Promise((resolve) => {
       playbackManager
