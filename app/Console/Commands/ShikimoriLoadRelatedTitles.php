@@ -67,7 +67,7 @@ class ShikimoriLoadRelatedTitles extends Command
 
             return $items->isEmpty() ? [] : $items->pluck('id')->toArray();
         } catch (\Exception $e) {
-            Log::error("Failed to fetch related titles for ID {$shikimoriId}: " . $e->getMessage());
+            Log::error("Failed to fetch related titles for ID {$shikimoriId}: ".$e->getMessage());
 
             return [];
         }
@@ -93,6 +93,6 @@ class ShikimoriLoadRelatedTitles extends Command
                 $title->update(['group_sort' => $index + 1]);
             });
 
-        Log::info("Group ID {$this->maxGroupId} assigned to titles: " . implode(',', $shikimoriIds));
+        Log::info("Group ID {$this->maxGroupId} assigned to titles: ".implode(',', $shikimoriIds));
     }
 }

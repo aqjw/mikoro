@@ -1,11 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
 import FullLayout from '@/Layouts/FullLayout.vue';
-import PartBookmarkTabs from './Parts/Profile/PartBookmarkTabs.vue';
-import PartHistory from './Parts/Profile/PartHistory.vue';
-import PartHeatmap from './Parts/Profile/PartHeatmap.vue';
 import { initials } from '@/Utils';
+import { Head } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import PartBookmarkTabs from './Parts/Profile/PartBookmarkTabs.vue';
+import PartHeatmap from './Parts/Profile/PartHeatmap.vue';
+import PartHistory from './Parts/Profile/PartHistory.vue';
 
 const props = defineProps({
   user: Object,

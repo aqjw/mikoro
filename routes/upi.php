@@ -26,12 +26,13 @@ Route::prefix('upi')->as('upi.')->group(function () {
         Route::get('filters', [TitleController::class, 'filters'])->name('filters');
         Route::get('genres', [TitleController::class, 'genres'])->name('genres');
         Route::get('episodes/{title:id}', [TitleController::class, 'episodes'])->name('episodes');
-        Route::get('episode-media/{episode:id}', [TitleController::class, 'episodeMedia'])->name('episode_media');
+        Route::get('video-links/{title:id}/{episode:id?}', [TitleController::class, 'videoLinks'])->name('video_links');
         Route::get('recommendations/{title:id}', [TitleController::class, 'recommendations'])->name('recommendations');
 
         Route::middleware('auth')->group(function () {
             Route::post('rating/{title:id}', [TitleController::class, 'rating'])->middleware('throttle:rating')->name('rating');
-            Route::post('playback-state/{title:id}', [TitleController::class, 'playbackState'])->name('playback_state');
+            Route::get('playback-state/{title:id}', [TitleController::class, 'getPlaybackState'])->name('playback_state');
+            Route::post('playback-state/{title:id}', [TitleController::class, 'savePlaybackState'])->name('playback_state');
             Route::post('episode-subscriptions/{title:id}', [TitleController::class, 'episodeSubscriptionToggle'])->name('episode_subscription_toggle');
         });
 

@@ -1,9 +1,10 @@
 <script setup>
-import { ref, toRefs, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { NavigationPlugin, OverlayPlugin } from '@/Plugins/xgplayer';
-import { storeToRefs, useUserStore } from '@/Stores';
-import Player from 'xgplayer';
 import '@/../css/player.css';
+import usePlaybackManager from '@/Composables/usePlaybackManager';
+import { OverlayPlugin, PlaylistPlugin, VolumePlugin } from '@/Plugins/xgplayer';
+import { onBeforeUnmount, onMounted, ref, toRefs } from 'vue';
+import Player from 'xgplayer';
+import HlsPlugin from 'xgplayer-hls';
 
 const props = defineProps({
   poster: {
@@ -18,18 +19,23 @@ const props = defineProps({
 
 const { poster, titleId } = toRefs(props);
 
-const userStore = useUserStore();
-const { isLogged } = storeToRefs(userStore);
-
 const player = ref(null);
 const playerContainer = ref(null);
-const videoUrl = ref(
-  '//cloud.kodik-storage.com/useruploads/ba2c1fec-cdae-410c-855c-9f60f790937e/b16c171865ad9e40772fc683b382a591:2024102721/720.mp4'
-//   '//cloud.kodik-storage.com/useruploads/ba2c1fec-cdae-410c-855c-9f60f790937e/b16c171865ad9e40772fc683b382a591:2024102721/720.mp4:hls:manifest.m3u8'
-);
 
-onMounted(() => {
-  nextTick(initPlayer);
+onMounted(async () => {
+  const playbackManager = await usePlaybackManager(titleId.value);
+
+  playbackManager
+    .loadLinks()
+    .then(() => {
+      initPlayer(playbackManager.links.value, playbackManager);
+    })
+
+    .catch((error) => {
+      // TODO: Handle error
+      console.error('error while load video links', error);
+    });
+
   window.addEventListener('beforeunload', destroyPlayer);
 });
 
@@ -38,10 +44,15 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', destroyPlayer);
 });
 
-const initPlayer = () => {
+const initPlayer = (definitionList, playbackManager) => {
+  const time = playbackManager.playbackState.value?.time ?? 0;
+
   player.value = new Player({
     el: playerContainer.value,
-    url: videoUrl.value,
+    definition: {
+      defaultDefinition: '1080p',
+      list: definitionList,
+    },
     poster: poster.value && {
       poster: poster.value,
       isEndedShow: false,
@@ -49,31 +60,72 @@ const initPlayer = () => {
     height: '100%',
     width: '100%',
     cssFullscreen: false,
+    startTime: time,
     controls: {
       mode: 'normal',
+      initShow: time > 0,
+    },
+    start: {
+      isShowPause: true,
+      isShowEnd: true,
+    },
+    playbackRate: {
+      isShowIcon: false,
+    },
+    isHideTips: true,
+    progress: {
+      miniMoveStep: 2,
+      miniStartStep: 2,
     },
     keyboard: {
       keyCodeMap: {
-        fullscreen: {
+        key_f: {
           keyCode: 70,
-          action: (_, player) => {
+          action: (e, player) => {
             player.getPlugin('fullscreen').handleFullscreen();
           },
         },
-        mute: {
+        key_m: {
           keyCode: 77,
-          action: (_, player) => {
+          action: (e, player) => {
             player.muted = !player.muted;
           },
         },
+        right: {
+          action: (e, player) => {
+            player.getPlugin('keyboard').seek(e);
+          },
+          pressAction: () => {},
+        },
       },
     },
-    plugins: [OverlayPlugin],
+    plugins: [OverlayPlugin, HlsPlugin],
   });
 
-  player.value.registerPlugin(NavigationPlugin, {
-    titleId: titleId.value,
-    isLogged: isLogged.value,
+  player.value.unRegisterPlugin('volume');
+  player.value.unRegisterPlugin('play');
+  player.value.unRegisterPlugin('replay');
+  player.value.registerPlugin(VolumePlugin);
+  player.value.registerPlugin(PlaylistPlugin, { playbackManager });
+
+  player.value.on('timeupdate', (time) => {
+    console.log('timeupdate', time);
+  });
+
+  player.value.usePluginHooks('error', 'errorRetry', () => {
+    return new Promise((resolve) => {
+      playbackManager
+        .reloadLinks()
+        .then(() => {
+          player.value.definitionList = playbackManager.links.value;
+          resolve(false);
+        })
+        .catch((error) => {
+          // TODO: handle error
+          console.error(error);
+          resolve(true);
+        });
+    });
   });
 };
 

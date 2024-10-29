@@ -35,8 +35,9 @@ const bookmarks = ref(getConfig.value.bookmarks);
           :key="index"
           :value="item.name"
           class="text-none"
-          :base-color="getBookmarkColor(item.name, isDark)"
           :prepend-icon="getBookmarkIcon(item.name)"
+          :base-color="getBookmarkColor(item.name, isDark)"
+          :slider-color="getBookmarkColor(item.name, isDark)"
         >
           {{ item.name }}
         </v-tab>

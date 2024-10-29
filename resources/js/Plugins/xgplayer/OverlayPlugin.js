@@ -2,7 +2,7 @@ import { Plugin } from 'xgplayer';
 
 export default class OverlayPlugin extends Plugin {
   static get pluginName() {
-    return 'OverlayPlugin';
+    return 'overlay';
   }
 
   static get defaultConfig() {
@@ -10,6 +10,10 @@ export default class OverlayPlugin extends Plugin {
       position: Plugin.POSITIONS.ROOT,
       index: 0,
     };
+  }
+
+  runCustomHook(cb) {
+    return () => this.customHookCb() && cb();
   }
 
   afterCreate() {
@@ -22,8 +26,8 @@ export default class OverlayPlugin extends Plugin {
       this.player.getPlugin('fullscreen').handleFullscreen();
     };
 
-    this.onClick = () => {
-      this.emit('overlay_click');
+    this.customHookCb = () => true;
+    this.onClick = this.runCustomHook(() => {
       clickTimer = setTimeout(() => {
         if (isDblclick) {
           isDblclick = false;
@@ -32,14 +36,13 @@ export default class OverlayPlugin extends Plugin {
 
         this.player.paused ? this.player.play() : this.player.pause();
       }, 300);
-    };
+    });
 
     this.bind('.xgplayer-overlay', 'dblclick', this.onDblclick);
     this.bind('.xgplayer-overlay', 'click', this.onClick);
   }
 
   destroy() {
-    console.log('OverlayPlugin - destroy');
     this.unbind('.xgplayer-overlay', 'dblclick', this.onDblclick);
     this.unbind('.xgplayer-overlay', 'click', this.onClick);
   }

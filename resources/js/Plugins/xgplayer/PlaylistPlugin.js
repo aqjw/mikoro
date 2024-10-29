@@ -1,23 +1,27 @@
-import { Plugin, Events, Util } from 'xgplayer';
-import Session from '@/Plugins/Session';
+import { Events, Plugin, Util } from 'xgplayer';
 
-export default class NavigationPlugin extends Plugin {
+export default class PlaylistPlugin extends Plugin {
   static get pluginName() {
-    return 'NavigationPlugin';
+    return 'PlaylistPlugin';
   }
 
   static get defaultConfig() {
     return {
       position: Plugin.POSITIONS.ROOT_TOP,
       index: 0,
-      titleId: null,
-      isLogged: false,
+      playbackManager: null,
     };
   }
 
   afterCreate() {
+    this._loading = true;
+
+    this._playbackManager = this.config.playbackManager;
+    console.log('playbackManager', this._playbackManager);
+    // TODO: if no playbackManager - do something
+
     this._d = {
-      single_episode: true,
+      isSingleEpisode: true,
       translations: [],
       episodes: [],
       selected: {
@@ -26,8 +30,7 @@ export default class NavigationPlugin extends Plugin {
       },
     };
 
-    console.log('this.config.isLogged', this.config.isLogged);
-    this.fetchTitleEpisodes(this.config.titleId);
+    this.loadEpisodes();
     this.listenEvents();
   }
 
@@ -44,58 +47,76 @@ export default class NavigationPlugin extends Plugin {
       this.changeSelectedOption(node.dataset.sid, +node.dataset.oid);
     };
 
-    this.onPlay = () => {
-      this.closeDropdowns();
-      this.updatePlaybackState();
-    };
-
     this.onPause = () => {
-      this.updatePlaybackState();
+      this._playbackManager.savePlaybackState();
     };
 
-    this.onOverlayClick = () => {
-      this.closeDropdowns();
+    this.onTimeUpdate = () => {
+      this.setPlaybackState();
+    };
+
+    this.onDefinitionChanged = (e) => {
+      this.player.play();
+    };
+
+    this.useOverlayClickHook = () => {
+      try {
+        return !this.isDropdownOpen();
+      } finally {
+        this.closeDropdowns();
+      }
     };
 
     this.bind('.select-container', 'click', this.onSelectContainerClick);
     this.bind('.dropdown-option', 'click', this.onDropdownOptionClick);
-    this.on(Events.PLAY, this.onPlay);
+    //
     this.on(Events.PAUSE, this.onPause);
-    this.on('overlay_click', this.onOverlayClick);
+    this.on(Events.TIME_UPDATE, this.onTimeUpdate);
+    this.on(Events.AFTER_DEFINITION_CHANGE, this.onDefinitionChanged);
+    //
+    this.player.getPlugin('overlay').customHookCb = this.useOverlayClickHook;
   }
 
   destroy() {
     this.unbind('.select-container', 'click', this.onSelectContainerClick);
     this.unbind('.dropdown-option', 'click', this.onDropdownOptionClick);
-    this.off(Events.PLAY, this.onPlay);
+    //
     this.off(Events.PAUSE, this.onPause);
-    this.off('overlay_click', this.onOverlayClick);
-
-    this.updatePlaybackState();
+    this.off(Events.TIME_UPDATE, this.onTimeUpdate);
+    this.off(Events.AFTER_DEFINITION_CHANGE, this.onDefinitionChanged);
+    //
+    this._playbackManager.savePlaybackState();
   }
 
-  async fetchTitleEpisodes(titleId) {
-    try {
-      const { data } = await axios.get(route('upi.title.episodes', titleId));
-      this._d.single_episode = data.single_episode;
-      this._d.translations = data.translations;
-      this._d.episodes = data.episodes;
+  loadEpisodes() {
+    this._playbackManager
+      .loadEpisodes()
+      .then(() => {
+        const {
+          single_episode: isSingleEpisode,
+          translations,
+          episodes,
+        } = this._playbackManager.episodes.value;
 
-      this.populateDropdownOptions('translations', this._d.translations);
-      this.populateDropdownOptions('episodes', this.filteredEpisodeOptions());
+        this._d.isSingleEpisode = isSingleEpisode;
+        this._d.translations = translations;
+        this._d.episodes = episodes;
 
-      if (this._d.single_episode) {
-        this.removeDropdown('episodes');
-      }
+        this.populateDropdownOptions('translations', this._d.translations);
+        this.populateDropdownOptions('episodes', this.filteredEpisodeOptions());
 
-      this.applyPlaybackState(
-        this.config.isLogged
-          ? data.playback_state
-          : Session.get(`playback-${titleId}`, {})
-      );
-    } catch (error) {
-      console.error(error);
-    }
+        if (this._d.isSingleEpisode) {
+          this.removeDropdown('episodes');
+        }
+
+        this.applyPlaybackState(this._playbackManager.playbackState.value);
+      })
+      .catch(() => {
+        // TODO: handle error
+      })
+      .finally(() => {
+        this._loading = false;
+      });
   }
 
   applyPlaybackState(playbackState) {
@@ -109,32 +130,19 @@ export default class NavigationPlugin extends Plugin {
     this.player.currentTime = playbackTime;
   }
 
-  async updatePlaybackState() {
-    if (this.player.currentTime > 0) {
-      try {
-        const translationId = this._d.selected.translations;
+  setPlaybackState() {
+    const translationId = this._d.selected.translations;
 
-        if (this._d.single_episode) {
-          const episodeId = this.filteredEpisodeOptions(translationId)[0]?.id;
-          this._d.selected.episodes = episodeId ?? this._d.selected.episodes;
-        }
-
-        const titleId = this.config.titleId;
-        const params = {
-          episode_id: this._d.selected.episodes,
-          translation_id: translationId,
-          time: Math.floor(this.player.currentTime),
-        };
-
-        if (this.config.isLogged) {
-          await axios.post(route('upi.title.playback_state', titleId), params);
-        } else {
-          Session.set(`playback-${titleId}`, params);
-        }
-      } catch (error) {
-        console.error(error);
-      }
+    if (this._d.isSingleEpisode) {
+      const episodeId = this.filteredEpisodeOptions(translationId)[0]?.id;
+      this._d.selected.episodes = episodeId ?? this._d.selected.episodes;
     }
+
+    this._playbackManager.setPlaybackState({
+      episode_id: this._d.selected.episodes,
+      translation_id: translationId,
+      time: Math.ceil(this.player.currentTime),
+    });
   }
 
   getOptionLabel(selectId, option, withEpisodes = false) {
@@ -144,7 +152,7 @@ export default class NavigationPlugin extends Plugin {
       return `${option.label} серия`;
     }
 
-    if (withEpisodes && !this._d.single_episode) {
+    if (withEpisodes && !this._d.isSingleEpisode) {
       return `<div class="with-episodes-count">
                 <div class="with-episodes-count__label">${option.label}</div>
                 <div class="with-episodes-count__count">${option.episodes_count}</div>
@@ -154,8 +162,14 @@ export default class NavigationPlugin extends Plugin {
     return option.label;
   }
 
+  isDropdownOpen() {
+    return Boolean(this.find('.select-container.open'));
+  }
+
   closeDropdowns() {
     this.find('.select-container.open')?.classList.remove('open');
+    this.player.innerStates.isActiveLocked = false;
+    this.player.focus();
   }
 
   toggleDropdownVisibility(selectId) {
@@ -164,10 +178,9 @@ export default class NavigationPlugin extends Plugin {
     }
 
     const opened = this.find(`#${selectId}`).classList.toggle('open');
+    this.player.innerStates.isActiveLocked = opened;
 
     if (opened) {
-      this.player.pause();
-
       const optionId = this._d.selected[selectId];
       if (optionId) {
         const element = this.find(`#${selectId} .dropdown li[data-oid="${optionId}"]`);
@@ -176,10 +189,12 @@ export default class NavigationPlugin extends Plugin {
           dropdown.scrollTop = element.offsetTop - dropdown.offsetTop;
         }
       }
+    } else {
+      this.player.focus();
     }
   }
 
-  changeSelectedOption(selectId, optionId) {
+  changeSelectedOption(selectId, optionId, resetTime = true) {
     if (this._d.selected[selectId] === optionId) {
       return;
     }
@@ -193,6 +208,24 @@ export default class NavigationPlugin extends Plugin {
       this.populateDropdownOptions('episodes', this.filteredEpisodeOptions());
       this.switchEpisodeTranslation();
     }
+
+    if (!this._loading && selectId === 'episodes') {
+      this.setPlaybackState();
+
+      this._playbackManager
+        .reloadLinks()
+        .then(() => {
+          if (resetTime) {
+            this.player.currentTime = 0;
+          }
+
+          this.player.definitionList = this._playbackManager.links.value;
+        })
+        .catch((error) => {
+          // TODO: handle error
+          console.error(error);
+        });
+    }
   }
 
   switchEpisodeTranslation() {
@@ -202,17 +235,23 @@ export default class NavigationPlugin extends Plugin {
 
     if (!selectedEpisodeId) return;
 
+    let resetTime = false;
+
     const currentEpisode = episodes.find((item) => item.id === selectedEpisodeId);
+    let newEpisode = episodes.find(
+      (item) =>
+        currentEpisode.label === item.label &&
+        item.translation_id === selectedTranslationId
+    );
 
-    let newEpisode =
-      episodes.find(
-        (item) =>
-          currentEpisode.label === item.label &&
-          item.translation_id === selectedTranslationId
-      ) ||
-      episodes.filter((item) => item.translation_id === selectedTranslationId).last();
+    if (!newEpisode) {
+      resetTime = true;
+      newEpisode = episodes
+        .filter((item) => item.translation_id === selectedTranslationId)
+        .last();
+    }
 
-    this.changeSelectedOption('episodes', newEpisode?.id);
+    this.changeSelectedOption('episodes', newEpisode.id, resetTime);
   }
 
   highlightSelectedOption(selectId, optionId) {
@@ -273,7 +312,7 @@ export default class NavigationPlugin extends Plugin {
 
   render() {
     return `
-    <div class="w-full text-white xgplayer-ignore xgplayer-navigation">
+    <div class="w-full text-white xgplayer-ignore xgplayer-playlist">
         ${this.selectNode('translations', 'long')}
         ${this.selectNode('episodes', 'short')}
     </div>`;

@@ -1,17 +1,16 @@
 <script setup>
-import { computed, ref, toRefs, watch, onMounted, nextTick } from 'vue';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
-import Player from '@/Components/Player.vue';
-import CardComment from '@/Components/Comments/CardComment.vue';
 import SectionComments from '@/Components/Comments/SectionComments.vue';
-import PartRating from './Parts/PartRating.vue';
-import PartRelated from './Parts/PartRelated.vue';
-import PartDetails from './Parts/PartDetails.vue';
-import PartScreenshots from './Parts/PartScreenshots.vue';
+import Player from '@/Components/Player.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import { Head } from '@inertiajs/vue3';
+import { computed, toRefs } from 'vue';
 import PartBookmark from './Parts/PartBookmark.vue';
+import PartDetails from './Parts/PartDetails.vue';
 import PartEpisodeNotify from './Parts/PartEpisodeNotify.vue';
+import PartRating from './Parts/PartRating.vue';
 import PartRecommendations from './Parts/PartRecommendations.vue';
+import PartRelated from './Parts/PartRelated.vue';
+import PartScreenshots from './Parts/PartScreenshots.vue';
 
 const props = defineProps({
   title: {
@@ -39,7 +38,7 @@ const isReleased = computed(() => status.value === 'released');
   <Head :title="title.title" />
 
   <AppLayout>
-    <div>
+    <div class="space-y-4">
       <div class="bg-second p-4 rounded-lg shadow-lg">
         <div>
           <div
@@ -87,7 +86,9 @@ const isReleased = computed(() => status.value === 'released');
         </div>
       </div>
 
-      <div class="my-4">
+      <PartScreenshots v-if="screenshots.length > 1" :title="title" />
+
+      <div>
         <div class="flex gap-4 mb-2">
           <div class="w-8/12">
             <span class="text-xl font-medium mr-1">Хронология</span>
@@ -116,21 +117,23 @@ const isReleased = computed(() => status.value === 'released');
         </div>
       </div>
 
-      <div class="bg-second rounded-lg shadow-lg my-4 p-4 flex relative">
+      <div class="bg-second rounded-lg shadow-lg p-4 flex relative">
         <PartBookmark :title="title" class="w-5/12" />
         <div class="divider-vertical mx-4"></div>
         <PartEpisodeNotify :title="title" class="w-7/12" />
       </div>
 
-      <div class="bg-gray-300 h-[30rem] my-4 rounded-lg shadow-lg overflow-hidden">
-        <Player :poster="$media.original(screenshots[0])" :title-id="title.id" />
+      <div class="bg-second h-[30rem] rounded-lg shadow-lg overflow-hidden">
+        <Player
+          :poster="$media.original(screenshots[0])"
+          :title-id="title.id"
+          class="rounded-lg overflow-hidden"
+        />
       </div>
 
-      <PartScreenshots v-if="screenshots.length > 1" class="my-4" :title="title" />
-
-      <div class="my-4">
+      <div>
         <div class="text-xl font-medium mb-2">Рекомендации</div>
-          <PartRecommendations :title-id="title.id" />
+        <PartRecommendations :title-id="title.id" />
       </div>
 
       <div class="mb-4 mt-6">

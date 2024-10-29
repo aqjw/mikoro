@@ -1,4 +1,5 @@
-import NavigationPlugin from './NavigationPlugin';
+import PlaylistPlugin from './PlaylistPlugin';
 import OverlayPlugin from './OverlayPlugin';
+import VolumePlugin from './VolumePlugin';
 
-export { NavigationPlugin, OverlayPlugin };
+export { PlaylistPlugin, OverlayPlugin, VolumePlugin };

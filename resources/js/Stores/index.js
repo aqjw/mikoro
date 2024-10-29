@@ -6,6 +6,7 @@ import { useCommentStore } from './CommentStore';
 import { useNotificationStore } from './NotificationStore';
 import { useUserStore } from './UserStore';
 import { useAppStore } from './AppStore';
+import { useVideoProgressStore } from './VideoProgressStore';
 
 export {
   storeToRefs,
@@ -16,4 +17,5 @@ export {
   useNotificationStore,
   useUserStore,
   useAppStore,
+  useVideoProgressStore,
 };

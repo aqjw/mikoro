@@ -3,7 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Enums\TitleKind;
-use App\Services\KodikService;
+use App\Models\Title;
+use App\Services\KodikImportService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -13,13 +14,17 @@ class KodikLoadTitles extends Command
 
     protected $description = 'Load titles from Kodik API';
 
-    public function handle(KodikService $kodikService)
+    protected array $titleSearchColumns = [];
+
+    public function handle(KodikImportService $kodikService)
     {
+        $this->titleSearchColumns = array_keys(Title::make()->toSearchableArray());
+
         set_time_limit(0);
         ini_set('max_execution_time', 0);
         ignore_user_abort(true);
 
-        $url = 'https://kodikapi.com/list?' . http_build_query($this->getQueryParams());
+        $url = 'https://kodikapi.com/list?'.http_build_query($this->getQueryParams());
         $bar = null;
 
         while ($url) {
@@ -71,9 +76,19 @@ class KodikLoadTitles extends Command
         ];
     }
 
-    private function processItem(KodikService $kodikService, array $item): void
+    private function processItem(KodikImportService $kodikService, array $item): void
     {
-        $title = $kodikService->updateOrCreateTitle($item);
+        /** @var Title $title */
+        $title = Title::withoutSyncingToSearch(
+            fn () => $kodikService->updateOrCreateTitle($item)
+        );
+
+        $keys = array_keys($title->getChanges());
+        $needsSync = count(array_intersect($keys, $this->titleSearchColumns)) > 0;
+        if ($needsSync) {
+            $title->searchable();
+        }
+
         $translationId = $kodikService->createTranslation($item);
         $kodikService->createEpisodes($title, $translationId, $item);
         $kodikService->syncTranslations($title);

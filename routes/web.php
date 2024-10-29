@@ -28,5 +28,5 @@ Route::middleware('auth')->group(function () {
 
 Route::get('profile/{user:slug?}', [ProfileController::class, 'profile'])->name('profile');
 
-require __DIR__ . '/upi.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/upi.php';
+require __DIR__.'/auth.php';

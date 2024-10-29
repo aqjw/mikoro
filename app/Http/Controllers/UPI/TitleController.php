@@ -13,14 +13,14 @@ use App\Models\Genre;
 use App\Models\Studio;
 use App\Models\Title;
 use App\Models\Translation;
-use App\Services\ActivityHistoryService;
 use App\Services\CatalogService;
 use App\Services\EpisodeReleaseSubscriptionService;
+use App\Services\KodikService;
+use App\Services\PlaybackStateService;
 use App\Services\TitleRatingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 class TitleController extends Controller
 {
@@ -118,7 +118,7 @@ class TitleController extends Controller
             ->when($title->group_id, fn ($query) => $query->where('group_id', '!=', $title->group_id))
             ->whereHas('genres', fn ($query) => $query->whereIn('id', $genreIds))
             ->withCount([
-                'genres as genre_match_count' => fn ($query) => $query->whereIn('id', $genreIds)
+                'genres as genre_match_count' => fn ($query) => $query->whereIn('id', $genreIds),
             ])
             ->orderByDesc('genre_match_count')
             ->orderByDesc('shikimori_rating')
@@ -131,15 +131,13 @@ class TitleController extends Controller
         ]);
     }
 
-
-    public function episodes(Title $title, Request $request): JsonResponse
+    public function episodes(Title $title): JsonResponse
     {
         $title->load('episodes', 'translations');
 
         $episodes = $title->episodes->map(fn ($episode) => [
             'id' => $episode->id,
             'label' => $episode->name,
-            'source' => $episode->source,
             'translation_id' => $episode->translation_id,
         ]);
 
@@ -168,59 +166,27 @@ class TitleController extends Controller
             ->select('id', 'label', 'episodes_count')
             ->values();
 
-        $user = $request->user();
-        $playbackState = $user?->playbackStates()
-            ->where('title_id', $title->id)
-            ->first();
-
         return response()->json([
             'single_episode' => $title->singleEpisode,
             'translations' => $translations,
             'episodes' => $episodes,
-            'playback_state' => $playbackState ? [
-                'episode_id' => $playbackState->episode_id,
-                'translation_id' => $playbackState->translation_id,
-                'time' => $playbackState->time,
-            ] : null,
         ]);
     }
 
-    public function episodeMedia(Episode $episode, Request $request): JsonResponse
+    public function videoLinks(Title $title, Request $request, KodikService $kodikService, ?Episode $episode = null): JsonResponse
     {
-        $link = $episode->source;
-        $apiKey = env('KODIK_API_PUBLIC_KEY');
-        $privateKey = env('KODIK_API_PRIVATE_KEY');
-        $userIp = $request->ip();
+        $episode ??= $title->episodes()->first();
+        $links = cache()->remember(
+            key: "episode-links-{$episode->id}",
+            ttl: 60 * 60 * 6, // 6 hours
+            callback: fn () => $kodikService->getVideoLinks(
+                link: $episode->source,
+                userIp: $request->ip()
+            )
+        );
 
-        // Set deadline (current UTC + 6 hours)
-        $deadline = now('UTC')->addHours(6)->format('YmdH');
-
-        // Generate signature
-        $signatureString = "{$link}:{$userIp}:{$deadline}";
-        $signature = hash_hmac('sha256', $signatureString, $privateKey);
-
-        // Form request URL
-        $url = "https://kodik.biz/api/video-links";
-        $params = [
-            'link' => $link,
-            'p' => $apiKey,
-            'ip' => $userIp,
-            'd' => $deadline,
-            's' => $signature,
-        ];
-
-        // Make the GET request
-        $response = Http::get($url, $params);
-
-        dd($response->json());
-
-        // Return URL or error
-        return response()->json([
-            'url' => $response->json('url') ?? null,
-            'error' => $response->successful() ? null : 'Failed to retrieve video link',
-        ]);
+        return response()->json(['links' => $links]);
     }
-
 
     public function rating(Title $title, Request $request, TitleRatingService $titleRatingService): JsonResponse
     {
@@ -242,25 +208,26 @@ class TitleController extends Controller
         ]);
     }
 
-    public function playbackState(Title $title, PlaybackStateRequest $request, ActivityHistoryService $activityHistoryService): JsonResponse
+    public function getPlaybackState(Title $title, Request $request, PlaybackStateService $playbackStateService): JsonResponse
     {
-        $data = $request->validated();
-        $user = $request->user();
+        $playbackState = $playbackStateService->get(
+            user: $request->user(),
+            title: $title
+        );
 
-        $user->playbackStates()
-            ->updateOrCreate(
-                ['title_id' => $title->id],
-                [
-                    'episode_id' => $data['episode_id'],
-                    'translation_id' => $data['translation_id'],
-                    'time' => $data['time'],
-                ]
-            );
+        return response()->json([
+            'episode_id' => $playbackState->episode_id,
+            'translation_id' => $playbackState->translation_id,
+            'time' => $playbackState->time,
+        ]);
+    }
 
-        $activityHistoryService->storeEpisodeOrNone(
-            user: $user,
-            titleId: $title->id,
-            episodeId: $data['episode_id'],
+    public function savePlaybackState(Title $title, PlaybackStateRequest $request, PlaybackStateService $playbackStateService): JsonResponse
+    {
+        $playbackStateService->save(
+            user: $request->user(),
+            title: $title,
+            data: $request->validated()
         );
 
         return response()->json('ok');

@@ -2,29 +2,29 @@ import '../css/app.css';
 import './bootstrap';
 
 // Vuetify
-import 'vuetify/styles';
-import { createVuetify, useTheme } from 'vuetify';
+import '@mdi/font/css/materialdesignicons.css';
+import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
-import '@mdi/font/css/materialdesignicons.css';
-import { en, uk, ru } from 'vuetify/locale';
+import { en, ru, uk } from 'vuetify/locale';
+import 'vuetify/styles';
 
 // Core Vue and inertiajs
-import { createApp, h, provide } from 'vue';
 import { createInertiaApp, router } from '@inertiajs/vue3';
+import { createApp, h } from 'vue';
 
 // Helpers and plugins
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { ZiggyVue } from '../../vendor/tightenco/ziggy';
-import { createPinia } from 'pinia';
 import { Settings } from 'luxon';
+import { createPinia } from 'pinia';
+import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
 // Stores and custom plugins
-import { useUserStore, useNotificationStore } from '@/Stores';
+import { useNotificationStore, useUserStore } from '@/Stores';
 // import laravelEcho from '@/Plugins/laravelEcho';
-import useMedia from '@/Plugins/useMedia.js';
 import useSession from '@/Composables/useSession';
 import useLink from '@/Plugins/Link';
+import useMedia from '@/Plugins/useMedia.js';
 
 // Toast
 import ToastPlugin, { useToast } from 'vue-toast-notification';
@@ -61,7 +61,7 @@ function createAppInstance({ App, props, plugin }) {
   return app;
 }
 
-function setupEventListeners(app) {
+function setupEventListeners() {
   const $toast = useToast();
 
   router.on('success', (event) => {
@@ -104,15 +104,13 @@ createInertiaApp({
     resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
   setup({ el, App, props, plugin }) {
     const appInstance = createAppInstance({ App, props, plugin });
-    const mountedApp = appInstance.mount(el);
 
-    // Setup stores on initial page load and listen for route changes
     setupStores(props.initialPage.props);
-    setupEventListeners(mountedApp);
+    setupEventListeners();
 
     // laravelEcho.start(mountedApp, userStore);
-    // Screen.setSizes({ sm: 640, md: 768, lg: 1024, xl: 1280 });
 
+    const mountedApp = appInstance.mount(el);
     toggleTheme(mountedApp.$vuetify);
 
     return mountedApp;

@@ -1,10 +1,11 @@
 <script setup>
-import { computed, ref, toRefs, watch, onMounted, nextTick } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
 import { storeToRefs, useAppStore } from '@/Stores';
+import { getBookmarkColor, getBookmarkIcon } from '@/Utils';
+import { Head } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
+import { useTheme } from 'vuetify';
 import PartTab from './Parts/PartTab.vue';
-import { getBookmarkIcon } from '@/Utils';
 
 const props = defineProps({
   bookmark: {
@@ -14,7 +15,10 @@ const props = defineProps({
 });
 
 const appStore = useAppStore();
+const theme = useTheme();
 const { getConfig } = storeToRefs(appStore);
+
+const isDark = computed(() => theme.global.name.value === 'dark');
 
 const tab = ref(props.bookmark);
 const bookmarks = ref(
@@ -53,6 +57,8 @@ const refreshTab = (tab) => {
               :value="item.name"
               class="text-none"
               :prepend-icon="getBookmarkIcon(item.name)"
+              :base-color="getBookmarkColor(item.name, isDark)"
+              :slider-color="getBookmarkColor(item.name, isDark)"
             >
               {{ item.name }}
             </v-tab>

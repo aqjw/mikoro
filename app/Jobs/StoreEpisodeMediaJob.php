@@ -48,7 +48,7 @@ class StoreEpisodeMediaJob implements ShouldQueue
         }
 
         if (strpos($url, '//') === 0) {
-            $url = 'https:' . $url;
+            $url = 'https:'.$url;
         }
 
         return $url;
