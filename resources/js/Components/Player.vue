@@ -15,9 +15,13 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  isSingleEpisode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const { poster, titleId } = toRefs(props);
+const { poster, titleId, isSingleEpisode } = toRefs(props);
 
 const player = ref(null);
 const playerContainer = ref(null);
@@ -106,7 +110,10 @@ const initPlayer = (definitionList, playbackManager) => {
   player.value.unRegisterPlugin('play');
   player.value.unRegisterPlugin('replay');
   player.value.registerPlugin(VolumePlugin);
-  player.value.registerPlugin(PlaylistPlugin, { playbackManager });
+  player.value.registerPlugin(PlaylistPlugin, {
+    isSingleEpisode: isSingleEpisode.value,
+    playbackManager: playbackManager,
+  });
 
   player.value.usePluginHooks('error', 'errorRetry', () => {
     return new Promise((resolve) => {

@@ -1,4 +1,5 @@
 import { Plugin } from 'xgplayer';
+import './index.scss';
 
 export default class OverlayPlugin extends Plugin {
   static get pluginName() {

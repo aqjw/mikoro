@@ -147,7 +147,8 @@ class TitleController extends Controller
                 'label' => $translation->title,
                 'episodes_count' => $episodes
                     ->where('translation_id', $translation->id)
-                    ->count(),
+                    ->sortByDesc('label')
+                    ->value('label'),
                 'type' => $translation->type,
             ])
             ->sort(function ($a, $b) {

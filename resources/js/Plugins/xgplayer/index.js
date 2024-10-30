@@ -1,5 +1,5 @@
-import PlaylistPlugin from './PlaylistPlugin';
 import OverlayPlugin from './OverlayPlugin';
+import PlaylistPlugin from './PlaylistPlugin';
 import VolumePlugin from './VolumePlugin';
 
-export { PlaylistPlugin, OverlayPlugin, VolumePlugin };
+export { OverlayPlugin, PlaylistPlugin, VolumePlugin };

@@ -127,6 +127,7 @@ const isReleased = computed(() => status.value === 'released');
         <Player
           :poster="$media.original(screenshots[0])"
           :title-id="title.id"
+          :is-single-episode="title.single_episode"
           class="rounded-lg overflow-hidden"
         />
       </div>

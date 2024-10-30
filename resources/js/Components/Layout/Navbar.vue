@@ -31,6 +31,9 @@ function toggleTheme() {
     document.documentElement.classList.remove('dark');
   }
 }
+
+// TODO:
+console.clear()
 </script>
 
 <template>
