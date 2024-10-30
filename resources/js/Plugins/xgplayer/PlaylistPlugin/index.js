@@ -1,5 +1,5 @@
 import { Events, Plugin } from 'xgplayer';
-import DropdownHandler from './DropdownHandler';
+import DropdownHandler from './DropdownHandler.ts';
 import './index.scss';
 
 export default class PlaylistPlugin extends Plugin {
@@ -54,12 +54,9 @@ export default class PlaylistPlugin extends Plugin {
       formatOptionLabel: (option) => `${option.label} серия`,
     });
 
-    // TODO: resetTime - not working
-    let resetTime = false;
-
     translationsDropdown.emitter
       .on('selected-updated', () => {
-        this.dropdowns.episodes.applyFilter();
+        this.dropdowns.episodes.refreshOptions();
         if (!this.dropdowns.episodes.hasSelected()) {
           return;
         }
@@ -69,7 +66,6 @@ export default class PlaylistPlugin extends Plugin {
         let newEpisode = null;
 
         if (currentEpisode) {
-          resetTime = false;
           newEpisode = episodes.find(
             (item) =>
               currentEpisode.label === item.label &&
@@ -78,7 +74,6 @@ export default class PlaylistPlugin extends Plugin {
         }
 
         if (!newEpisode) {
-          resetTime = true;
           newEpisode = this.dropdowns.episodes.last();
         }
 
@@ -96,13 +91,13 @@ export default class PlaylistPlugin extends Plugin {
       .on('selected-updated', () => {
         this.updatePlaybackState();
 
+        const resetTime = !translationsDropdown.wasRecentlyChanged();
         this.playbackManager
           .reloadLinks()
           .then(() => {
             if (resetTime) {
               this.player.currentTime = 0;
             }
-
             this.player.definitionList = this.playbackManager.links.value;
           })
           .catch((error) => {
@@ -140,8 +135,8 @@ export default class PlaylistPlugin extends Plugin {
     this.useOverlayClickHook = () => {
       try {
         return !(
-          this.dropdowns.translations.isDropdownOpen() ||
-          this.dropdowns.episodes.isDropdownOpen()
+          this.dropdowns.translations.getDropdownStatus() ||
+          this.dropdowns.episodes.getDropdownStatus()
         );
       } finally {
         this.dropdowns.translations.closeDropdown();

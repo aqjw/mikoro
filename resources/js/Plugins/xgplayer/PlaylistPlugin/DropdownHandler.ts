@@ -7,28 +7,33 @@ export default class DropdownHandler {
     this.emitter = new Emitter();
     this.plugin = plugin;
     this.config = config;
-    //
+
     this.isOpen = ref(false);
     this.selected = ref(null);
     this.options = ref([]);
-    //
+    this.lastChanged = ref(0);
+
     this.filteredOptions = computed(() => {
       if (typeof this.config.filter === 'function') {
         return this.config.filter(this.options.value);
       }
       return this.options.value;
     });
-    //
-    this.appendNode();
+
+    this.selectedOption = computed(() =>
+      this.options.value.find((option) => option.id === this.selected.value)
+    );
+
+    this.renderDropdown();
     this.initWatchers();
     this.initEventListeners();
   }
 
-  applyFilter() {
+  refreshOptions() {
     this.options.value = [...this.options.value];
   }
 
-  isDropdownOpen() {
+  getDropdownStatus() {
     return this.isOpen.value;
   }
 
@@ -41,6 +46,12 @@ export default class DropdownHandler {
         nextTick(() => this.emitter.start());
       }
     }
+  }
+
+  wasRecentlyChanged() {
+    return (
+      Date.now() - this.lastChanged.value <= (this.config.recentChangeThreshold || 500)
+    );
   }
 
   closeDropdown() {
@@ -64,7 +75,7 @@ export default class DropdownHandler {
   }
 
   getSelectedOption() {
-    return this.filteredOptions.value.find((option) => option.id === this.selected.value);
+    return this.selectedOption.value;
   }
 
   getSelected() {
@@ -72,11 +83,11 @@ export default class DropdownHandler {
   }
 
   first() {
-    return this.filteredOptions.value.first();
+    return this.filteredOptions.value[0];
   }
 
   last() {
-    return this.filteredOptions.value.last();
+    return this.filteredOptions.value[this.filteredOptions.value.length - 1];
   }
 
   selector(selector = '') {
@@ -95,75 +106,78 @@ export default class DropdownHandler {
           ? this.el('.select-container').classList.add('open')
           : this.el('.select-container').classList.remove('open');
       });
+
+      watch(this.selected, () => {
+        this.emitter.emit('selected-updated');
+        this.lastChanged.value = Date.now();
+        this.highlightSelectedOption();
+      });
+
+      watch(this.filteredOptions, () => {
+        this.emitter.emit('options-updated');
+        this.renderOptions();
+      });
     }
-
-    watch(this.selected, () => {
-      this.emitter.emit('selected-updated');
-      this.highlightSelectedOption();
-    });
-
-    watch(this.filteredOptions, () => {
-      this.emitter.emit('options-updated');
-      this.renderOptions();
-    });
   }
 
   initEventListeners() {
-    if (this.config.invisible) {
-      return;
-    }
+    if (this.isInvisible()) return;
 
-    this.onContainerClick = (e) => {
+    this.handleContainerClick = (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.isOpen.value = !this.isOpen.value;
     };
 
-    this.onOptionClick = (e) => {
+    this.handleOptionClick = (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.setSelected(+e.delegateTarget.dataset.value);
     };
 
-    this.plugin.bind(this.selector('.select-container'), 'click', this.onContainerClick);
-    this.plugin.bind(this.selector('.dropdown-option'), 'click', this.onOptionClick);
+    this.plugin.bind(
+      this.selector('.select-container'),
+      'click',
+      this.handleContainerClick
+    );
+    this.plugin.bind(this.selector('.dropdown-option'), 'click', this.handleOptionClick);
   }
 
   destroy() {
-    if (this.config.invisible) {
-      return;
-    }
+    if (this.isInvisible()) return;
 
     this.plugin.unbind(
       this.selector('.select-container'),
       'click',
-      this.onContainerClick
+      this.handleContainerClick
     );
-    this.plugin.unbind(this.selector('.dropdown-option'), 'click', this.onOptionClick);
+    this.plugin.unbind(
+      this.selector('.dropdown-option'),
+      'click',
+      this.handleOptionClick
+    );
+  }
+
+  isInvisible() {
+    return this.config.invisible;
   }
 
   highlightSelectedOption() {
-    if (this.config.invisible) {
-      return;
-    }
+    if (this.isInvisible()) return;
 
-    const selectedValue = this.selected.value;
     this.el('.dropdown-option.selected')?.classList.remove('selected');
-    this.el(`.dropdown-option[data-value="${selectedValue}"]`)?.classList.add('selected');
+    this.el(`.dropdown-option[data-value="${this.selected.value}"]`)?.classList.add(
+      'selected'
+    );
 
     const el = this.el('.selected-option');
-    if (el) {
-      const option = this.filteredOptions.value.find(
-        (option) => option.id === selectedValue
-      );
-      el.innerHTML = this.config.formatOptionLabel(option);
+    if (el && this.selectedOption.value) {
+      el.innerHTML = this.config.formatOptionLabel(this.selectedOption.value);
     }
   }
 
   renderOptions() {
-    if (this.config.invisible) {
-      return;
-    }
+    if (this.isInvisible()) return;
 
     const html = this.filteredOptions.value
       .map((option) => {
@@ -178,10 +192,8 @@ export default class DropdownHandler {
     this.el('.dropdown').innerHTML = html;
   }
 
-  appendNode() {
-    if (this.config.invisible) {
-      return;
-    }
+  renderDropdown() {
+    if (this.isInvisible()) return;
 
     const html = `<div class="selected-option-container">
         <div class="selected-option"></div>
@@ -190,7 +202,6 @@ export default class DropdownHandler {
     <div class="dropdown-container"><ul class="dropdown"></ul></div>`;
 
     const node = Util.createDom('div', html, {}, `select-container ${this.config.class}`);
-
     this.plugin.appendChild(this.config.container, node);
   }
 }
