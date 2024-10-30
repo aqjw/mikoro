@@ -1,12 +1,38 @@
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, Ref, watch } from 'vue';
 import { Util } from 'xgplayer';
 import Emitter from '../Emitter';
 
+interface DropdownConfig {
+  container: string;
+  class?: string;
+  invisible?: boolean;
+  recentChangeThreshold?: number;
+  filter?: (options: any[]) => any[];
+  formatOptionLabel: (option: any, isSelected?: boolean) => string;
+}
+
+interface DropdownOption {
+  id: number;
+  label: string;
+  [key: string]: any;
+}
+
 export default class DropdownHandler {
-  constructor(plugin, config) {
+  private emitter: Emitter;
+  private plugin: any;
+  private config: DropdownConfig;
+
+  public isOpen: Ref<boolean>;
+  public selected: Ref<number | string | null>;
+  public options: Ref<DropdownOption[]>;
+  private lastChanged: Ref<number>;
+  public filteredOptions: Ref<DropdownOption[]>;
+  public selectedOption: Ref<DropdownOption | undefined>;
+
+  constructor(plugin: any, config: DropdownConfig) {
     this.emitter = new Emitter();
     this.plugin = plugin;
-    this.config = config;
+    this.config = this.initializeConfig(config);
 
     this.isOpen = ref(false);
     this.selected = ref(null);
@@ -29,15 +55,26 @@ export default class DropdownHandler {
     this.initEventListeners();
   }
 
-  refreshOptions() {
+  private initializeConfig(config: DropdownConfig): DropdownConfig {
+    return {
+      class: '',
+      filter: null,
+      invisible: false,
+      recentChangeThreshold: 500,
+      formatOptionLabel: (option: any) => option.label,
+      ...config,
+    };
+  }
+
+  refreshOptions(): void {
     this.options.value = [...this.options.value];
   }
 
-  getDropdownStatus() {
+  getDropdownStatus(): boolean {
     return this.isOpen.value;
   }
 
-  suspendEmitter(autoResume = true) {
+  suspendEmitter(autoResume = true): this {
     try {
       this.emitter.stop();
       return this;
@@ -48,63 +85,78 @@ export default class DropdownHandler {
     }
   }
 
-  wasRecentlyChanged() {
-    return (
-      Date.now() - this.lastChanged.value <= (this.config.recentChangeThreshold || 500)
-    );
+  wasRecentlyChanged(): boolean {
+    return Date.now() - this.lastChanged.value <= this.config.recentChangeThreshold;
   }
 
-  closeDropdown() {
+  closeDropdown(): void {
     this.isOpen.value = false;
   }
 
-  setOptions(options) {
+  setOptions(options: DropdownOption[]): void {
     this.options.value = options;
   }
 
-  getOptions() {
+  getOptions(): DropdownOption[] {
     return this.options.value;
   }
 
-  hasSelected() {
+  hasSelected(): boolean {
     return Boolean(this.selected.value);
   }
 
-  setSelected(selected) {
+  setSelected(selected: number | string): void {
     this.selected.value = selected;
+    this.lastChanged.value = Date.now();
   }
 
-  getSelectedOption() {
+  getSelectedOption(): DropdownOption | undefined {
     return this.selectedOption.value;
   }
 
-  getSelected() {
+  getSelected(): number | null {
     return this.selected.value;
   }
 
-  first() {
+  first(): DropdownOption | undefined {
     return this.filteredOptions.value[0];
   }
 
-  last() {
+  last(): DropdownOption | undefined {
     return this.filteredOptions.value[this.filteredOptions.value.length - 1];
   }
 
-  selector(selector = '') {
+  selector(selector = ''): string {
     return `${this.config.container} ${selector}`.trim();
   }
 
-  el(selector = '') {
+  el(selector = ''): HTMLElement | null {
     return this.plugin.find(this.selector(selector));
   }
 
-  initWatchers() {
+  scrollToSelected(): void {
+    const selectedValue = this.getSelected();
+    if (!selectedValue) return;
+
+    const optionNode = this.el(`.dropdown li[data-value="${selectedValue}"]`);
+    const dropdownNode = this.el('.dropdown');
+
+    if (optionNode && dropdownNode) {
+      const offset = optionNode.offsetTop - dropdownNode.offsetTop - optionNode.offsetHeight;
+      dropdownNode.scrollTop = Math.max(0, offset);
+    }
+  }
+
+  initWatchers(): void {
     if (!this.config.invisible) {
       watch(this.isOpen, (val) => {
         this.emitter.emit('open-toggle', val);
-        val
-          ? this.el('.select-container').classList.add('open')
-          : this.el('.select-container').classList.remove('open');
+        if (val) {
+          this.el('.select-container')?.classList.add('open');
+          this.scrollToSelected();
+        } else {
+          this.el('.select-container')?.classList.remove('open');
+        }
       });
 
       watch(this.selected, () => {
@@ -120,49 +172,37 @@ export default class DropdownHandler {
     }
   }
 
-  initEventListeners() {
+  initEventListeners(): void {
     if (this.isInvisible()) return;
 
-    this.handleContainerClick = (e) => {
+    this.handleContainerClick = (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
       this.isOpen.value = !this.isOpen.value;
     };
 
-    this.handleOptionClick = (e) => {
+    this.handleOptionClick = (e: any) => {
       e.preventDefault();
       e.stopPropagation();
       this.setSelected(+e.delegateTarget.dataset.value);
     };
 
-    this.plugin.bind(
-      this.selector('.select-container'),
-      'click',
-      this.handleContainerClick
-    );
+    this.plugin.bind(this.selector('.select-container'), 'click', this.handleContainerClick);
     this.plugin.bind(this.selector('.dropdown-option'), 'click', this.handleOptionClick);
   }
 
-  destroy() {
+  destroy(): void {
     if (this.isInvisible()) return;
 
-    this.plugin.unbind(
-      this.selector('.select-container'),
-      'click',
-      this.handleContainerClick
-    );
-    this.plugin.unbind(
-      this.selector('.dropdown-option'),
-      'click',
-      this.handleOptionClick
-    );
+    this.plugin.unbind(this.selector('.select-container'), 'click', this.handleContainerClick);
+    this.plugin.unbind(this.selector('.dropdown-option'), 'click', this.handleOptionClick);
   }
 
-  isInvisible() {
-    return this.config.invisible;
+  isInvisible(): boolean {
+    return !!this.config.invisible;
   }
 
-  highlightSelectedOption() {
+  highlightSelectedOption(): void {
     if (this.isInvisible()) return;
 
     this.el('.dropdown-option.selected')?.classList.remove('selected');
@@ -176,7 +216,7 @@ export default class DropdownHandler {
     }
   }
 
-  renderOptions() {
+  renderOptions(): void {
     if (this.isInvisible()) return;
 
     const html = this.filteredOptions.value
@@ -192,7 +232,7 @@ export default class DropdownHandler {
     this.el('.dropdown').innerHTML = html;
   }
 
-  renderDropdown() {
+  renderDropdown(): void {
     if (this.isInvisible()) return;
 
     const html = `<div class="selected-option-container">
