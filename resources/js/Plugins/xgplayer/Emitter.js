@@ -21,6 +21,10 @@ export default class Emitter {
     return this;
   }
 
+  offAll() {
+    this.events = {};
+  }
+
   emit(name, ...args) {
     if (this.isActive && this.events[name]) {
       this.events[name].forEach((callback) => callback(...args));

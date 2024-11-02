@@ -1,5 +1,5 @@
 import { computed, nextTick, ref, Ref, watch } from 'vue';
-import { Util } from 'xgplayer';
+import { Plugin, Util } from 'xgplayer';
 import Emitter from '../Emitter';
 
 interface DropdownConfig {
@@ -19,7 +19,7 @@ interface DropdownOption {
 
 export default class DropdownHandler {
   private emitter: Emitter;
-  private plugin: any;
+  private plugin: Plugin;
   private config: DropdownConfig;
 
   public isOpen: Ref<boolean>;
@@ -29,7 +29,7 @@ export default class DropdownHandler {
   public filteredOptions: Ref<DropdownOption[]>;
   public selectedOption: Ref<DropdownOption | undefined>;
 
-  constructor(plugin: any, config: DropdownConfig) {
+  constructor(plugin: Plugin, config: DropdownConfig) {
     this.emitter = new Emitter();
     this.plugin = plugin;
     this.config = this.initializeConfig(config);
@@ -118,12 +118,26 @@ export default class DropdownHandler {
     return this.selected.value;
   }
 
+  getSelectedIndex(): number {
+    return this.filteredOptions.value.findIndex((option) => option.id === this.getSelected());
+  }
+
   first(): DropdownOption | undefined {
     return this.filteredOptions.value[0];
   }
 
   last(): DropdownOption | undefined {
     return this.filteredOptions.value[this.filteredOptions.value.length - 1];
+  }
+
+  prev(): DropdownOption | undefined {
+    const selectedIndex = this.getSelectedIndex();
+    return this.filteredOptions.value?.[selectedIndex - 1];
+  }
+
+  next(): DropdownOption | undefined {
+    const selectedIndex = this.getSelectedIndex();
+    return this.filteredOptions.value?.[selectedIndex + 1];
   }
 
   selector(selector = ''): string {
@@ -152,10 +166,10 @@ export default class DropdownHandler {
       watch(this.isOpen, (val) => {
         this.emitter.emit('open-toggle', val);
         if (val) {
-          this.el('.select-container')?.classList.add('open');
+          this.el('.playlist-dropdown')?.classList.add('open');
           this.scrollToSelected();
         } else {
-          this.el('.select-container')?.classList.remove('open');
+          this.el('.playlist-dropdown')?.classList.remove('open');
         }
       });
 
@@ -187,14 +201,20 @@ export default class DropdownHandler {
       this.setSelected(+e.delegateTarget.dataset.value);
     };
 
-    this.plugin.bind(this.selector('.select-container'), 'click', this.handleContainerClick);
+    this.plugin.bind(this.selector('.playlist-dropdown'), 'click', this.handleContainerClick);
     this.plugin.bind(this.selector('.dropdown-option'), 'click', this.handleOptionClick);
   }
 
   destroy(): void {
-    if (this.isInvisible()) return;
+    this.emitter.offAll();
+    this.el()?.remove();
 
-    this.plugin.unbind(this.selector('.select-container'), 'click', this.handleContainerClick);
+    if (this.isInvisible()) return;
+    this.plugin.unbind(
+      this.selector('.playlist-dropdown'),
+      'click',
+      this.handleContainerClick
+    );
     this.plugin.unbind(this.selector('.dropdown-option'), 'click', this.handleOptionClick);
   }
 
@@ -241,7 +261,7 @@ export default class DropdownHandler {
     </div>
     <div class="dropdown-container"><ul class="dropdown"></ul></div>`;
 
-    const node = Util.createDom('div', html, {}, `select-container ${this.config.class}`);
+    const node = Util.createDom('div', html, {}, `playlist-dropdown ${this.config.class}`);
     this.plugin.appendChild(this.config.container, node);
   }
 }

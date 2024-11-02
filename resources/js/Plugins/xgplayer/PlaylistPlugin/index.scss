@@ -2,17 +2,9 @@
   .xgplayer-playlist {
     @apply flex divide-x divide-white/20;
 
-    .select-container {
+    .playlist-dropdown {
       @apply h-8 px-2 relative cursor-pointer;
       @apply bg-[#333] hover:bg-[#444] duration-300;
-
-      &:first-child {
-        @apply rounded-l-md;
-      }
-
-      &:last-child {
-        @apply rounded-r-md;
-      }
 
       &.w-long {
         @apply min-w-32;
@@ -36,7 +28,7 @@
 
       .dropdown-container {
         @apply absolute top-full left-0 right-0 hidden;
-        @apply bg-[#555] rounded-b-md overflow-hidden;
+        @apply bg-[#555] overflow-hidden;
 
         .dropdown {
           @apply max-h-80 min-h-7;
@@ -49,12 +41,13 @@
               @apply bg-[#222];
             }
 
-            .with-episodes-count {
+            .with-counter {
               @apply flex justify-between items-center;
 
               &__label {
                 @apply truncate pr-2;
               }
+
               &__count {
                 @apply text-xs bg-black/20 px-1 rounded-sm;
               }
@@ -64,7 +57,7 @@
       }
 
       &.open {
-        @apply bg-[#444] rounded-b-none;
+        @apply bg-[#444];
 
         .selected-option-container .icon {
           @apply -rotate-90;
@@ -73,6 +66,19 @@
 
       &.open .dropdown-container {
         @apply block;
+      }
+    }
+
+    .playlist-button {
+      @apply h-8 px-2 relative leading-[2rem];
+      @apply bg-[#333] duration-300;
+
+      &:not(.disabled) {
+        @apply hover:bg-[#444];
+      }
+
+      &.disabled {
+        @apply text-gray-300 cursor-not-allowed;
       }
     }
   }

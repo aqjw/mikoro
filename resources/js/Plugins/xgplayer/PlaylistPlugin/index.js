@@ -1,5 +1,7 @@
 import { Events, Plugin } from 'xgplayer';
+import ButtonHandler from './ButtonHandler.ts';
 import DropdownHandler from './DropdownHandler.ts';
+import InteractionFocusManager from './InteractionFocusManager.ts';
 import './index.scss';
 
 export default class PlaylistPlugin extends Plugin {
@@ -19,8 +21,10 @@ export default class PlaylistPlugin extends Plugin {
   afterCreate() {
     this._loading = true;
     this.playbackManager = this.config.playbackManager;
+    this.focusManager = new InteractionFocusManager(this);
 
     this.initDropdowns();
+    this.initButtons();
     this.loadEpisodes();
     this.listenEvents();
   }
@@ -32,9 +36,9 @@ export default class PlaylistPlugin extends Plugin {
       invisible: false,
       formatOptionLabel: (option, forLabel = true) => {
         if (!forLabel && !this.config.isSingleEpisode) {
-          return `<div class="with-episodes-count">
-                <div class="with-episodes-count__label">${option.label}</div>
-                <div class="with-episodes-count__count">${option.episodes_count}</div>
+          return `<div class="with-counter">
+                <div class="with-counter__label">${option.label}</div>
+                <div class="with-counter__count">${option.episodes_count}</div>
             </div>`;
         }
 
@@ -90,6 +94,10 @@ export default class PlaylistPlugin extends Plugin {
     episodesDropdown.emitter
       .on('selected-updated', () => {
         this.updatePlaybackState();
+        this.player.onWaiting();
+
+        this.buttons.prev.disabled(!this.dropdowns.episodes.prev());
+        this.buttons.next.disabled(!this.dropdowns.episodes.next());
 
         const resetTime = !translationsDropdown.wasRecentlyChanged();
         this.playbackManager
@@ -116,6 +124,37 @@ export default class PlaylistPlugin extends Plugin {
     this.dropdowns = {
       translations: translationsDropdown,
       episodes: episodesDropdown,
+    };
+  }
+
+  initButtons() {
+    const prevButton = new ButtonHandler(this, {
+      container: 'xg-prev',
+      label: 'Previous',
+    });
+
+    const nextButton = new ButtonHandler(this, {
+      container: 'xg-next',
+      label: 'Next',
+    });
+
+    prevButton.emitter.on('click', () => {
+      const prevEpisode = this.dropdowns.episodes.prev();
+      if (prevEpisode) {
+        this.dropdowns.episodes.setSelected(prevEpisode.id);
+      }
+    });
+
+    nextButton.emitter.on('click', () => {
+      const nextEpisode = this.dropdowns.episodes.next();
+      if (nextEpisode) {
+        this.dropdowns.episodes.setSelected(nextEpisode.id);
+      }
+    });
+
+    this.buttons = {
+      prev: prevButton,
+      next: nextButton,
     };
   }
 
@@ -159,6 +198,9 @@ export default class PlaylistPlugin extends Plugin {
     this.playbackManager.savePlaybackState();
     this.dropdowns.translations.destroy();
     this.dropdowns.episodes.destroy();
+    this.buttons.prev.destroy();
+    this.buttons.next.destroy();
+    this.focusManager.destroy();
   }
 
   loadEpisodes() {
@@ -209,9 +251,12 @@ export default class PlaylistPlugin extends Plugin {
 
   render() {
     return `
-      <div class="w-full text-white xgplayer-ignore xgplayer-playlist">
+    <xg-playlist class="w-full text-white xgplayer-ignore xgplayer-playlist">
         <xg-translations></xg-translations>
+        -
+        <xg-prev></xg-prev>
         <xg-episodes></xg-episodes>
-      </div>`;
+        <xg-next></xg-next>
+    </xg-playlist>`;
   }
 }

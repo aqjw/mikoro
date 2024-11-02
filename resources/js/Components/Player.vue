@@ -63,7 +63,6 @@ const initPlayer = (definitionList, playbackManager) => {
     },
     height: '100%',
     width: '100%',
-    cssFullscreen: false,
     startTime: time,
     controls: {
       mode: 'normal',
@@ -104,11 +103,9 @@ const initPlayer = (definitionList, playbackManager) => {
       },
     },
     plugins: [OverlayPlugin, HlsPlugin],
+    ignores: ['cssFullscreen', 'volume', 'play', 'replay'],
   });
 
-  player.value.unRegisterPlugin('volume');
-  player.value.unRegisterPlugin('play');
-  player.value.unRegisterPlugin('replay');
   player.value.registerPlugin(VolumePlugin);
   player.value.registerPlugin(PlaylistPlugin, {
     isSingleEpisode: isSingleEpisode.value,
