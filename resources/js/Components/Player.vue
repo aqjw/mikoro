@@ -25,8 +25,10 @@ const { poster, titleId, isSingleEpisode } = toRefs(props);
 
 const player = ref(null);
 const playerContainer = ref(null);
+const loading = ref(true);
 
 onMounted(async () => {
+  loading.value = true;
   const playbackManager = await usePlaybackManager(titleId.value);
 
   playbackManager
@@ -34,10 +36,12 @@ onMounted(async () => {
     .then(() => {
       initPlayer(playbackManager.links.value, playbackManager);
     })
-
     .catch((error) => {
       // TODO: Handle error
       console.error('error while load video links', error);
+    })
+    .finally(() => {
+      loading.value = false;
     });
 
   window.addEventListener('beforeunload', destroyPlayer);
@@ -137,5 +141,9 @@ const destroyPlayer = () => {
 </script>
 
 <template>
-  <div ref="playerContainer"></div>
+  <div ref="playerContainer" class="relative h-full">
+    <div v-if="loading" class="absolute-center">
+      <v-progress-circular color="primary" indeterminate :size="40" :width="2" />
+    </div>
+  </div>
 </template>

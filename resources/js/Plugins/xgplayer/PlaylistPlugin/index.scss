@@ -1,6 +1,6 @@
 .xgplayer {
   .xgplayer-playlist {
-    @apply flex divide-x divide-white/20;
+    @apply flex divide-x divide-white/20 w-full;
 
     .playlist-dropdown {
       @apply h-8 px-2 relative cursor-pointer;
@@ -79,6 +79,20 @@
 
       &.disabled {
         @apply text-gray-300 cursor-not-allowed;
+      }
+    }
+
+    .spinner-overlay {
+      z-index: 1000;
+      pointer-events: none;
+
+      .spinner {
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        @apply animate-spin;
       }
     }
   }

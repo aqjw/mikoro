@@ -175,7 +175,6 @@ class TitleController extends Controller
 
     public function videoLinks(Title $title, Request $request, KodikService $kodikService, ?Episode $episode = null): JsonResponse
     {
-        sleep(3);
         $episode ??= $title->episodes()->first();
         $links = cache()->remember(
             key: "episode-links-{$episode->id}",

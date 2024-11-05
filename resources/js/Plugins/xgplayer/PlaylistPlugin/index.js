@@ -2,6 +2,7 @@ import { Events, Plugin } from 'xgplayer';
 import ButtonHandler from './ButtonHandler.ts';
 import DropdownHandler from './DropdownHandler.ts';
 import InteractionFocusManager from './InteractionFocusManager.ts';
+import SpinnerOverlay from './SpinnerOverlay.ts';
 import './index.scss';
 
 export default class PlaylistPlugin extends Plugin {
@@ -22,6 +23,7 @@ export default class PlaylistPlugin extends Plugin {
     this._loading = true;
     this.playbackManager = this.config.playbackManager;
     this.focusManager = new InteractionFocusManager(this);
+    this.spinnerOverlay = new SpinnerOverlay(this, 'xg-spinner');
 
     this.initDropdowns();
     this.initButtons();
@@ -100,6 +102,8 @@ export default class PlaylistPlugin extends Plugin {
         this.buttons.next.disabled(!this.dropdowns.episodes.next());
 
         const resetTime = !translationsDropdown.wasRecentlyChanged();
+        this.spinnerOverlay.show();
+
         this.playbackManager
           .reloadLinks()
           .then(() => {
@@ -111,6 +115,9 @@ export default class PlaylistPlugin extends Plugin {
           .catch((error) => {
             // TODO: handle error
             console.error(error);
+          })
+          .finally(() => {
+            this.spinnerOverlay.hide();
           });
       })
       .on('open-toggle', (isOpen) => {
@@ -204,6 +211,7 @@ export default class PlaylistPlugin extends Plugin {
   }
 
   loadEpisodes() {
+    this.spinnerOverlay.show();
     this.playbackManager
       .loadEpisodes()
       .then(() => {
@@ -220,6 +228,7 @@ export default class PlaylistPlugin extends Plugin {
       })
       .finally(() => {
         this._loading = false;
+        this.spinnerOverlay.hide();
       });
   }
 
@@ -257,6 +266,8 @@ export default class PlaylistPlugin extends Plugin {
         <xg-prev></xg-prev>
         <xg-episodes></xg-episodes>
         <xg-next></xg-next>
+        -
+        <xg-spinner></xg-spinner>
     </xg-playlist>`;
   }
 }
