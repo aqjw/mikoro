@@ -1,0 +1,72 @@
+.xgplayer {
+  .xgplayer-settings {
+    display: block;
+    position: initial;
+
+    .xgplayer-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .xgplayer-modal {
+      @apply shadow-lg rounded-md overflow-hidden;
+      background-color: rgba(var(--v-theme-surface), 0.8);
+      color: light-dark(#000, #fff);
+      max-height: 15rem;
+      min-height: 4rem;
+      width: 16rem;
+      overflow-y: auto;
+      position: absolute;
+      bottom: 3.5rem;
+      right: 0;
+      transition: ease width 200ms, transform cubic-bezier(0.175, 0.885, 0.32, 1.275) 200ms;
+      opacity: 0.1;
+      transform: translate(10%, 60%) scale(0);
+
+      .xgplayer-modal-tab {
+        display: none;
+        position: relative;
+
+        ul li {
+          padding: 0.4rem 0.5rem;
+
+          &:hover {
+            background: light-dark(#eee, #666);
+          }
+
+          &.item-active {
+            background: light-dark(#999, #333);
+          }
+        }
+
+        .list-header {
+          @apply p-2 flex gap-2 items-center sticky top-0;
+          background-color: rgba(var(--v-theme-surface), 0.8);
+
+          span {
+            @apply opacity-65;
+          }
+
+          img {
+            @apply h-4 opacity-65;
+          }
+
+          &:hover img {
+            @apply opacity-100;
+          }
+        }
+
+        &.show-tab {
+          display: block;
+        }
+      }
+    }
+
+    &.xgplayer-active {
+      .xgplayer-modal {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+    }
+  }
+}

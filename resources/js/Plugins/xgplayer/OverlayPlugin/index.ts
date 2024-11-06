@@ -2,6 +2,8 @@ import { Plugin } from 'xgplayer';
 import './index.scss';
 
 export default class OverlayPlugin extends Plugin {
+  private customHookCbs: Array<() => boolean> = [];
+
   static get pluginName() {
     return 'overlay';
   }
@@ -13,22 +15,32 @@ export default class OverlayPlugin extends Plugin {
     };
   }
 
-  runCustomHook(cb) {
-    return () => this.customHookCb() && cb();
+  addCustomHook(cb: () => boolean) {
+    this.customHookCbs.push(cb);
+  }
+
+  runCustomHooks(cb: () => void) {
+    return () => {
+      for (const hook of this.customHookCbs) {
+        if (!hook()) return;
+      }
+      cb();
+    };
   }
 
   afterCreate() {
+    this.customHookCbs = [];
+
     let isDblclick = false;
-    let clickTimer = null;
+    let clickTimer: NodeJS.Timeout | null = null;
 
     this.onDblclick = () => {
       isDblclick = true;
-      clearTimeout(clickTimer);
+      clearTimeout(clickTimer as NodeJS.Timeout);
       this.player.getPlugin('fullscreen').handleFullscreen();
     };
 
-    this.customHookCb = () => true;
-    this.onClick = this.runCustomHook(() => {
+    this.onClick = this.runCustomHooks(() => {
       clickTimer = setTimeout(() => {
         if (isDblclick) {
           isDblclick = false;
@@ -46,6 +58,7 @@ export default class OverlayPlugin extends Plugin {
   destroy() {
     this.unbind('.xgplayer-overlay', 'dblclick', this.onDblclick);
     this.unbind('.xgplayer-overlay', 'click', this.onClick);
+    this.customHookCbs = [];
   }
 
   render() {

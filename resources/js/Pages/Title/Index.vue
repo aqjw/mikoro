@@ -123,12 +123,13 @@ const isReleased = computed(() => status.value === 'released');
         <PartEpisodeNotify :title="title" class="w-7/12" />
       </div>
 
-      <div class="bg-second h-[30rem] rounded-lg shadow-lg overflow-hidden">
+      <div
+        class="bg-second h-[30rem] rounded-lg shadow-lg overflow-hidden duration-200 hover:scale-[1.025]"
+      >
         <Player
           :poster="$media.original(screenshots[0])"
           :title-id="title.id"
           :is-single-episode="title.single_episode"
-          class="rounded-lg overflow-hidden"
         />
       </div>
 

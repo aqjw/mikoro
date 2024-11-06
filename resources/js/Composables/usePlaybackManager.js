@@ -43,9 +43,9 @@ const usePlaybackManager = async (titleId) => {
   };
 
   const _formatLink = ([definition, url]) => ({
-    definition: `${definition}p`,
+    definition,
     url,
-    text: `${definition}P`,
+    text: definition,
   });
 
   return {

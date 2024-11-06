@@ -178,7 +178,11 @@ export default class PlaylistPlugin extends Plugin {
       this.player.play();
     };
 
-    this.useOverlayClickHook = () => {
+    this.on(Events.PAUSE, this.onPause);
+    this.on(Events.TIME_UPDATE, this.onTimeUpdate);
+    this.on(Events.AFTER_DEFINITION_CHANGE, this.onDefinitionChanged);
+
+    this.player.getPlugin('overlay').addCustomHook(() => {
       try {
         return !(
           this.dropdowns.translations.getDropdownStatus() ||
@@ -188,13 +192,7 @@ export default class PlaylistPlugin extends Plugin {
         this.dropdowns.translations.closeDropdown();
         this.dropdowns.episodes.closeDropdown();
       }
-    };
-
-    this.on(Events.PAUSE, this.onPause);
-    this.on(Events.TIME_UPDATE, this.onTimeUpdate);
-    this.on(Events.AFTER_DEFINITION_CHANGE, this.onDefinitionChanged);
-
-    this.player.getPlugin('overlay').customHookCb = this.useOverlayClickHook;
+    });
   }
 
   destroy() {

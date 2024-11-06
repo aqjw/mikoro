@@ -1,7 +1,12 @@
 <script setup>
 import '@/../css/player.css';
 import usePlaybackManager from '@/Composables/usePlaybackManager';
-import { OverlayPlugin, PlaylistPlugin, VolumePlugin } from '@/Plugins/xgplayer';
+import {
+  OverlayPlugin,
+  PlaylistPlugin,
+  SettingsPlugin,
+  VolumePlugin,
+} from '@/Plugins/xgplayer';
 import { onBeforeUnmount, onMounted, ref, toRefs } from 'vue';
 import Player from 'xgplayer';
 import HlsPlugin from 'xgplayer-hls';
@@ -58,7 +63,8 @@ const initPlayer = (definitionList, playbackManager) => {
   player.value = new Player({
     el: playerContainer.value,
     definition: {
-      defaultDefinition: '1080p',
+      isShowIcon: false,
+      defaultDefinition: 1080,
       list: definitionList,
     },
     poster: poster.value && {
@@ -78,6 +84,15 @@ const initPlayer = (definitionList, playbackManager) => {
     },
     playbackRate: {
       isShowIcon: false,
+      list: [
+        { text: '2', rate: 2 },
+        { text: '1.5', rate: 1.5 },
+        { text: '1.25', rate: 1.25 },
+        { text: 'Normal', rate: 1 },
+        { text: '0.75', rate: 0.75 },
+        { text: '0.5', rate: 0.5 },
+        { text: '0.25', rate: 0.25 },
+      ],
     },
     isHideTips: true,
     progress: {
@@ -111,6 +126,7 @@ const initPlayer = (definitionList, playbackManager) => {
   });
 
   player.value.registerPlugin(VolumePlugin);
+  player.value.registerPlugin(SettingsPlugin);
   player.value.registerPlugin(PlaylistPlugin, {
     isSingleEpisode: isSingleEpisode.value,
     playbackManager: playbackManager,

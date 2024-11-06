@@ -70,7 +70,11 @@ export default class VolumePlugin extends Plugin {
     ) {
       this.bind('mouseenter', this._onMouseenterHandler);
 
-      this.bind(['blur', 'mouseleave'], this._onMouseleaveHandler);
+      const controlsPlugin = this.player.getPlugin('controls');
+      if (controlsPlugin) {
+        controlsPlugin.bind('blur', this._onMouseleaveHandler);
+        controlsPlugin.bind('mouseleave', this._onMouseleaveHandler);
+      }
 
       this.bind('.xgplayer-slider', 'mousedown', this.onBarMousedown);
       this.bind('.xgplayer-slider', 'mousemove', this.onBarMouseMove);
@@ -96,15 +100,14 @@ export default class VolumePlugin extends Plugin {
 
     const barRect = bar.getBoundingClientRect();
     const pos = Util.getEventPos(e, player.zoom);
-    const height = barRect.height - (pos.clientY - barRect.top);
-    pos.h = height;
-    pos.barH = barRect.height;
+    const width = pos.clientX - barRect.left; // Изменяем высоту на ширину
+    pos.w = width;
+    pos.barW = barRect.width;
     this.pos = pos;
-    // 差值小于0，说明点击的不是音量滑块位置 不做响应
-    if (height < -2) {
+    if (width < -2) {
       return;
     }
-    this.updateVolumePos(height, e);
+    this.updateVolumePos(width, e);
     document.addEventListener('mouseup', this.onBarMouseUp);
     this._d.isStart = true;
     return false;
@@ -112,19 +115,15 @@ export default class VolumePlugin extends Plugin {
 
   onBarMouseMove = (e) => {
     const { _d } = this;
-    if (!_d.isStart) {
-      return;
-    }
+    if (!_d.isStart) return;
     const { pos, player } = this;
     e.preventDefault();
     e.stopPropagation();
     Util.event(e);
     const _ePos = Util.getEventPos(e, player.zoom);
     _d.isMoving = true;
-    const w = pos.h - _ePos.clientY + pos.clientY;
-    if (w > pos.barH) {
-      return;
-    }
+    const w = _ePos.clientX - pos.clientX + pos.w;
+    if (w > pos.barW) return;
     this.updateVolumePos(w, e);
   };
 
@@ -136,15 +135,14 @@ export default class VolumePlugin extends Plugin {
     _d.isMoving = false;
   };
 
-  updateVolumePos(height, event) {
+  updateVolumePos(width, event) {
     const { player } = this;
     const drag = this.find('.xgplayer-drag');
     const bar = this.find('.xgplayer-bar');
-    if (!bar || !drag) {
-      return;
-    }
-    const now = parseInt((height / bar.getBoundingClientRect().height) * 1000, 10);
-    drag.style.height = `${height}px`;
+    if (!bar || !drag) return;
+
+    const now = parseInt((width / bar.getBoundingClientRect().width) * 1000, 10);
+    drag.style.width = `${width}px`;
     const to = Math.max(Math.min(now / 1000, 1), 0);
     const props = {
       volume: {
@@ -163,7 +161,7 @@ export default class VolumePlugin extends Plugin {
       volume: player.volume,
       props,
     });
-    player.volume = Math.max(Math.min(now / 1000, 1), 0);
+    player.volume = to;
     player.muted && (player.muted = false);
 
     if (this.config.showValueLabel) {
@@ -239,6 +237,7 @@ export default class VolumePlugin extends Plugin {
   };
 
   onMouseleave = (e) => {
+    if (this._d.isMoving) return;
     this._d.isActive = false;
     this.unFocus(100, false, e);
     this.emit('icon_mouseleave', {
@@ -276,8 +275,8 @@ export default class VolumePlugin extends Plugin {
     }
     const { muted, volume } = this.player;
     if (!this._d.isMoving) {
-      this.find('.xgplayer-drag').style.height =
-        muted || volume === 0 ? '4px' : `${volume * 100}%`;
+      const width = muted || volume === 0 ? '4px' : `${volume * 100}%`;
+      this.find('.xgplayer-drag').style.width = width;
       if (this.config.showValueLabel) {
         this.updateVolumeValue();
       }
@@ -309,12 +308,18 @@ export default class VolumePlugin extends Plugin {
     }
     this.unbind('mouseenter', this.onMouseenter);
 
-    this.unbind(['blur', 'mouseleave'], this.onMouseleave);
+    // Используем плагин controls для отвязки событий blur и mouseleave
+    const controlsPlugin = this.player.getPlugin('controls');
+    if (controlsPlugin) {
+      controlsPlugin.unbind('blur', this.onMouseleave);
+      controlsPlugin.unbind('mouseleave', this.onMouseleave);
+    }
 
     this.unbind('.xgplayer-slider', 'mousedown', this.onBarMousedown);
     this.unbind('.xgplayer-slider', 'mousemove', this.onBarMouseMove);
     this.unbind('.xgplayer-slider', 'mouseup', this.onBarMouseUp);
     document.removeEventListener('mouseup', this.onBarMouseUp);
+
     this.unbind(
       '.xgplayer-icon',
       Sniffer.device === 'mobile' ? 'touchend' : 'click',
@@ -330,16 +335,15 @@ export default class VolumePlugin extends Plugin {
     const isShowVolumeValue = this.config.showValueLabel;
     return `
       <xg-icon class="xgplayer-volume" data-state="normal">
-        <div class="xgplayer-icon">
-        </div>
+        <div class="xgplayer-icon"></div>
         <xg-slider class="xgplayer-slider">
-          ${
-            isShowVolumeValue
-              ? `<div class="xgplayer-value-label">${volume * 100}</div>`
-              : ''
-          }
-          <div class="xgplayer-bar">
-            <xg-drag class="xgplayer-drag" style="height: ${volume * 100}%"></xg-drag>
+          ${isShowVolumeValue ? `<div class="xgplayer-value-label">${volume * 100}</div>` : ''}
+          <div class="xgplayer-bar-wrap">
+            <div class="xgplayer-bar">
+                <xg-drag class="xgplayer-drag" style="width: ${volume * 100}%">
+                    <div class="xgplayer-drag-btn"></div>
+                </xg-drag>
+            </div>
           </div>
         </xg-slider>
       </xg-icon>`;
