@@ -177,7 +177,7 @@ class TitleController extends Controller
     {
         $episode ??= $title->episodes()->first();
         $links = cache()->remember(
-            key: "e1pisode-links-{$episode->id}",
+            key: "e11pisode-links-{$episode->id}",
             ttl: 60 * 60 * 6, // 6 hours
             callback: fn () => $kodikService->getVideoLinks(
                 link: $episode->source,

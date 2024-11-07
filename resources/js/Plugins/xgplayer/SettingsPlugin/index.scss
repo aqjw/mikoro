@@ -10,9 +10,9 @@
 
     .xgplayer-modal {
       @apply shadow-lg rounded-md overflow-hidden;
-      background-color: rgba(var(--v-theme-surface), 0.8);
-      color: light-dark(#000, #fff);
-      max-height: 15rem;
+      background-color: rgba(33, 33, 33, 0.8);
+      color: #fff;
+      max-height: 18rem;
       min-height: 4rem;
       width: 16rem;
       overflow-y: auto;
@@ -27,28 +27,181 @@
         display: none;
         position: relative;
 
+        img {
+          @apply w-6 h-6;
+        }
+
         ul li {
           padding: 0.4rem 0.5rem;
 
-          &:hover {
-            background: light-dark(#eee, #666);
+          &.rate-item {
+            position: relative;
+
+            &.item-active .icon-item,
+            &.item-active:after {
+              opacity: 1 !important;
+            }
+
+            &:after {
+              content: '';
+              position: absolute;
+              right: 0.25rem;
+              top: calc(50% - 2.5px);
+              height: 5px;
+              width: 40px;
+              border-radius: 100px;
+              opacity: 0;
+              filter: blur(10px); /* Размытие краев */
+              transition: 500ms;
+            }
+
+            &-2 {
+              &:after {
+                background-color: #ff0000; /* Красный (горячий) */
+              }
+
+              .icon-item {
+                animation: waveSwingSoft 0.5s infinite linear;
+                transform-origin: left bottom;
+                transition: 500ms;
+                opacity: 0.1;
+
+                img {
+                  animation: spin 0.5s linear infinite;
+                }
+              }
+            }
+            &-1_5 {
+              &:after {
+                background-color: #ff4500; /* Оранжево-красный */
+              }
+
+              .icon-item {
+                animation: waveSwingSoft 0.75s infinite linear;
+                transform-origin: left bottom;
+                transition: 500ms;
+                opacity: 0.2;
+
+                img {
+                  animation: spin 0.75s linear infinite;
+                }
+              }
+            }
+            &-1_25 {
+              &:after {
+                background-color: #ffa500; /* Оранжевый */
+              }
+
+              .icon-item {
+                animation: waveSwingSoft 1s infinite linear;
+                transform-origin: left bottom;
+                transition: 500ms;
+                opacity: 0.2;
+
+                img {
+                  animation: spin 1s linear infinite;
+                }
+              }
+            }
+            &-1 {
+              &:after {
+                background-color: #ffff00; /* Желтый */
+              }
+
+              .icon-item {
+                animation: waveSwingSoft 1.25s infinite linear;
+                transform-origin: left bottom;
+                transition: 500ms;
+                opacity: 0.2;
+
+                img {
+                  animation: spin 1.25s linear infinite;
+                }
+              }
+            }
+            &-0_75 {
+              &:after {
+                background-color: #add8e6; /* Светло-голубой */
+              }
+
+              .icon-item {
+                animation: waveSwingSoft 1.5s infinite linear;
+                transform-origin: left bottom;
+                transition: 500ms;
+                opacity: 0.2;
+
+                img {
+                  animation: spin 1.5s linear infinite;
+                }
+              }
+            }
+            &-0_5 {
+              &:after {
+                background-color: #00bfff; /* Глубокий голубой */
+              }
+
+              .icon-item {
+                animation: waveSwingSoft 2s infinite linear;
+                transform-origin: left bottom;
+                transition: 500ms;
+                opacity: 0.2;
+
+                img {
+                  animation: spin 2s linear infinite;
+                }
+              }
+            }
+            &-0_25 {
+              &:after {
+                background-color: #0000ff; /* Синий (холодный) */
+              }
+
+              .icon-item {
+                animation: waveSwingSoft 4s infinite linear;
+                transform-origin: left bottom;
+                transition: 500ms;
+                opacity: 0.2;
+
+                img {
+                  animation: spin 4s linear infinite;
+                }
+              }
+            }
           }
 
+          &:hover,
           &.item-active {
-            background: light-dark(#999, #333);
+            .item-icon-wave {
+              animation: waveSwingSoft 4s infinite linear;
+              transform-origin: left bottom;
+
+              img {
+                animation: waveSwingSoft 4s infinite linear;
+                transform-origin: left bottom;
+                animation-delay: 100ms;
+              }
+            }
+          }
+
+          &:hover {
+            background-color: rgba(33, 33, 33, 0.9);
+            &.rate-item .icon-item,
+            &.rate-item:after {
+              opacity: 1 !important;
+            }
           }
         }
 
         .list-header {
           @apply p-2 flex gap-2 items-center sticky top-0;
-          background-color: rgba(var(--v-theme-surface), 0.8);
+          background-color: rgba(33, 33, 33, 0.8);
 
           span {
             @apply opacity-65;
           }
 
           img {
-            @apply h-4 opacity-65;
+            @apply opacity-65;
           }
 
           &:hover img {
@@ -68,5 +221,82 @@
         opacity: 1;
       }
     }
+  }
+}
+
+.img-wave-on-hover:hover img {
+  animation: waveSwingSoft 4s infinite linear;
+  transform-origin: left bottom;
+}
+
+@keyframes waveSwing {
+  0% {
+    transform: rotate(0deg) translate(0, 0);
+  }
+  10% {
+    transform: rotate(-6deg) translate(-3px, 2px);
+  }
+  20% {
+    transform: rotate(5deg) translate(4px, -1px);
+  }
+  30% {
+    transform: rotate(-8deg) translate(-5px, 3px);
+  }
+  40% {
+    transform: rotate(7deg) translate(3px, -2px);
+  }
+  50% {
+    transform: rotate(-5deg) translate(-4px, 1px);
+  }
+  60% {
+    transform: rotate(4deg) translate(2px, -3px);
+  }
+  70% {
+    transform: rotate(-7deg) translate(-3px, 2px);
+  }
+  80% {
+    transform: rotate(6deg) translate(3px, -1px);
+  }
+  90% {
+    transform: rotate(-4deg) translate(-2px, 2px);
+  }
+  100% {
+    transform: rotate(0deg) translate(0, 0);
+  }
+}
+
+@keyframes waveSwingSoft {
+  0% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-1px, 0.5px);
+  }
+  20% {
+    transform: translate(1px, -0.5px);
+  }
+  30% {
+    transform: translate(-1.5px, 1px);
+  }
+  40% {
+    transform: translate(1px, -1px);
+  }
+  50% {
+    transform: translate(-1px, 0.5px);
+  }
+  60% {
+    transform: translate(0.5px, -1px);
+  }
+  70% {
+    transform: translate(-1px, 0.5px);
+  }
+  80% {
+    transform: translate(1px, -0.5px);
+  }
+  90% {
+    transform: translate(-0.5px, 0.5px);
+  }
+  100% {
+    transform: translate(0, 0);
   }
 }

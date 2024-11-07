@@ -274,3 +274,7 @@ blockquote {
     }
   }
 }
+
+.border-px {
+    @apply border;
+}

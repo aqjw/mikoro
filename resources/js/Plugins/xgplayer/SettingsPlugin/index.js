@@ -1,8 +1,10 @@
 import { Plugin } from 'xgplayer';
 import backSvg from './assets/back.svg';
+import checkSvg from './assets/check.svg';
 import definitionSvg from './assets/definition.svg';
 import definitionsSvg from './assets/definitions';
 import playbackRateSvg from './assets/playbackRate.svg';
+import playbackSpinnerSvg from './assets/playbackSpinner.svg';
 import settingsSvg from './assets/settings.svg';
 import './index.scss';
 
@@ -12,6 +14,25 @@ export default class SettingsPlugin extends Plugin {
   }
 
   static get defaultConfig() {
+    const getDefinitionIcon = (definition) => {
+      const resolutionIcons = {
+        360: 'sd',
+        480: 'hq',
+        720: 'hd',
+        1080: 'fhd',
+        // TODO: 2k - https://uxwing.com/8k-label-color-icon/
+        //   1440: 'qhd',
+        2160: 'uhd',
+        4320: 'q8k',
+      };
+
+      const closestResolution = Object.keys(resolutionIcons)
+        .reverse()
+        .find((res) => definition >= res);
+
+      return definitionsSvg[resolutionIcons[closestResolution] || 'fhd'];
+    };
+
     return {
       position: Plugin.POSITIONS.CONTROLS_RIGHT,
       index: 1,
@@ -21,42 +42,25 @@ export default class SettingsPlugin extends Plugin {
           width: '12rem',
           getTitle: () => 'Definition',
           getLabel: (player) => {
-            const current = player.curDefinition.text;
             return `
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center img-wave-on-hover">
                     <div class="flex gap-2 items-center">
-                        <div class="w-6">
-                            <img src="${definitionSvg}"/>
-                        </div>
+                        <img src="${definitionSvg}" />
                         <div>Definition</div>
                     </div>
-                    <div class="text-xs">${current}</div>
+                    <div class="text-xs">
+                        ${player.curDefinition.text}p
+                    </div>
                 </div>
             `;
           },
           getItems: (player) => {
-            const resolutionIcons = {
-              360: 'sd',
-              480: 'hq',
-              720: 'hd',
-              1080: 'fhd',
-              // TODO: 2k - https://uxwing.com/8k-label-color-icon/
-              //   1440: 'qhd',
-              2160: 'uhd',
-              4320: 'q8k',
-            };
-
-            const getIcon = (definition) => {
-              const closestResolution = Object.keys(resolutionIcons)
-                .reverse()
-                .find((res) => definition >= res);
-
-              return definitionsSvg[resolutionIcons[closestResolution] || 'fhd'];
-            };
-
             return [...player.definitionList].map((item) => ({
               ...item,
-              icon: getIcon(+item.definition),
+              icon: getDefinitionIcon(+item.definition),
+              iconClass:
+                'item-icon-wave !h-[initial] !w-8 border-px !border-white/50 rounded-md',
+              containerClass: '',
               active: item.definition === player.curDefinition.definition,
             }));
           },
@@ -74,21 +78,21 @@ export default class SettingsPlugin extends Plugin {
               ({ rate }) => rate === playbackRate.curValue
             ).text;
             return `
-              <div class="flex justify-between items-center">
-                  <div class="flex gap-2 items-center">
-                      <div class="w-6">
-                          <img src="${playbackRateSvg}"/>
-                      </div>
-                      <div>Playback Speed</div>
-                  </div>
-                  <div class="text-xs">${current}</div>
-              </div>
-          `;
+                <div class="flex justify-between items-center img-wave-on-hover">
+                    <div class="flex gap-2 items-center">
+                        <img src="${playbackRateSvg}" />
+                        <div>Playback Speed</div>
+                    </div>
+                    <div class="text-xs">${current}</div>
+                </div>`;
           },
           getItems: (player) => {
             const playbackRate = player.getPlugin('playbackRate');
             return [...playbackRate.config.list].map((item) => ({
               ...item,
+              icon: playbackSpinnerSvg,
+              iconClass: '!h-5 icon-item',
+              containerClass: `rate-item rate-item-${item.rate}`.replace('.', '_'),
               active: item.rate === player.playbackRate,
             }));
           },
@@ -222,7 +226,7 @@ export default class SettingsPlugin extends Plugin {
         if (item.name !== 'list') {
           headerHtml = `
             <div class="list-header">
-                <img src="${backSvg}" />
+                <img src="${backSvg}" class="!h-4" />
                 <span>${item.getTitle()}</span>
             </div>`;
         }
@@ -249,13 +253,22 @@ export default class SettingsPlugin extends Plugin {
       .map(
         (item, index) =>
           `<li
-                class="flex justify-between items-center ${item.active ? 'item-active' : ''}"
+                class="flex justify-between items-center ${item.active ? 'item-active' : ''} ${
+            item.containerClass
+          }"
                 data-index="${index}"
                 data-tab="${tab}"
             >
-            <div>${item.text}</div>
-            <div class="w-8 ${item.icon ? '' : 'hidden'}">
-                <img src="${item.icon}"/>
+            <div class="flex gap-2 items-center">
+                <div class="w-4">
+                    <img src="${checkSvg}"
+                        class="${item.active ? '' : '!hidden'} !h-4" />
+                </div>
+                <div>${item.text}</div>
+            </div>
+
+            <div class="${item.icon ? '' : '!hidden'} ${item.iconClass}">
+                <img src="${item.icon}" class="!w-[initial] !h-full" />
             </div>
           </li>`
       )

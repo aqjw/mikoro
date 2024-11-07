@@ -85,13 +85,13 @@ const initPlayer = (definitionList, playbackManager) => {
     playbackRate: {
       isShowIcon: false,
       list: [
-        { text: '2', rate: 2 },
-        { text: '1.5', rate: 1.5 },
-        { text: '1.25', rate: 1.25 },
+        { text: '2x', rate: 2 },
+        { text: '1.5x', rate: 1.5 },
+        { text: '1.25x', rate: 1.25 },
         { text: 'Normal', rate: 1 },
-        { text: '0.75', rate: 0.75 },
-        { text: '0.5', rate: 0.5 },
-        { text: '0.25', rate: 0.25 },
+        { text: '0.75x', rate: 0.75 },
+        { text: '0.5x', rate: 0.5 },
+        { text: '0.25x', rate: 0.25 },
       ],
     },
     isHideTips: true,
@@ -158,6 +158,10 @@ const destroyPlayer = () => {
 
 <template>
   <div ref="playerContainer" class="relative h-full">
+    <span
+      class="!hidden !h-full !h-4 !h-7 !w-8 duration-200 !h-5 !h-6 !w-6 !w-8 !h-8 !w-[initial] !h-[initial] border border-2 !border-white !border-white/50 rounded-md"
+      >tailwindcss use classes</span
+    >
     <div v-if="loading" class="absolute-center">
       <v-progress-circular color="primary" indeterminate :size="40" :width="2" />
     </div>

@@ -20,7 +20,7 @@ export default class PlaylistPlugin extends Plugin {
   }
 
   afterCreate() {
-    this._loading = true;
+    this.initLoading = true;
     this.playbackManager = this.config.playbackManager;
     this.focusManager = new InteractionFocusManager(this);
     this.spinnerOverlay = new SpinnerOverlay(this, 'xg-spinner');
@@ -103,6 +103,10 @@ export default class PlaylistPlugin extends Plugin {
 
         const resetTime = !translationsDropdown.wasRecentlyChanged();
         this.spinnerOverlay.show();
+
+        if (this.initLoading) {
+          return;
+        }
 
         this.playbackManager
           .reloadLinks()
@@ -225,7 +229,7 @@ export default class PlaylistPlugin extends Plugin {
         console.error(error);
       })
       .finally(() => {
-        this._loading = false;
+        this.initLoading = false;
         this.spinnerOverlay.hide();
       });
   }
