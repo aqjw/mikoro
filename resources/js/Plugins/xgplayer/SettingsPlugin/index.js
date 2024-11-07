@@ -14,6 +14,13 @@ export default class SettingsPlugin extends Plugin {
   }
 
   static get defaultConfig() {
+    return {
+      position: Plugin.POSITIONS.CONTROLS_RIGHT,
+      index: 1,
+    };
+  }
+
+  getTabs() {
     const getDefinitionIcon = (definition) => {
       const resolutionIcons = {
         360: 'sd',
@@ -33,87 +40,83 @@ export default class SettingsPlugin extends Plugin {
       return definitionsSvg[resolutionIcons[closestResolution] || 'fhd'];
     };
 
-    return {
-      position: Plugin.POSITIONS.CONTROLS_RIGHT,
-      index: 1,
-      tabs: [
-        {
-          name: 'definition',
-          width: '12rem',
-          getTitle: () => 'Definition',
-          getLabel: (player) => {
-            return `
-                <div class="flex justify-between items-center img-wave-on-hover">
-                    <div class="flex gap-2 items-center">
-                        <img src="${definitionSvg}" />
-                        <div>Definition</div>
+    return [
+      {
+        name: 'definition',
+        width: '12rem',
+        getTitle: () => 'Definition',
+        getLabel: (player) => {
+          return `
+                    <div class="flex justify-between items-center img-wave-on-hover">
+                        <div class="flex gap-2 items-center">
+                            <img src="${definitionSvg}" />
+                            <div>Definition</div>
+                        </div>
+                        <div class="text-xs">
+                            ${player.curDefinition.text}p
+                        </div>
                     </div>
-                    <div class="text-xs">
-                        ${player.curDefinition.text}p
-                    </div>
-                </div>
-            `;
-          },
-          getItems: (player) => {
-            return [...player.definitionList].map((item) => ({
-              ...item,
-              icon: getDefinitionIcon(+item.definition),
-              iconClass:
-                'item-icon-wave !h-[initial] !w-8 border-px !border-white/50 rounded-md',
-              containerClass: '',
-              active: item.definition === player.curDefinition.definition,
-            }));
-          },
-          onClick: (e, player, definition) => {
-            player.changeDefinition(definition);
-          },
+                `;
         },
-        {
-          name: 'playbackRate',
-          width: '12em',
-          getTitle: () => 'Playback Speed',
-          getLabel: (player) => {
-            const playbackRate = player.getPlugin('playbackRate');
-            const current = playbackRate.config.list.find(
-              ({ rate }) => rate === playbackRate.curValue
-            ).text;
-            return `
-                <div class="flex justify-between items-center img-wave-on-hover">
-                    <div class="flex gap-2 items-center">
-                        <img src="${playbackRateSvg}" />
-                        <div>Playback Speed</div>
-                    </div>
-                    <div class="text-xs">${current}</div>
-                </div>`;
-          },
-          getItems: (player) => {
-            const playbackRate = player.getPlugin('playbackRate');
-            return [...playbackRate.config.list].map((item) => ({
-              ...item,
-              icon: playbackSpinnerSvg,
-              iconClass: '!h-5 icon-item',
-              containerClass: `rate-item rate-item-${item.rate}`.replace('.', '_'),
-              active: item.rate === player.playbackRate,
-            }));
-          },
-          onClick: (e, player, { rate }) => {
-            const playbackRate = player.getPlugin('playbackRate');
-            if (!rate || rate === playbackRate.curValue) {
-              return false;
-            }
-            const props = {
-              playbackRate: {
-                from: player.playbackRate,
-                to: rate,
-              },
-            };
-            playbackRate.emitUserAction(e, 'change_rate', { props });
-            playbackRate.curValue = rate;
-            player.playbackRate = rate;
-          },
+        getItems: (player) => {
+          return [...player.definitionList].map((item) => ({
+            ...item,
+            icon: getDefinitionIcon(+item.definition),
+            iconClass:
+              'item-icon-wave !h-[initial] !w-8 border-px !border-white/50 rounded-md',
+            containerClass: '',
+            active: item.definition === player.curDefinition.definition,
+          }));
         },
-      ],
-    };
+        onClick: (e, player, definition) => {
+          player.changeDefinition(definition);
+        },
+      },
+      {
+        name: 'playbackRate',
+        width: '12em',
+        getTitle: () => 'Playback Speed',
+        getLabel: (player) => {
+          const playbackRate = player.getPlugin('playbackRate');
+          const current = playbackRate.config.list.find(
+            ({ rate }) => rate === playbackRate.curValue
+          ).text;
+          return `
+                    <div class="flex justify-between items-center img-wave-on-hover">
+                        <div class="flex gap-2 items-center">
+                            <img src="${playbackRateSvg}" />
+                            <div>Playback Speed</div>
+                        </div>
+                        <div class="text-xs">${current}</div>
+                    </div>`;
+        },
+        getItems: (player) => {
+          const playbackRate = player.getPlugin('playbackRate');
+          return [...playbackRate.config.list].map((item) => ({
+            ...item,
+            icon: playbackSpinnerSvg,
+            iconClass: '!h-5 icon-item',
+            containerClass: `rate-item rate-item-${item.rate}`.replace('.', '_'),
+            active: item.rate === player.playbackRate,
+          }));
+        },
+        onClick: (e, player, { rate }) => {
+          const playbackRate = player.getPlugin('playbackRate');
+          if (!rate || rate === playbackRate.curValue) {
+            return false;
+          }
+          const props = {
+            playbackRate: {
+              from: player.playbackRate,
+              to: rate,
+            },
+          };
+          playbackRate.emitUserAction(e, 'change_rate', { props });
+          playbackRate.curValue = rate;
+          player.playbackRate = rate;
+        },
+      },
+    ];
   }
 
   registerIcons() {
@@ -156,11 +159,26 @@ export default class SettingsPlugin extends Plugin {
     });
   }
 
+  destroy() {
+    this.unbind('.xgplayer-icon', ['touchend', 'click'], this.toggleModalHandler);
+    this.unbind(
+      '.xgplayer-modal-tab .list-header',
+      ['touchend', 'click'],
+      this.backTabHandler
+    );
+    this.unbind(
+      '.xgplayer-modal-tab[data-tab="list"] ul > li',
+      ['touchend', 'click'],
+      this.toggleTabHandler
+    );
+  }
+
   initIcons() {
     const { icons } = this;
     this.appendChild('.xgplayer-icon', icons.settings);
   }
 
+  /** ---------- Events - start 🟢 */
   toggleModalHandler = () => {
     this._d.isActive = !this._d.isActive;
     this.player.innerStates.isActiveLocked = this._d.isActive;
@@ -184,7 +202,7 @@ export default class SettingsPlugin extends Plugin {
   toggleTabHandler = (e) => {
     const tabName = e.delegateTarget.dataset.tab;
     const index = e.delegateTarget.dataset.index;
-    const tab = this.config.tabs.find((tab) => tab.name === tabName);
+    const tab = this.getTabs().find((tab) => tab.name === tabName);
     const items = tab.getItems(this.player);
     tab.onClick(e, this.player, items[index]);
     this.toggleModalHandler();
@@ -193,34 +211,18 @@ export default class SettingsPlugin extends Plugin {
   backTabHandler = (e) => {
     this.switchTab('list');
   };
+  /** ---------- Events - end 🟥 */
 
   switchTab(tabName) {
     this.find(`.xgplayer-modal-tab[data-tab].show-tab`).classList.remove('show-tab');
     this.find(`.xgplayer-modal-tab[data-tab="${tabName}"]`).classList.add('show-tab');
 
-    const tab = this.config.tabs.find((tab) => tab.name === tabName);
+    const tab = this.getTabs().find((tab) => tab.name === tabName);
     this.find(`.xgplayer-modal`).style.width = tab?.width || null;
   }
 
-  destroy() {
-    this.unbind('.xgplayer-icon', ['touchend', 'click'], this.toggleModalHandler);
-    this.unbind(
-      '.xgplayer-modal-tab .list-header',
-      ['touchend', 'click'],
-      this.backTabHandler
-    );
-    this.unbind(
-      '.xgplayer-modal-tab[data-tab="list"] ul > li',
-      ['touchend', 'click'],
-      this.toggleTabHandler
-    );
-  }
-
   renderTabs() {
-    this.find('.xgplayer-modal').innerHTML = [
-      { name: 'list', show: true },
-      ...this.config.tabs,
-    ]
+    this.find('.xgplayer-modal').innerHTML = [{ name: 'list', show: true }, ...this.getTabs()]
       .map((item) => {
         let headerHtml = '';
         if (item.name !== 'list') {
@@ -242,13 +244,15 @@ export default class SettingsPlugin extends Plugin {
       })
       .join('');
 
-    this.find(`.xgplayer-modal-tab[data-tab="list"] ul`).innerHTML = this.config.tabs
+    this.find(`.xgplayer-modal-tab[data-tab="list"] ul`).innerHTML = this.getTabs()
       .map((item) => `<li data-target="${item.name}">${item.getLabel(this.player)}</li>`)
       .join('');
   }
 
   renderTabItems(tab) {
-    const items = this.config.tabs.find(({ name }) => name === tab).getItems(this.player);
+    const items = this.getTabs()
+      .find(({ name }) => name === tab)
+      .getItems(this.player);
     this.find(`.xgplayer-modal-tab[data-tab="${tab}"] ul`).innerHTML = items
       .map(
         (item, index) =>
