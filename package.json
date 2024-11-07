@@ -34,6 +34,7 @@
         "vue3-carousel": "^0.3.4",
         "vuetify": "^3.7.2",
         "xgplayer": "^3.0.20",
+        "xgplayer-ads": "^3.0.20-alpha.0",
         "xgplayer-hls": "^3.0.20"
     }
 }
