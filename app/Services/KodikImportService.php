@@ -155,7 +155,7 @@ class KodikImportService
                     ['source' => $episodeData['link']]
                 );
 
-                if ($episode->wasRecentlyCreated) {
+                if ($episode->wasRecentlyCreated && $title->episodes()->count() === 1) {
                     $this->storeEpisodeMedia(
                         episodeId: $episode->id,
                         screenshots: array_slice($episodeData['screenshots'], 0, 5)
