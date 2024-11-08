@@ -8,9 +8,10 @@ import {
   VolumePlugin,
 } from '@/Plugins/xgplayer';
 import { onBeforeUnmount, onMounted, ref, toRefs } from 'vue';
+
 import Player from 'xgplayer';
+import AdPlugin, { AdEvents } from 'xgplayer-ads';
 import HlsPlugin from 'xgplayer-hls';
-import AdPlugin from 'xgplayer-ads';
 
 const props = defineProps({
   poster: {
@@ -123,11 +124,11 @@ const initPlayer = (definitionList, playbackManager) => {
       },
     },
     ad: {
-      adType: 'google-ima',
+      adType: 'ima',
+      controls: true,
+      debug: true,
       ima: {
-        debug: true,
-        locale: 'ru_RU',
-        // adsRequest: createAdsRequest()
+        // locale: 'ru_RU',
         adTagUrl:
           'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=',
       },
@@ -143,6 +144,37 @@ const initPlayer = (definitionList, playbackManager) => {
     playbackManager: playbackManager,
   });
 
+  // TODO: hide start plugin
+  const adPlugin = player.value.getPlugin(AdPlugin.pluginName);
+
+  adPlugin.on(AdEvents.IMA_AD_MANAGER_READY, () => {
+    adPlugin.uiManager.adUIPlugins = adPlugin.uiManager.adUIPlugins.filter(
+      ([targetPlugin, _]) => targetPlugin.pluginName !== 'playbackrate'
+    );
+  });
+
+  adPlugin.on(AdEvents.AD_PLAY, () => {
+    console.log('AdEvents.AD_PLAY');
+    player.value.getPlugin(OverlayPlugin.pluginName).hide();
+    // player.value.getPlugin('start').toggleTo('play');
+    // console.log('11111', player.value.getPlugin('start').config.mode);
+  });
+
+  // TODO:  OverlayPlugin - show
+  //   player.value.on(Events.ENDED, (e) => {
+  //     console.log('Events.ENDED', e);
+  //     player.value.getPlugin(OverlayPlugin.pluginName).show();
+  //     // player.value.getPlugin('start').toggleTo('pause');
+  //     // console.log('22222', player.value.getPlugin('start').config.mode);
+  //   });
+
+  adPlugin.on('ima_content_pause_requested', () => {
+    console.log('Реклама началась');
+  });
+
+  adPlugin.on('ima_content_resume_requested', () => {
+    console.log('Реклама закончилась');
+  });
   player.value.usePluginHooks('error', 'errorRetry', () => {
     return new Promise((resolve) => {
       playbackManager

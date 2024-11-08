@@ -61,6 +61,14 @@ export default class OverlayPlugin extends Plugin {
     this.customHookCbs = [];
   }
 
+  hide() {
+    this.root.classList.add('hidden');
+  }
+
+  show() {
+    this.root.classList.remove('hidden');
+  }
+
   render() {
     return '<div class="xgplayer-overlay"></div>';
   }
